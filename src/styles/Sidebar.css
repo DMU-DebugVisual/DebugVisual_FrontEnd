@@ -1,0 +1,18 @@
+* {
+    box-sizing: border-box;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+}
+
+.sidebar {
+    border-right: 1px solid black;
+    padding: 10px;
+    width: 300px;
+    position: fixed;
+    top: 60px; /* 헤더 높이만큼 떨어지도록 설정 */
+    left: 0;
+    height: calc(100% - 60px); /* 화면 전체에서 헤더 높이를 제외한 부분 */
+}

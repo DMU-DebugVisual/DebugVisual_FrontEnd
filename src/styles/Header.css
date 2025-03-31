@@ -1,0 +1,16 @@
+* {
+    box-sizing: border-box;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+}
+
+.header {
+    border-bottom: 1px solid black;
+    text-align: center;
+    padding: 10px;
+    height: 60px;
+    width: 100%;
+}
