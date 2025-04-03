@@ -11,7 +11,7 @@ const Main = () => {
             <div className="main-content">
                 <Sidebar />
             </div>
-            <Footer />
+
         </div>
     );
 };

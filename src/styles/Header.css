@@ -1,16 +1,53 @@
-* {
-    box-sizing: border-box;
-}
-
-body, html {
-    margin: 0;
-    padding: 0;
-}
-
 .header {
-    border-bottom: 1px solid black;
-    text-align: center;
-    padding: 10px;
-    height: 60px;
-    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100vw;
+    height: 130px; /* 기존보다 높이 증가 */
+    background-color: white;
+    border-bottom: 2px solid #ddd;
+    font-size: 24px; /* 글자 크기도 더 키움 */
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    padding: 0 20px; /* 좌우 여백 */
+}
+.logo {
+    font-size: 48px; /* 글자 크기 확 키움 */
+    font-weight: bold;
+    letter-spacing: 2px; /* 글자 간격 조절 */
+    text-transform: uppercase; /* 대문자 스타일 (선택 사항) */
+    margin-left: 150px;
+    color: #333; /* 색상 강조 */
+}
+
+.nav ul {
+    list-style: none;
+    display: flex;
+    gap: 200px; /* 항목 간 간격을 늘림 (기존보다 넓게) */
+    padding: 0;
+    margin: 0;
+}
+
+.nav ul li {
+    display: inline;
+}
+
+.nav ul li a {
+    text-decoration: none;
+    color: black;
+    font-size: 30px; /* 글씨 크기 증가 */
+    font-weight: bold;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    font-size: 30px;
+    font-weight: bold;
+}
+
+.icon {
+    margin-right: 8px;
 }

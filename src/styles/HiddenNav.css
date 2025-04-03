@@ -1,0 +1,67 @@
+/* 오버레이 열기 버튼 (화면 오른쪽 중앙) */
+.hidden-nav-toggle {
+    position: fixed;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    z-index: 2000;
+    padding: 10px 15px;
+    font-size: 18px;
+    cursor: pointer;
+    border: none;
+    border-radius: 50%;
+    background-color: #333;
+    color: #fff;
+}
+
+/* 오버레이 배경 */
+.hidden-nav-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5); /* 반투명 검정 배경 */
+    z-index: 1999; /* 헤더, 사이드바보다 위 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 오버레이 내부 컨텐츠 박스 */
+.hidden-nav-content {
+    position: relative;
+    background-color: #fff;
+    width: 300px;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+/* 오버레이 닫기 버튼 */
+.hidden-nav-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border: none;
+    background: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+/* 메뉴 리스트 */
+.hidden-nav-content nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 40px 0 0;
+    text-align: center;
+}
+
+.hidden-nav-content nav ul li {
+    margin: 10px 0;
+}
+
+.hidden-nav-content nav ul li a {
+    text-decoration: none;
+    font-size: 18px;
+    color: #333;
+}
