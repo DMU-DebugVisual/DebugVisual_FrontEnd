@@ -8,9 +8,41 @@ body, html {
 }
 
 .header {
+    display: flex;
+    align-items: center;  /* 세로 중앙 정렬 */
+    justify-content: space-between;  /* 왼쪽(로고) - 중앙(메뉴) - 오른쪽(이미지) 배치 */
+    padding: 10px 20px;
     border-bottom: 1px solid black;
-    text-align: center;
-    padding: 10px;
-    height: 60px;
+    height: 70px;
     width: 100%;
+    position: relative;  /* 로고를 고정하기 위한 기준 */
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.nav-menu {
+    display: flex;
+    gap: 100px;  /* 메뉴 간격 */
+}
+
+.nav-menu a {
+    text-decoration: none;
+    color: black;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 10px 15px;  /* 마우스 오버 영역 확장 */
+    border-radius: 5px;  /* 부드러운 모서리 */
+    transition: background-color 0.3s ease;  /* 부드러운 효과 */
+}
+
+.nav-menu a:hover {
+    background-color: #D3D3D3; /* 마우스 오버 시 색 변경 */
+}
+
+.header img {
+    width: 30px;
+    height: 30px;
 }
