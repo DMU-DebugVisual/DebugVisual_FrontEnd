@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import "../styles/Sidebar.css";
 
-
 const Sidebar = ({ darkMode, onClose }) => {
     const [activeFile, setActiveFile] = useState(1);
     const [fileHover, setFileHover] = useState(null);
