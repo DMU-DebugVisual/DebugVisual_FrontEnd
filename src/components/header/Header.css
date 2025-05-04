@@ -1,0 +1,82 @@
+/* Header 전체 스타일 */
+.custom-header {
+    width: 100%;
+    padding: 12px 24px;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+    position: fixed;
+}
+
+/* 왼쪽: 로고 + 사이트명 */
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    width: 32px;
+    height: 32px;
+    margin-right: 8px;
+}
+
+.site-name {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+}
+
+/* 가운데: 네비게이션 */
+.header-nav {
+    display: flex;
+    gap: 20px;
+}
+
+.header-nav a {
+    text-decoration: none;
+    color: #555;
+    font-size: 14px;
+    transition: color 0.2s ease;
+}
+
+.header-nav a:hover {
+    color: #6a0dad; /* 보라색 */
+}
+
+/* 오른쪽: 버튼들 */
+.header-right {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    padding: 6px 12px;
+    font-size: 14px;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-outline {
+    border: 1px solid #6a0dad;
+    color: #6a0dad;
+    background-color: transparent;
+}
+
+.btn-outline:hover {
+    background-color: #f5f0ff;
+}
+
+.btn-filled {
+    background-color: #6a0dad;
+    color: white;
+    border: none;
+}
+
+.btn-filled:hover {
+    background-color: #5a0099;
+}

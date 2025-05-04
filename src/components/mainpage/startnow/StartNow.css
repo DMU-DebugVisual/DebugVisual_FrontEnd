@@ -1,0 +1,35 @@
+.start-section {
+    background-color: #7a52c6;
+    color: white;
+    text-align: center;
+    padding: 80px 20px;
+}
+
+.start-title {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 16px;
+}
+
+.start-description {
+    font-size: 16px;
+    max-width: 640px;
+    margin: 0 auto 24px;
+    line-height: 1.6;
+}
+
+.start-button {
+    background-color: white;
+    color: #7a52c6;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.start-button:hover {
+    background-color: #f2e9ff;
+}
