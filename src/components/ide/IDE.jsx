@@ -20,6 +20,19 @@ const IDE = () => {
     // 다크모드/라이트모드 토글을 위한 상태 추가
     const [isDarkMode, setIsDarkMode] = useState(true);
 
+    // 언어 선택을 위한 상태 추가
+    const [selectedLanguage, setSelectedLanguage] = useState('python');
+    const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
+
+    // 지원하는 언어 목록
+    const supportedLanguages = [
+        { id: 'python', name: 'Python', extension: '.py', template: '# 여기에 Python 코드를 입력하세요', color: '#3572A5' },
+        { id: 'java', name: 'Java', extension: '.java', template: '// 여기에 Java 코드를 입력하세요\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello World");\n    }\n}', color: '#B07219' },
+        { id: 'cpp', name: 'C++', extension: '.cpp', template: '// 여기에 C++ 코드를 입력하세요\n#include <iostream>\n\nint main() {\n    std::cout << "Hello World" << std::endl;\n    return 0;\n}', color: '#f34b7d' },
+        { id: 'c', name: 'C', extension: '.c', template: '// 여기에 C 코드를 입력하세요\n#include <stdio.h>\n\nint main() {\n    printf("Hello World\\n");\n    return 0;\n}', color: '#555555' },
+        { id: 'javascript', name: 'JavaScript', extension: '.js', template: '// 여기에 JavaScript 코드를 입력하세요\nconsole.log("Hello World");', color: '#f1e05a' },
+    ];
+
     // Monaco 에디터 참조 추가
     const editorRef = useRef(null);
 
@@ -31,6 +44,43 @@ const IDE = () => {
             document.body.classList.add('dark-mode');
         } else {
             document.body.classList.remove('dark-mode');
+        }
+    };
+
+    // 언어 메뉴 토글 함수
+    const toggleLanguageMenu = () => {
+        setIsLanguageMenuOpen(!isLanguageMenuOpen);
+    };
+
+    // 현재 선택된 언어의 색상 클래스 가져오기
+    const getCurrentLanguageColorClass = () => {
+        const langId = selectedLanguage || 'python';
+        return `lang-${langId}`;
+    };
+
+    // 언어 선택 함수
+    const selectLanguage = (langId) => {
+        const newLanguage = supportedLanguages.find(lang => lang.id === langId);
+
+        if (newLanguage) {
+            // 저장되지 않은 변경사항이 있는지 확인
+            if (!isSaved) {
+                const shouldChange = window.confirm('저장되지 않은 변경사항이 있습니다. 언어를 변경하시겠습니까?');
+                if (!shouldChange) {
+                    setIsLanguageMenuOpen(false);
+                    return;
+                }
+            }
+
+            // 새 언어에 맞게 파일명 변경
+            const baseName = fileName.split('.')[0];
+            const newFileName = `${baseName}${newLanguage.extension}`;
+
+            setSelectedLanguage(langId);
+            setFileName(newFileName);
+            setCode(newLanguage.template);
+            setIsSaved(false);
+            setIsLanguageMenuOpen(false);
         }
     };
 
@@ -106,7 +156,10 @@ const IDE = () => {
 
     // 새 파일 생성
     const handleNewFile = () => {
-        const defaultName = `untitled${savedFiles.length + 1}.py`;
+        // 현재 선택된 언어의 확장자와 템플릿 가져오기
+        const currentLang = supportedLanguages.find(lang => lang.id === selectedLanguage) || supportedLanguages[0];
+
+        const defaultName = `untitled${savedFiles.length + 1}${currentLang.extension}`;
         const newFileName = prompt('새 파일 이름을 입력하세요:', defaultName);
 
         if (!newFileName) return;
@@ -118,14 +171,30 @@ const IDE = () => {
         }
 
         // 새 파일 추가
-        const newFile = { name: newFileName, code: '# 새 파일' };
+        const newFile = { name: newFileName, code: currentLang.template };
         setSavedFiles([...savedFiles, newFile]);
 
         // 새 파일 선택
         setFileName(newFileName);
-        setCode('# 새 파일');
+        setCode(currentLang.template);
         setActiveFile(newFileName);
         setIsSaved(true);
+
+        // 확장자에 맞게 언어 업데이트
+        const fileExtension = newFileName.split('.').pop().toLowerCase();
+        const languageFromExtension = Object.entries(getLanguageMap()).find(([_, ext]) => ext === fileExtension)?.[0];
+        if (languageFromExtension) {
+            setSelectedLanguage(languageFromExtension);
+        }
+    };
+
+    // 확장자와 언어 ID 매핑 함수
+    const getLanguageMap = () => {
+        const map = {};
+        supportedLanguages.forEach(lang => {
+            map[lang.id] = lang.extension.replace('.', '');
+        });
+        return map;
     };
 
     // 출력 패널 토글
@@ -149,7 +218,7 @@ const IDE = () => {
                 },
                 body: JSON.stringify({
                     code: currentCode,
-                    language: getLanguageFromFileName(fileName),
+                    language: selectedLanguage,
                     fileName: fileName
                 }),
             });
@@ -165,20 +234,51 @@ const IDE = () => {
 
             // API 오류 시 폴백으로 간단한 시뮬레이션
             const currentCode = editorRef.current.getValue();
-            if (fileName.endsWith('.py')) {
-                if (currentCode.includes('print')) {
-                    const match = currentCode.match(/print\(['"](.*)['"]\)/);
-                    if (match) {
-                        setOutput(match[1]);
-                    } else {
-                        setOutput("Hello, World! (시뮬레이션된 출력)");
+            let simulatedOutput = "API 연결 실패로 실제 실행은 되지 않았습니다.";
+
+            // 언어별 간단한 시뮬레이션
+            switch(selectedLanguage) {
+                case 'python':
+                    if (currentCode.includes('print')) {
+                        const match = currentCode.match(/print\(['"](.*)['"]\)/);
+                        if (match) {
+                            simulatedOutput = match[1];
+                        } else {
+                            simulatedOutput = "Hello, World! (시뮬레이션된 출력)";
+                        }
                     }
-                } else {
-                    setOutput("코드가 성공적으로 실행되었습니다. (API 연결 실패로 실제 실행은 되지 않았습니다)");
-                }
-            } else {
-                setOutput(`오류: ${error.message} (API 연결에 실패했습니다)`);
+                    break;
+                case 'java':
+                    if (currentCode.includes('System.out.println')) {
+                        const match = currentCode.match(/System\.out\.println\(['"](.*)['"]\)/);
+                        if (match) {
+                            simulatedOutput = match[1];
+                        } else {
+                            simulatedOutput = "Hello, World! (시뮬레이션된 출력)";
+                        }
+                    }
+                    break;
+                case 'cpp':
+                case 'c':
+                    if (currentCode.includes('printf') || currentCode.includes('cout')) {
+                        simulatedOutput = "Hello, World! (시뮬레이션된 출력)";
+                    }
+                    break;
+                case 'javascript':
+                    if (currentCode.includes('console.log')) {
+                        const match = currentCode.match(/console\.log\(['"](.*)['"]\)/);
+                        if (match) {
+                            simulatedOutput = match[1];
+                        } else {
+                            simulatedOutput = "Hello, World! (시뮬레이션된 출력)";
+                        }
+                    }
+                    break;
+                default:
+                    simulatedOutput = "코드가 성공적으로 실행되었습니다. (API 연결 실패로 실제 실행은 되지 않았습니다)";
             }
+
+            setOutput(simulatedOutput);
         } finally {
             setIsRunning(false);
         }
@@ -204,7 +304,8 @@ const IDE = () => {
                 },
                 body: JSON.stringify({
                     code: currentCode,
-                    fileName: fileName
+                    fileName: fileName,
+                    language: selectedLanguage
                 }),
             });
 
@@ -276,6 +377,13 @@ const IDE = () => {
             setCode(fileData.code);
             setActiveFile(fileData.name);
             setIsSaved(true);
+
+            // 파일 확장자에 맞는 언어 설정
+            const fileExtension = fileData.name.split('.').pop().toLowerCase();
+            const langId = getLanguageFromFileName(fileData.name);
+            if (langId) {
+                setSelectedLanguage(langId);
+            }
         } catch (error) {
             console.error('파일 불러오기 오류:', error);
 
@@ -286,6 +394,13 @@ const IDE = () => {
                 setCode(selectedFile.code);
                 setActiveFile(selectedFile.name);
                 setIsSaved(true);
+
+                // 파일 확장자에 맞는 언어 설정
+                const fileExtension = selectedFile.name.split('.').pop().toLowerCase();
+                const langId = getLanguageFromFileName(selectedFile.name);
+                if (langId) {
+                    setSelectedLanguage(langId);
+                }
             }
         }
     };
@@ -333,44 +448,69 @@ const IDE = () => {
 
     return (
         <div className={`ide-container ${!isDarkMode ? 'light-mode' : 'dark-mode'}`}>
-            {/* 왼쪽 사이드바 - 회원만 표시 */}
-            {isLoggedIn && (
-                <div className={`sidebar ${isLeftPanelCollapsed ? 'collapsed' : ''}`}>
-                    <div className="sidebar-header">
-                        <div className="file-list-header">
-                            <span className="icon-small">📁</span>
-                            <span>파일 목록</span>
-                            <button className="icon-button" onClick={handleNewFile}>
-                                <span className="icon-small">+</span>
+            {/* 왼쪽 사이드바 - 회원/비회원 표시 */}
+            <div className={`sidebar ${isLeftPanelCollapsed ? 'collapsed' : ''}`}>
+                {isLoggedIn ? (
+                    // 회원용 사이드바 - 파일 목록
+                    <>
+                        <div className="sidebar-header">
+                            <div className="file-list-header">
+                                <span className="icon-small">📁</span>
+                                <span>파일 목록</span>
+                                <button className="icon-button" onClick={handleNewFile}>
+                                    <span className="icon-small">+</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* 파일 목록 */}
+                        <div className="file-list">
+                            {savedFiles.map((file) => (
+                                <div
+                                    key={file.name}
+                                    className={`file-item ${activeFile === file.name ? 'active' : ''}`}
+                                    onClick={() => handleFileSelect(file.name)}
+                                >
+                                    <span className="icon-small">📄</span>
+                                    <span>{file.name}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </>
+                ) : (
+                    // 비회원용 사이드바 - 로그인/회원가입 버튼
+                    <div className="auth-sidebar">
+                        <div className="auth-header">
+                            <div className="auth-title">
+                                <span className="icon-small">🔐</span>
+                                <span>계정 접속</span>
+                            </div>
+                        </div>
+                        <div className="auth-content">
+                            <div className="auth-message">
+                                <p>코드 저장 및 관리를 위해 로그인하세요.</p>
+                                <p>아직 계정이 없으신가요? 회원가입을 통해 더 많은 기능을 이용해보세요.</p>
+                            </div>
+                            <button className="login-button auth-button">
+                                <span className="icon-small">🔑</span>
+                                로그인
+                            </button>
+                            <button className="signup-button auth-button">
+                                <span className="icon-small">✏️</span>
+                                회원가입
                             </button>
                         </div>
                     </div>
+                )}
+            </div>
 
-                    {/* 파일 목록 */}
-                    <div className="file-list">
-                        {savedFiles.map((file) => (
-                            <div
-                                key={file.name}
-                                className={`file-item ${activeFile === file.name ? 'active' : ''}`}
-                                onClick={() => handleFileSelect(file.name)}
-                            >
-                                <span className="icon-small">📄</span>
-                                <span>{file.name}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* 사이드바 토글 버튼 - 회원만 표시 */}
-            {isLoggedIn && (
-                <button
-                    className={`sidebar-toggle ${isLeftPanelCollapsed ? 'collapsed' : ''}`}
-                    onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
-                >
-                    {isLeftPanelCollapsed ? '›' : '‹'}
-                </button>
-            )}
+            {/* 사이드바 토글 버튼 */}
+            <button
+                className={`sidebar-toggle ${isLeftPanelCollapsed ? 'collapsed' : ''}`}
+                onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
+            >
+                {isLeftPanelCollapsed ? '›' : '‹'}
+            </button>
 
             {/* 메인 콘텐츠 */}
             <div className={`main-content ${!isLoggedIn ? 'guest-mode' : ''}`}>
@@ -384,7 +524,31 @@ const IDE = () => {
                         >
                             <span className="header-title">IDE</span>
                         </button>
-                        <span className="header-badge">{getLanguageFromFileName(fileName).toUpperCase()}</span>
+
+                        {/* 언어 선택 드롭다운 */}
+                        <div className="language-selector">
+                            <button
+                                className={`language-button lang-${selectedLanguage}`}
+                                onClick={toggleLanguageMenu}
+                            >
+                                {supportedLanguages.find(lang => lang.id === selectedLanguage)?.name || 'Python'}
+                                <span className="dropdown-arrow">{isLanguageMenuOpen ? '▲' : '▼'}</span>
+                            </button>
+
+                            {isLanguageMenuOpen && (
+                                <div className="language-dropdown">
+                                    {supportedLanguages.map(lang => (
+                                        <div
+                                            key={lang.id}
+                                            className={`language-item ${selectedLanguage === lang.id ? 'active' : ''} lang-border-${lang.id}`}
+                                            onClick={() => selectLanguage(lang.id)}
+                                        >
+                                            {lang.name}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <div className="header-right">
@@ -438,9 +602,9 @@ const IDE = () => {
                     <div className="monaco-editor-wrapper">
                         <Editor
                             height="100%"
-                            defaultLanguage={getLanguageFromFileName(fileName)}
+                            defaultLanguage={selectedLanguage}
                             defaultValue={code}
-                            language={getLanguageFromFileName(fileName)}
+                            language={selectedLanguage}
                             value={code}
                             onChange={handleEditorChange}
                             onMount={handleEditorDidMount}
