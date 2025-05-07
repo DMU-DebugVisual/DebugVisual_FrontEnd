@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Editor from '@monaco-editor/react';
 import './IDE.css';
-
+//npm install @monaco-editor/react
 const IDE = () => {
     // 기존 상태 유지
     const [isLoggedIn, setIsLoggedIn] = useState(false);
