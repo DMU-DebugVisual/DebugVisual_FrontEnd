@@ -1,29 +1,12 @@
 import React from 'react';
 import './Mypage.css';
 import { FaExchangeAlt, FaUser, FaStar } from 'react-icons/fa';
+import Sidebar from './Sidebar'; // Sidebar 불러오기
 
 const MyPage = () => {
     return (
         <div className="mypage">
-            <aside className="sidebar">
-                <div className="username">
-                    <div className="avatar-small" />
-                    <div className="user-info">
-                        <span className="name">김코딩</span>
-                        <span className="email">@kimcoidng</span>
-                    </div>
-                </div>
-
-
-                <ul>
-                    <li className="active">📊 대시보드</li>
-                    <li>🗂️ 프로젝트</li>
-                    <li>💬 커뮤니티</li>
-                    <li>🌐 네트워크</li>
-                    <li>📁 공유함</li>
-                    <li>⚙️ 설정</li>
-                </ul>
-            </aside>
+            <Sidebar />
 
             <main className="content">
                 <h1 className="page-title">마이페이지</h1>
