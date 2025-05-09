@@ -1,0 +1,228 @@
+/* 전체 레이아웃 */
+.mypage {
+    display: flex;
+    height: 100vh;
+    background-color: #f4f4f4;
+    font-family: 'Pretendard', sans-serif;
+}
+
+/* 컨테이너 */
+.settings-container {
+    flex: 1;
+    margin: 0 auto;
+    padding: 3rem;
+    box-sizing: border-box;
+    max-width: 1400px;
+}
+
+/* 제목 */
+.settings-title {
+    font-size: 40px;
+    margin-bottom: 2rem;
+}
+
+/* 탭 메뉴 */
+.settings-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1rem;
+}
+
+.tab {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    background-color: #f2f2f2;
+    color: #888;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.tab.active {
+    background-color: white;
+    color: #000;
+    font-weight: 600;
+}
+
+/* 카드 */
+.settings-card {
+    background-color: #fff;
+    padding: 3rem;
+    border-radius: 12px;
+    box-shadow: none;
+}
+
+/* 섹션 제목 및 설명 */
+.section-title {
+    font-size: 36px;
+    margin-bottom: 2rem;
+    margin-top: 1px;
+}
+
+.section-desc {
+    font-size: 20px;
+    margin-bottom: 2rem;
+    color: #555;
+}
+
+/* 프로필 이미지 */
+.profile-image-section {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.profile-image {
+    width: 150px;
+    height: 150px;
+    background-color: #ddd;
+    border-radius: 50%;
+}
+
+/* 버튼 */
+.upload-btn,
+.delete-btn {
+    margin-right: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+}
+
+.upload-btn {
+    background-color: #007bff;
+    color: white;
+}
+
+.delete-btn {
+    background-color: #ccc;
+    color: #333;
+}
+
+.upload-note {
+    font-size: 15px;
+    color: #888;
+    margin-top: 4px;
+}
+
+/* 폼 */
+.form-group {
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-row {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.form-group.half {
+    flex: 1;
+}
+
+.form-group label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+/* input & textarea */
+.form-group input[type="text"] {
+    all: unset;
+    box-sizing: border-box;
+    padding: 12px 16px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    height: 48px;
+    width: 100%;
+}
+
+.form-group textarea {
+    padding: 16px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    resize: none;
+    min-height: 120px;
+}
+
+/* 기타 텍스트 */
+.small-text {
+    font-size: 13px;
+    color: #888;
+    margin-top: 0.3rem;
+}
+
+/* 기술 스택 */
+.tech-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 1rem;
+}
+
+.tag {
+    background-color: #007bff;
+    color: white;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 15px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.remove-x {
+    cursor: pointer;
+    margin-left: 6px;
+    font-weight: bold;
+    color: white;
+    padding: 0 6px;
+    border-radius: 50%;
+    line-height: 1;
+}
+
+.remove-x:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 기술 입력 */
+.tech-input-row {
+    display: flex;
+    gap: 15px;
+}
+
+.tech-input-row input {
+    flex-grow: 1;
+    padding: 12px 16px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.add-btn {
+    background-color: #a684f1;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+
+/* 소셜 링크 */
+.social-links {
+    display: flex;
+    gap: 16px;
+}
+
