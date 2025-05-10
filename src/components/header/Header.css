@@ -10,6 +10,7 @@
     box-sizing: border-box;
     font-family: 'Segoe UI', sans-serif;
     position: fixed;
+    z-index: 1000;
 }
 
 /* 왼쪽: 로고 + 사이트명 */
@@ -36,23 +37,35 @@
     gap: 20px;
 }
 
+/* NavLink 기본 상태 */
 .header-nav a {
     text-decoration: none;
     color: #555;
     font-size: 14px;
-    transition: color 0.2s ease;
+    transition: color 0.2s ease, border-bottom 0.2s ease;
+    padding-bottom: 2px;
 }
 
+/* NavLink hover */
 .header-nav a:hover {
-    color: #6a0dad; /* 보라색 */
+    color: #6a0dad;
 }
 
-/* 오른쪽: 버튼들 */
+/* NavLink 활성 상태 */
+.header-nav .active {
+    color: #6a0dad;
+    border-bottom: 2px solid #6a0dad;
+    font-weight: 600;
+}
+
+/* 오른쪽: 버튼들 또는 닉네임 */
 .header-right {
     display: flex;
+    align-items: center;
     gap: 10px;
 }
 
+/* 로그인/회원가입 버튼 */
 .btn {
     padding: 6px 12px;
     font-size: 14px;
@@ -79,4 +92,79 @@
 
 .btn-filled:hover {
     background-color: #5a0099;
+}
+
+/* 로그인 상태일 때 닉네임 표시 */
+.user-nickname {
+    font-size: 14px;
+    font-weight: 600;
+    color: #6a0dad;
+    padding: 6px 12px;
+}
+
+.theme-toggle-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 6px;
+    transition: background-color 0.3s, color 0.3s;
+    display: flex;
+    align-items: center;
+    color: #6a0dad;
+}
+
+.theme-toggle-btn:hover {
+    background-color: rgba(106, 13, 173, 0.1);
+}
+
+/* 🌙 다크 모드: 헤더 전체 */
+.dark-mode .custom-header {
+    background-color: #1e1e1e;
+    color: #eee;
+    box-shadow: 0 2px 6px rgba(255, 255, 255, 0.05);
+}
+
+/* 🌙 사이트명 */
+.dark-mode .site-name {
+    color: #eee;
+}
+
+/* 🌙 네비게이션 기본 상태 */
+.dark-mode .header-nav a {
+    color: #ccc;
+}
+
+/* 🌙 네비게이션 hover */
+.dark-mode .header-nav a:hover {
+    color: #b88eff;
+}
+
+/* 🌙 네비게이션 active 상태 */
+.dark-mode .header-nav .active {
+    color: #ffffff;
+    border-bottom: 2px solid #b88eff;
+}
+
+/* 🌙 버튼 - 테두리 버튼 */
+.dark-mode .btn-outline {
+    border-color: #aaa;
+    color: #aaa;
+}
+
+.dark-mode .btn-outline:hover {
+    background-color: #333;
+}
+
+/* 🌙 버튼 - 채워진 버튼은 기본 보라색 유지 */
+
+/* 🌙 닉네임 표시 */
+.dark-mode .user-nickname {
+    color: #b88eff;
+}
+
+/* 🌙 다크모드 토글 버튼 */
+.dark-mode .theme-toggle-btn {
+    color: #b88eff;
 }
