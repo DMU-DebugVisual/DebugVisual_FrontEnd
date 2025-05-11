@@ -13,12 +13,14 @@ const IDE = () => {
     const [isRunning, setIsRunning] = useState(false);
     const [output, setOutput] = useState("");
     const [isOutputVisible, setIsOutputVisible] = useState(false);
+    const [isVisualizationVisible, setIsVisualizationVisible] = useState(false);
+    const [input, setInput] = useState("");
     const [savedFiles, setSavedFiles] = useState([
         { name: "untitled.py", code: '# 여기에 코드를 입력하세요' }
     ]);
 
-    // 다크모드/라이트모드 토글을 위한 상태 추가
-    const [isDarkMode, setIsDarkMode] = useState(true);
+    // 항상 다크 모드 사용
+    const isDarkMode = true;
 
     // 언어 선택을 위한 상태 추가
     const [selectedLanguage, setSelectedLanguage] = useState('python');
@@ -36,20 +38,14 @@ const IDE = () => {
     // Monaco 에디터 참조 추가
     const editorRef = useRef(null);
 
-    // 테마 전환 함수
-    const toggleTheme = () => {
-        setIsDarkMode(!isDarkMode);
-        // body 요소에 다크모드 클래스 추가/제거
-        if (!isDarkMode) {
-            document.body.classList.add('dark-mode');
-        } else {
-            document.body.classList.remove('dark-mode');
-        }
-    };
-
     // 언어 메뉴 토글 함수
     const toggleLanguageMenu = () => {
         setIsLanguageMenuOpen(!isLanguageMenuOpen);
+    };
+
+    // 시각화 패널 토글
+    const toggleVisualization = () => {
+        setIsVisualizationVisible(!isVisualizationVisible);
     };
 
     // 현재 선택된 언어의 색상 클래스 가져오기
@@ -96,6 +92,22 @@ const IDE = () => {
         editor.addCommand(monaco.KeyCode.F5, function() {
             handleRun();
         });
+
+        // 현재 줄 하이라이트 색상 테마 설정
+        monaco.editor.defineTheme('custom-dark', {
+            base: 'vs-dark',
+            inherit: true,
+            rules: [],
+            colors: {
+                // 라인 하이라이트 배경색 (연보라색)
+                'editor.lineHighlightBackground': '#7e57c233',
+                // 라인 하이라이트 테두리 색상 (약간 더 진한 연보라색)
+                'editor.lineHighlightBorder': '#7e57c244'
+            }
+        });
+
+        // 커스텀 테마 적용
+        monaco.editor.setTheme('custom-dark');
     };
 
     // 파일 확장자에 따른 언어 결정
@@ -197,11 +209,6 @@ const IDE = () => {
         return map;
     };
 
-    // 출력 패널 토글
-    const toggleOutputPanel = () => {
-        setIsOutputVisible(!isOutputVisible);
-    };
-
     const handleRun = async () => {
         setIsRunning(true);
         setIsOutputVisible(true);
@@ -219,7 +226,8 @@ const IDE = () => {
                 body: JSON.stringify({
                     code: currentCode,
                     language: selectedLanguage,
-                    fileName: fileName
+                    fileName: fileName,
+                    input: input
                 }),
             });
 
@@ -276,6 +284,10 @@ const IDE = () => {
                     break;
                 default:
                     simulatedOutput = "코드가 성공적으로 실행되었습니다. (API 연결 실패로 실제 실행은 되지 않았습니다)";
+            }
+
+            if (input) {
+                simulatedOutput = "입력값: " + input + "\n\n" + simulatedOutput;
             }
 
             setOutput(simulatedOutput);
@@ -447,7 +459,7 @@ const IDE = () => {
     };
 
     return (
-        <div className={`ide-container ${!isDarkMode ? 'light-mode' : 'dark-mode'}`}>
+        <div className={`ide-container dark-mode`}>
             {/* 왼쪽 사이드바 - 회원/비회원 표시 */}
             <div className={`sidebar ${isLeftPanelCollapsed ? 'collapsed' : ''}`}>
                 {isLoggedIn ? (
@@ -489,7 +501,7 @@ const IDE = () => {
                         <div className="auth-content">
                             <div className="auth-message">
                                 <p>코드 저장 및 관리를 위해 로그인하세요.</p>
-                                <p>아직 계정이 없으신가요? 회원가입을 통해 더 많은 기능을 이용해보세요.</p>
+                                <p>아직 계정이 없으신가요?</p>
                             </div>
                             <button className="login-button auth-button">
                                 <span className="icon-small">🔑</span>
@@ -504,25 +516,21 @@ const IDE = () => {
                 )}
             </div>
 
-            {/* 사이드바 토글 버튼 */}
-            <button
-                className={`sidebar-toggle ${isLeftPanelCollapsed ? 'collapsed' : ''}`}
-                onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
-            >
-                {isLeftPanelCollapsed ? '›' : '‹'}
-            </button>
-
             {/* 메인 콘텐츠 */}
             <div className={`main-content ${!isLoggedIn ? 'guest-mode' : ''}`}>
                 {/* 상단 헤더 */}
                 <div className="main-header">
                     <div className="header-left">
-                        {/* IDE 버튼으로 만들고 클릭 시 테마 전환 */}
+                        {/* 햄버거 메뉴 버튼 */}
                         <button
-                            onClick={toggleTheme}
-                            className="theme-toggle-button"
+                            onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
+                            className="sidebar-toggle-button"
                         >
-                            <span className="header-title">IDE</span>
+                            <div className="hamburger-icon">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
                         </button>
 
                         {/* 언어 선택 드롭다운 */}
@@ -596,94 +604,100 @@ const IDE = () => {
                     </div>
                 </div>
 
-                {/* 코드 에디터와 출력 영역 */}
-                <div className={`editor-container ${isOutputVisible ? 'output-visible' : ''}`}>
-                    {/* Monaco 에디터 적용 */}
-                    <div className="monaco-editor-wrapper">
-                        <Editor
-                            height="100%"
-                            defaultLanguage={selectedLanguage}
-                            defaultValue={code}
-                            language={selectedLanguage}
-                            value={code}
-                            onChange={handleEditorChange}
-                            onMount={handleEditorDidMount}
-                            theme={isDarkMode ? "vs-dark" : "vs-light"}
-                            options={{
-                                fontSize: 14,
-                                minimap: { enabled: true },
-                                scrollBeyondLastLine: false,
-                                automaticLayout: true,
-                                tabSize: 4,
-                                insertSpaces: true,
-                                cursorBlinking: "smooth",
-                                folding: true,
-                                lineNumbersMinChars: 3,
-                                wordWrap: "on",
-                                renderWhitespace: "selection",
-                                // 추가 옵션: https://microsoft.github.io/monaco-editor/api/interfaces/monaco.editor.IStandaloneEditorConstructionOptions.html
-                            }}
-                        />
-
-                        {/* 실행 버튼 */}
-                        <button
-                            className="run-button"
-                            onClick={handleRun}
-                            disabled={isRunning}
-                            title="코드 실행 (F5)"
-                        >
-                            {isRunning ? '⌛' : '▶'}
-                        </button>
+                {/* 코드 에디터와 출력 영역 레이아웃 변경 */}
+                <div className="content-layout">
+                    {/* 좌측 에디터 영역 */}
+                    <div className="editor-section">
+                        <div className="monaco-editor-wrapper">
+                            <Editor
+                                height="100%"
+                                defaultLanguage={selectedLanguage}
+                                defaultValue={code}
+                                language={selectedLanguage}
+                                value={code}
+                                onChange={handleEditorChange}
+                                onMount={handleEditorDidMount}
+                                theme="vs-dark"
+                                options={{
+                                    fontSize: 14,
+                                    minimap: { enabled: true },
+                                    scrollBeyondLastLine: false,
+                                    automaticLayout: true,
+                                    tabSize: 4,
+                                    insertSpaces: true,
+                                    cursorBlinking: "smooth",
+                                    folding: true,
+                                    lineNumbersMinChars: 3,
+                                    wordWrap: "on",
+                                    renderWhitespace: "selection",
+                                    renderLineHighlight: "all",
+                                    renderLineHighlightOnlyWhenFocus: false,
+                                }}
+                            />
+                        </div>
                     </div>
 
-                    {/* 출력 패널 */}
-                    {isOutputVisible ? (
-                        <div className="visualization-panel">
-                            {/* 토글 버튼 - 패널이 열렸을 때 패널 왼쪽에 표시 */}
+                    {/* 우측 입력/출력/버튼 영역 */}
+                    <div className="right-panel">
+                        {/* 실행 및 시각화 버튼 */}
+                        <div className="action-buttons">
                             <button
-                                className="visualization-toggle-open"
-                                onClick={toggleOutputPanel}
-                                title="출력 패널 닫기"
+                                className="run-code-button"
+                                onClick={handleRun}
+                                disabled={isRunning}
                             >
-                                ›
+                                <span className="button-icon">▶</span>
+                                실행 코드
                             </button>
+                            <button
+                                className={`visualization-button ${isVisualizationVisible ? 'active' : ''}`}
+                                onClick={toggleVisualization}
+                            >
+                                <span className="button-icon">📊</span>
+                                코드 시각화
+                            </button>
+                        </div>
 
-                            {/* 탭 헤더 */}
-                            <div className="tab-header">
-                                <div className="tab-buttons">
-                                    <button className="tab-button active">
-                                        실행 결과
-                                    </button>
-                                </div>
+                        {/* 입력 영역 */}
+                        <div className="input-section">
+                            <div className="section-header">프로그램 입력</div>
+                            <textarea
+                                className="program-input"
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                placeholder="프로그램 실행 시 필요한 입력값을 여기에 작성하세요"
+                            ></textarea>
+                        </div>
+
+                        {/* 출력 영역 */}
+                        <div className="output-section">
+                            <div className="section-header">프로그램 출력</div>
+                            <pre className="program-output">
+                                {isRunning ? "실행 중..." : (output || "코드를 실행하면 결과가 여기에 표시됩니다.")}
+                            </pre>
+                        </div>
+                    </div>
+
+                    {/* 시각화 패널 (코드 시각화 버튼 클릭 시 표시) */}
+                    {isVisualizationVisible && (
+                        <div className="visualization-sidebar">
+                            <div className="visualization-header">
+                                <h3>코드 시각화</h3>
                                 <button
                                     className="close-button"
-                                    onClick={() => setIsOutputVisible(false)}
-                                    title="패널 닫기"
+                                    onClick={toggleVisualization}
+                                    title="시각화 패널 닫기"
                                 >
                                     ✕
                                 </button>
                             </div>
-
-                            {/* 탭 콘텐츠 */}
-                            <div className="tab-content">
-                                {/* 실행 결과 탭 */}
-                                <div className="output-content">
-                                    <h3>실행 결과</h3>
-                                    <pre className="output-block">
-                                        {isRunning ? "실행 중..." : (output || "코드를 실행하면 결과가 여기에 표시됩니다.")}
-                                    </pre>
+                            <div className="visualization-content">
+                                <div className="visualization-placeholder">
+                                    <p>코드 실행 결과의 시각화가 이곳에 표시됩니다.</p>
+                                    <p>현재 개발 중인 기능입니다.</p>
                                 </div>
                             </div>
                         </div>
-                    ) : (
-                        /* 패널이 닫혔을 때 기본 토글 버튼 표시 */
-                        <button
-                            className="visualization-toggle-closed"
-                            onClick={toggleOutputPanel}
-                            title="출력 패널 열기"
-                        >
-                            ‹
-                        </button>
                     )}
                 </div>
             </div>
