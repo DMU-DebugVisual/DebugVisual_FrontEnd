@@ -1,23 +1,10 @@
-import logo from './logo.svg';
 import './App.css';
+import IDE from './components/ide/IDE'; // IDE 컴포넌트 경로 확인
 
 function App() {
     return (
         <div className="App">
-            <header className="App-header">
-                <img src={logo} className="App-logo" alt="logo" />
-                <p>
-                    Edit <code>src/App.js</code> and save to reload.
-                </p>
-                <a
-                    className="App-link"
-                    href="https://reactjs.org"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    Learn React
-                </a>
-            </header>
+            <IDE />
         </div>
     );
 }

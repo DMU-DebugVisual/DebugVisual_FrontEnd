@@ -254,11 +254,12 @@ input:checked + .slider:before {
     width: 100%;
 }
 
-/* 인증 사이드바 스타일 */
+/* 인증 사이드바 스타일 - 수정됨 */
 .auth-sidebar {
     display: flex;
     flex-direction: column;
     height: 100%;
+    padding: 0;
 }
 
 .auth-header {
@@ -280,11 +281,8 @@ input:checked + .slider:before {
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 20px;
-    /* justify-content: center; 제거 */
+    padding: 24px 20px;
     align-items: center;
-    gap: 20px;
-    padding-top: 40px; /* 상단 패딩 추가 */
 }
 
 .auth-message {
@@ -292,11 +290,14 @@ input:checked + .slider:before {
     color: var(--text-light);
     font-size: 14px;
     line-height: 1.6;
-    margin-bottom: 20px; /* 여백 증가 */
+    margin-bottom: 15px;
 }
 
-.auth-message p {
-    margin-bottom: 10px;
+.auth-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
 }
 
 .auth-button {
@@ -312,6 +313,7 @@ input:checked + .slider:before {
     cursor: pointer;
     transition: var(--transition);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: none;
 }
 
 .login-button.auth-button {
@@ -327,13 +329,14 @@ input:checked + .slider:before {
 }
 
 .signup-button.auth-button {
-    background-color: #333333;
+    background-color: rgba(126, 87, 194, 0.15);
     color: var(--primary);
-    border: 1px solid var(--primary);
+    border: 1px solid rgba(126, 87, 194, 0.3);
 }
 
 .signup-button.auth-button:hover {
-    background-color: rgba(126, 87, 194, 0.15);
+    background-color: rgba(126, 87, 194, 0.25);
+    transform: translateY(-1px);
 }
 
 .main-header {

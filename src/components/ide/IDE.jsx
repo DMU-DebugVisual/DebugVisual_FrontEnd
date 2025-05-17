@@ -144,7 +144,8 @@ const IDE = () => {
         if (!isLoggedIn) return;
 
         try {
-            const response = await fetch('/api/files');
+            // 단순한 API 호출로 변경
+            const response = await fetch('http://localhost:4000/api/files');
 
             if (!response.ok) {
                 throw new Error('파일 목록 불러오기 실패');
@@ -217,16 +218,15 @@ const IDE = () => {
             // 현재 에디터의 값을 가져옴
             const currentCode = editorRef.current.getValue();
 
-            // API 호출
-            const response = await fetch('/api/execute', {
+            // API 호출 - HTML 예시에서 본 엔드포인트 사용
+            const response = await fetch('http://localhost:4000/api/run', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     code: currentCode,
-                    language: selectedLanguage,
-                    fileName: fileName,
+                    lang: selectedLanguage, // HTML 예시에서는 'lang'으로 전송
                     input: input
                 }),
             });
@@ -235,8 +235,9 @@ const IDE = () => {
                 throw new Error('API 호출 실패');
             }
 
-            const result = await response.json();
-            setOutput(result.output || "실행 결과가 없습니다.");
+            // HTML 예시처럼 text로 응답을 받음
+            const result = await response.text();
+            setOutput(result || "실행 결과가 없습니다.");
         } catch (error) {
             console.error('코드 실행 중 오류:', error);
 
@@ -309,7 +310,7 @@ const IDE = () => {
             const currentCode = editorRef.current.getValue();
 
             // API 호출
-            const response = await fetch('/api/save', {
+            const response = await fetch('http://localhost:4000/api/save', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -378,7 +379,7 @@ const IDE = () => {
 
         try {
             // API에서 파일 내용 불러오기
-            const response = await fetch(`/api/files/${name}`);
+            const response = await fetch(`http://localhost:4000/api/files/${name}`);
 
             if (!response.ok) {
                 throw new Error('파일 불러오기 실패');
@@ -391,7 +392,6 @@ const IDE = () => {
             setIsSaved(true);
 
             // 파일 확장자에 맞는 언어 설정
-            const fileExtension = fileData.name.split('.').pop().toLowerCase();
             const langId = getLanguageFromFileName(fileData.name);
             if (langId) {
                 setSelectedLanguage(langId);
@@ -408,7 +408,6 @@ const IDE = () => {
                 setIsSaved(true);
 
                 // 파일 확장자에 맞는 언어 설정
-                const fileExtension = selectedFile.name.split('.').pop().toLowerCase();
                 const langId = getLanguageFromFileName(selectedFile.name);
                 if (langId) {
                     setSelectedLanguage(langId);
@@ -490,7 +489,7 @@ const IDE = () => {
                         </div>
                     </>
                 ) : (
-                    // 비회원용 사이드바 - 로그인/회원가입 버튼
+                    // 비회원용 사이드바 - 로그인/회원가입 버튼 (수정된 부분)
                     <div className="auth-sidebar">
                         <div className="auth-header">
                             <div className="auth-title">
@@ -500,17 +499,18 @@ const IDE = () => {
                         </div>
                         <div className="auth-content">
                             <div className="auth-message">
-                                <p>코드 저장 및 관리를 위해 로그인하세요.</p>
                                 <p>아직 계정이 없으신가요?</p>
                             </div>
-                            <button className="login-button auth-button">
-                                <span className="icon-small">🔑</span>
-                                로그인
-                            </button>
-                            <button className="signup-button auth-button">
-                                <span className="icon-small">✏️</span>
-                                회원가입
-                            </button>
+                            <div className="auth-buttons">
+                                <button className="login-button auth-button">
+                                    <span className="icon-small">🔑</span>
+                                    로그인
+                                </button>
+                                <button className="signup-button auth-button">
+                                    <span className="icon-small">✏️</span>
+                                    회원가입
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}
