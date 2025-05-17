@@ -8,7 +8,6 @@ import Header from "../header/Header";
 const MyProject = () => {
     return (
         <div className="myproject-wrapper">
-            <Header />
             <Sidebar />
             <section className="projects-container">
                 <div className="projects-header">
@@ -25,7 +24,7 @@ const MyProject = () => {
                         <input
                             type="text"
                             placeholder="프로젝트 검색..."
-                            className="search-input"
+                            className="project-search-input"
                         />
                     </div>
                     <select className="filter-select" defaultValue="all">
@@ -41,9 +40,9 @@ const MyProject = () => {
                 </div>
 
                 <div className="projects-tabs">
-                    <button className="tab active">전체</button>
-                    <button className="tab">즐겨찾기</button>
-                    <button className="tab">공유됨</button>
+                    <button className="tabs active">전체</button>
+                    <button className="tabs">즐겨찾기</button>
+                    <button className="tabs">공유됨</button>
                 </div>
 
                 <div className="projects-grid">

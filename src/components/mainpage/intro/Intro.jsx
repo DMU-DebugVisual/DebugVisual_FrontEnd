@@ -1,6 +1,7 @@
 import React from "react";
 import "./Intro.css";
-import introImage from "./intro.png"; // 오른쪽 이미지
+import introImage from "./intro.png";
+import {Link} from "react-router-dom"; // 오른쪽 이미지
 
 const Intro = () => {
     return (
@@ -15,8 +16,8 @@ const Intro = () => {
                     코드 방송 기능을 통해 실시간으로 지식을 공유할 수 있습니다.
                 </p>
                 <div className="intro-buttons">
-                    <button className="btn primary">시작하기</button>
-                    <button className="btn secondary">기능 살펴보기</button>
+                    <Link to="ide" className="btn primary">시작하기</Link>
+                    <Link to="" className="btn secondary">기능 살펴보기</Link>
                 </div>
             </div>
 

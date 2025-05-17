@@ -1,16 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { NavLink } from 'react-router-dom';
 import './Sidebar.css';
 
 const Sidebar = () => {
-    const [activeTab, setActiveTab] = useState('대시보드');
-
     const menuItems = [
-        { label: '📊 대시보드', key: '대시보드' },
-        { label: '🗂️ 프로젝트', key: '프로젝트' },
-        { label: '💬 커뮤니티', key: '커뮤니티' },
-        { label: '🌐 네트워크', key: '네트워크' },
-        { label: '📁 공유됨', key: '공유됨' },
-        { label: '⚙️ 설정', key: '설정' }
+        { label: '📊 대시보드', path: '/mypage' },
+        { label: '🗂️ 프로젝트', path: '/mypage/project' },
+        { label: '💬 커뮤니티', path: '/mypage/community' },
+        { label: '🌐 네트워크', path: '/mypage/network' },
+        { label: '📁 공유됨', path: '/mypage/shared' },
+        { label: '⚙️ 설정', path: '/mypage/setting' }
     ];
 
     return (
@@ -25,12 +24,14 @@ const Sidebar = () => {
 
             <ul>
                 {menuItems.map(item => (
-                    <li
-                        key={item.key}
-                        className={activeTab === item.key ? 'active' : ''}
-                        onClick={() => setActiveTab(item.key)}
-                    >
-                        {item.label}
+                    <li key={item.path}>
+                        <NavLink
+                            to={item.path}
+                            end={item.path === "/mypage"} // ✅ 대시보드일 때만 end 속성 적용
+                            className={({ isActive }) => (isActive ? 'active' : '')}
+                        >
+                            {item.label}
+                        </NavLink>
                     </li>
                 ))}
             </ul>

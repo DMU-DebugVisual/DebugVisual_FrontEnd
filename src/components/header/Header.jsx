@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import { FaMoon, FaSun } from "react-icons/fa";
 import "./Header.css";
 
@@ -36,8 +36,8 @@ const Header = ({ isLoggedIn, nickname }) => {
                     <span className="user-nickname">👤 {nickname}</span>
                 ) : (
                     <>
-                        <NavLink to="/login" className="btn btn-outline">로그인</NavLink>
-                        <NavLink to="/signup" className="btn btn-filled">회원가입</NavLink>
+                        <Link to="/login" className="btn btn-outline">로그인</Link>
+                        <Link to="/signup" className="btn btn-filled">회원가입</Link>
                     </>
                 )}
             </div>

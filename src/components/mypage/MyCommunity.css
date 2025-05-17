@@ -30,7 +30,7 @@
     margin-bottom: 20px;
 }
 
-.tab {
+.commu-tab {
     padding: 8px 16px;
     border-radius: 6px;
     border: none;
@@ -38,7 +38,7 @@
     cursor: pointer;
 }
 
-.tab.active {
+.commu-tab.active {
     background-color: #7a52c6;
     color: white;
     font-weight: bold;

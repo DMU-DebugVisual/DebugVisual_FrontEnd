@@ -6,14 +6,13 @@ import Sidebar from "./Sidebar";
 const MyCommunity = () => {
     return (
         <div className="mycommunity-wrapper">
-            <Header />
             <Sidebar />
             <section className="community-container">
                 <h2 className="community-title">내 활동</h2>
                 <input type="text" className="community-search" placeholder="검색..."/>
                 <div className="community-tabs">
-                    <button className="tab active">내 게시물</button>
-                    <button className="tab">내 댓글</button>
+                    <button className="commu-tab active">내 게시물</button>
+                    <button className="commu-tab">내 댓글</button>
                 </div>
 
                 <div className="post-card">

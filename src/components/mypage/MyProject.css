@@ -59,8 +59,8 @@
     color: #aaa;
 }
 
-.search-input {
-    width: 90%;
+.project-search-input {
+    width: 100%;
     padding: 10px 12px 10px 36px;
     border: 1px solid #ccc;
     border-radius: 6px;
@@ -88,7 +88,7 @@
     gap: 10px;
 }
 
-.tab {
+.tabs {
     padding: 8px 14px;
     border-radius: 6px;
     background-color: #eee;
@@ -97,7 +97,7 @@
     border: none;
 }
 
-.tab.active {
+.tabs.active {
     background-color: #7a52c6;
     color: white;
     font-weight: bold;

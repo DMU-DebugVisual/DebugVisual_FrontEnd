@@ -2,6 +2,7 @@ import React from "react";
 import { FaPlus, FaArrowRight, FaDesktop } from "react-icons/fa";
 import "./Codecast.css";
 import Header from "../header/Header";
+import {Link} from "react-router-dom";
 
 const Codecast = () => {
     return (
@@ -35,10 +36,10 @@ const Codecast = () => {
                     <div className="broadcast-start">
                         <h3>새 방송 시작하기</h3>
                         <p>새로운 코드 방송을 시작하여 다른 사용자들과 실시간으로 코드를 공유하세요.</p>
-                        <button className="start-btn">
+                        <Link to="/startbroadcast" className="start-btn">
                             <FaPlus/>
                             새 방송 시작
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </section>
