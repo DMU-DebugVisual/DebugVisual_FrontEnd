@@ -143,20 +143,14 @@ const IDE = () => {
         // 비회원이면 API 호출 안함
         if (!isLoggedIn) return;
 
-        try {
-            // 단순한 API 호출로 변경
-            const response = await fetch('http://localhost:4000/api/files');
+        // 임시 로컬 파일 목록 사용
+        const localFiles = [
+            { name: "untitled.py", code: '# 여기에 코드를 입력하세요' },
+            { name: "example.py", code: 'print("Hello, World!")' },
+            { name: "test.js", code: 'console.log("Testing JavaScript");' }
+        ];
 
-            if (!response.ok) {
-                throw new Error('파일 목록 불러오기 실패');
-            }
-
-            const files = await response.json();
-            setSavedFiles(files);
-        } catch (error) {
-            console.error('파일 목록 불러오기 오류:', error);
-            // 오류 시 기본 파일 목록 유지
-        }
+        setSavedFiles(localFiles);
     };
 
     // 회원 상태가 변경될 때 파일 목록 갱신
@@ -218,7 +212,7 @@ const IDE = () => {
             // 현재 에디터의 값을 가져옴
             const currentCode = editorRef.current.getValue();
 
-            // API 호출 - HTML 예시에서 본 엔드포인트 사용
+            // HTML 예시처럼 API 호출
             const response = await fetch('http://localhost:4000/api/run', {
                 method: 'POST',
                 headers: {
@@ -226,10 +220,16 @@ const IDE = () => {
                 },
                 body: JSON.stringify({
                     code: currentCode,
-                    lang: selectedLanguage, // HTML 예시에서는 'lang'으로 전송
+                    lang: selectedLanguage,
                     input: input
                 }),
             });
+
+            console.log('보내는 데이터:', JSON.stringify({
+                code: currentCode,
+                lang: selectedLanguage,
+                input: input
+            }));
 
             if (!response.ok) {
                 throw new Error('API 호출 실패');
@@ -298,7 +298,7 @@ const IDE = () => {
     };
 
     // 파일 저장 함수
-    const handleSave = async () => {
+    const handleSave = () => {
         // 비회원은 로그인 유도
         if (!isLoggedIn) {
             alert("로그인 후 이용 가능한 기능입니다.");
@@ -308,27 +308,6 @@ const IDE = () => {
         try {
             // 현재 에디터의 값을 가져옴
             const currentCode = editorRef.current.getValue();
-
-            // API 호출
-            const response = await fetch('http://localhost:4000/api/save', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    code: currentCode,
-                    fileName: fileName,
-                    language: selectedLanguage
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error('파일 저장 실패');
-            }
-
-            // 저장 성공
-            setIsSaved(true);
-            setCode(currentCode);
 
             // 로컬 상태 업데이트
             const existingFileIndex = savedFiles.findIndex((file) => file.name === fileName);
@@ -343,75 +322,37 @@ const IDE = () => {
                 setSavedFiles([...savedFiles, { name: fileName, code: currentCode }]);
             }
 
+            setIsSaved(true);
+            setCode(currentCode);
             toast("파일이 저장되었습니다.");
         } catch (error) {
             console.error('파일 저장 중 오류:', error);
-
-            // API 오류 시 로컬만 업데이트
-            const currentCode = editorRef.current.getValue();
-            const existingFileIndex = savedFiles.findIndex((file) => file.name === fileName);
-
-            if (existingFileIndex >= 0) {
-                // 기존 파일 업데이트
-                const updatedFiles = [...savedFiles];
-                updatedFiles[existingFileIndex] = { name: fileName, code: currentCode };
-                setSavedFiles(updatedFiles);
-            } else {
-                // 새 파일 추가
-                setSavedFiles([...savedFiles, { name: fileName, code: currentCode }]);
-            }
-
-            setIsSaved(true);
-            setCode(currentCode);
-            toast("API 연결 실패. 임시로 저장되었습니다.");
+            toast("저장 중 오류가 발생했습니다.");
         }
     };
 
     // 파일 선택 함수
-    const handleFileSelect = async (name) => {
+    const handleFileSelect = (name) => {
         // 현재 파일에 변경사항이 있으면 저장
         if (!isSaved) {
             const shouldSave = window.confirm('변경 사항을 저장하시겠습니까?');
             if (shouldSave) {
-                await handleSave();
+                handleSave();
             }
         }
 
-        try {
-            // API에서 파일 내용 불러오기
-            const response = await fetch(`http://localhost:4000/api/files/${name}`);
-
-            if (!response.ok) {
-                throw new Error('파일 불러오기 실패');
-            }
-
-            const fileData = await response.json();
-            setFileName(fileData.name);
-            setCode(fileData.code);
-            setActiveFile(fileData.name);
+        // 로컬 상태에서 파일 찾기
+        const selectedFile = savedFiles.find((file) => file.name === name);
+        if (selectedFile) {
+            setFileName(selectedFile.name);
+            setCode(selectedFile.code);
+            setActiveFile(selectedFile.name);
             setIsSaved(true);
 
             // 파일 확장자에 맞는 언어 설정
-            const langId = getLanguageFromFileName(fileData.name);
+            const langId = getLanguageFromFileName(selectedFile.name);
             if (langId) {
                 setSelectedLanguage(langId);
-            }
-        } catch (error) {
-            console.error('파일 불러오기 오류:', error);
-
-            // API 호출 실패 시 로컬 상태에서 불러오기 시도
-            const selectedFile = savedFiles.find((file) => file.name === name);
-            if (selectedFile) {
-                setFileName(selectedFile.name);
-                setCode(selectedFile.code);
-                setActiveFile(selectedFile.name);
-                setIsSaved(true);
-
-                // 파일 확장자에 맞는 언어 설정
-                const langId = getLanguageFromFileName(selectedFile.name);
-                if (langId) {
-                    setSelectedLanguage(langId);
-                }
             }
         }
     };
