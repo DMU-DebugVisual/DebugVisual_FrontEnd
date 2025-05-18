@@ -1,5 +1,5 @@
 import React from "react";
-
+import {Element} from "react-scroll";
 import Intro from "./intro/Intro";
 import Features from "./features/Features";
 import DemoView from "./demoview/DemoView";
@@ -10,7 +10,9 @@ const Main = () => {
         <div>
             <main>
                 <Intro />
-                <Features />
+                <Element name="feature">
+                    <Features />
+                </Element>
                 <DemoView />
                 <StartNow />
             </main>

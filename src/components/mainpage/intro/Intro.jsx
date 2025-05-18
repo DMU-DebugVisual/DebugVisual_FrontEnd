@@ -1,7 +1,8 @@
 import React from "react";
 import "./Intro.css";
 import introImage from "./intro.png";
-import {Link} from "react-router-dom"; // 오른쪽 이미지
+import {Link} from "react-router-dom";
+import { Link as ScrollLink } from "react-scroll";
 
 const Intro = () => {
     return (
@@ -16,8 +17,12 @@ const Intro = () => {
                     코드 방송 기능을 통해 실시간으로 지식을 공유할 수 있습니다.
                 </p>
                 <div className="intro-buttons">
-                    <Link to="ide" className="btn primary">시작하기</Link>
-                    <Link to="" className="btn secondary">기능 살펴보기</Link>
+                    <Link to="/ide" className="btn primary">시작하기</Link>
+                    <ScrollLink to="feature"
+                                smooth
+                                duration={500}
+                                offset={-64}
+                                className="btn secondary">기능 살펴보기</ScrollLink>
                 </div>
             </div>
 

@@ -53,6 +53,7 @@
 /* NavLink hover */
 .header-nav a:hover {
     color: #6a0dad;
+    cursor: pointer;
 }
 
 /* NavLink 활성 상태 */
@@ -61,13 +62,6 @@
     border-bottom: 2px solid #6a0dad;
     font-weight: 600;
 }
-
-/* 오른쪽: 버튼들 또는 닉네임 */
-/*.header-right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}*/
 
 /* 로그인/회원가입 버튼 */
 .btn {
