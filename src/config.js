@@ -6,3 +6,11 @@ const config = {
 };
 
 export default config;
+
+
+// 아래는 프록시 코드를 제거하면 활성화 후 위 코드들 지우기
+//const config = {
+    //API_BASE_URL: 'http://3.38.244.234:8080', // 절대경로로 고정
+//};
+
+// default config;
