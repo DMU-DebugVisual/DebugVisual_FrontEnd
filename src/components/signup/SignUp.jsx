@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import '../login/Login.css'; // 로그인 스타일 재사용
+import config from '../../config';
+
+import '../login/Login.css';
 
 function SignUp() {
     const [formData, setFormData] = useState({
@@ -14,7 +16,7 @@ function SignUp() {
     const handleChange = (e) => {
         setFormData({
             ...formData,
-            [e.target.id]: e.target.value
+            [e.target.id]: e.target.value,
         });
     };
 
@@ -27,23 +29,18 @@ function SignUp() {
         }
 
         try {
-            const response = await axios.post('http://localhost:5000/api/users/signup', {
+            const response = await axios.post(`${config.API_BASE_URL}/api/users/signup`, {
                 userId: formData.username,
                 email: formData.email,
                 password: formData.password,
                 name: formData.name,
-            }, {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
             });
-
 
             console.log('회원가입 성공:', response.data);
             alert('회원가입이 완료되었습니다!');
         } catch (error) {
             console.error('회원가입 오류:', error.response?.data || error.message);
-            alert('회원가입에 실패했습니다.');
+            alert(error.response?.data?.message || '회원가입에 실패했습니다.');
         }
     };
 
@@ -55,30 +52,69 @@ function SignUp() {
 
                 <form className="login-form" onSubmit={handleSubmit}>
                     <label htmlFor="username">아이디 *</label>
-                    <input id="username" type="text" placeholder="사용할 아이디 입력" value={formData.username} onChange={handleChange} required />
+                    <input
+                        id="username"
+                        type="text"
+                        placeholder="사용할 아이디 입력"
+                        value={formData.username}
+                        onChange={handleChange}
+                        required
+                    />
 
                     <label htmlFor="email">이메일 *</label>
-                    <input id="email" type="email" placeholder="name@example.com" value={formData.email} onChange={handleChange} required />
+                    <input
+                        id="email"
+                        type="email"
+                        placeholder="name@example.com"
+                        value={formData.email}
+                        onChange={handleChange}
+                        required
+                    />
                     <small>인증번호를 받을 이메일 주소를 입력해주세요.</small>
 
                     <label htmlFor="password">비밀번호 *</label>
-                    <input id="password" type="password" value={formData.password} onChange={handleChange} required />
+                    <input
+                        id="password"
+                        type="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                    />
                     <small>비밀번호는 8자 이상이어야 합니다.</small>
 
                     <label htmlFor="confirmPassword">비밀번호 확인 *</label>
-                    <input id="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange} required />
+                    <input
+                        id="confirmPassword"
+                        type="password"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                        required
+                    />
 
                     <label htmlFor="name">이름 *</label>
-                    <input id="name" type="text" placeholder="홍길동" value={formData.name} onChange={handleChange} required />
+                    <input
+                        id="name"
+                        type="text"
+                        placeholder="홍길동"
+                        value={formData.name}
+                        onChange={handleChange}
+                        required
+                    />
 
                     <div className="remember-me">
                         <input type="checkbox" id="terms" required />
-                        <label htmlFor="terms"><strong>이용약관에 동의합니다.</strong><br />이용약관을 읽고 동의합니다.</label>
+                        <label htmlFor="terms">
+                            <strong>이용약관에 동의합니다.</strong><br />
+                            이용약관을 읽고 동의합니다.
+                        </label>
                     </div>
 
                     <div className="remember-me">
                         <input type="checkbox" id="privacy" required />
-                        <label htmlFor="privacy"><strong>개인정보 처리방침에 동의합니다.</strong><br />개인정보 처리방침을 확인 후 동의합니다.</label>
+                        <label htmlFor="privacy">
+                            <strong>개인정보 처리방침에 동의합니다.</strong><br />
+                            개인정보 처리방침을 확인 후 동의합니다.
+                        </label>
                     </div>
 
                     <button type="submit">회원가입 완료</button>

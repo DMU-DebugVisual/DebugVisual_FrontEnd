@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import config from '../../config';
 import './Login.css';
 
 function Login() {
@@ -11,7 +12,7 @@ function Login() {
     const handleChange = (e) => {
         setFormData({
             ...formData,
-            [e.target.id]: e.target.value
+            [e.target.id]: e.target.value,
         });
     };
 
@@ -19,7 +20,7 @@ function Login() {
         e.preventDefault();
 
         try {
-            const response = await axios.post('http://localhost:5000/api/users/login', {
+            const response = await axios.post(`${config.API_BASE_URL}/api/users/login`, {
                 userId: formData.username,
                 password: formData.password,
             });
@@ -28,15 +29,13 @@ function Login() {
 
             console.log('✅ 로그인 성공:', response.data);
 
-            // 토큰 및 사용자 정보 저장 (예: 로컬스토리지)
             localStorage.setItem('token', token);
             localStorage.setItem('username', name);
             localStorage.setItem('userId', userId);
             localStorage.setItem('role', role);
 
             alert('로그인 성공!');
-            // 페이지 이동 (예: 홈으로)
-            // window.location.href = '/';
+            // window.location.href = '/'; // 필요한 경우 이동
         } catch (error) {
             console.error('❌ 로그인 실패:', error.response?.data || error.message);
             alert(error.response?.data?.message || '로그인에 실패했습니다.');
