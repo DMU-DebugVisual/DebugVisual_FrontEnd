@@ -17,10 +17,10 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20  # ✅ Node.js 버전을 20으로 업그레이드
 
       - name: Install Dependencies
-        run: npm ci
+        run: npm ci  # ✅ npm ci로 의존성 설치
 
       - name: Build Project
         run: |
