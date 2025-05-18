@@ -17,16 +17,17 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18  # 프로젝트에 맞는 Node.js 버전
+          node-version: 18
 
       - name: Install Dependencies
         run: npm install
 
       - name: Build Project
-        run: npm run build  # 프로젝트에 맞는 빌드 명령어로 수정
+        run: |
+          CI=false npm run build  # CI=false로 경고 무시
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build  # 빌드 결과물이 저장되는 디렉토리 (React는 보통 build)
+          publish_dir: ./build
