@@ -1,4 +1,4 @@
-import {BrowserRouter, Route, Routes} from "react-router-dom";
+import { HashRouter, Route, Routes } from "react-router-dom";
 
 import Header from "./components/header/Header";
 import Footer from "./components/footer/Footer";
@@ -17,7 +17,7 @@ import MyCommunity from "./components/mypage/MyCommunity";
 
 function App() {
     return (
-        <BrowserRouter basename="/DebugVisual_FrontEnd">
+        <HashRouter>
             <Header />
             <Routes>
                 <Route path="/" element={<Main />} />
@@ -36,7 +36,7 @@ function App() {
                 </Route>
             </Routes>
             <Footer />
-        </BrowserRouter>
+        </HashRouter>
     );
 }
 
