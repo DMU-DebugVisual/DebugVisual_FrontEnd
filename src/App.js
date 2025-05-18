@@ -17,7 +17,7 @@ import MyCommunity from "./components/mypage/MyCommunity";
 
 function App() {
     return (
-        <BrowserRouter>
+        <BrowserRouter basename="/DebugVisual_FrontEnd">
             <Header />
             <Routes>
                 <Route path="/" element={<Main />} />

@@ -1,6 +1,7 @@
 {
   "name": "debugvisual_front",
   "version": "0.1.0",
+  "homepage": "https://DMU-DebugVisual.github.io/DebugVisual_FrontEnd",
   "private": true,
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
