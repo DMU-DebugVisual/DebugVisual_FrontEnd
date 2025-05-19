@@ -34,3 +34,24 @@
 .start-button:hover {
     background-color: #f2e9ff;
 }
+
+/* 🌙 섹션 전체 배경 및 텍스트 */
+.dark-mode .start-section {
+    background-color: #4e378a; /* 더 어두운 보라 */
+    color: #f5f5f5;
+}
+
+/* 🌙 설명 텍스트 */
+.dark-mode .start-description {
+    color: #ddd;
+}
+
+/* 🌙 버튼 색상 반전 */
+.dark-mode .start-button {
+    background-color: #1e1e1e;
+    color: #b88eff;
+}
+
+.dark-mode .start-button:hover {
+    background-color: #2a2a2a;
+}

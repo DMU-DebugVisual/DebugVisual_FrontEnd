@@ -63,3 +63,37 @@
     color: #555;
     line-height: 1.6;
 }
+
+/* 🌙 전체 섹션 배경 */
+.dark-mode .features-section {
+    background-color: #1e1e1e;
+    color: #eee;
+}
+
+/* 🌙 서브타이틀 */
+.dark-mode .features-subtitle {
+    color: #aaa;
+}
+
+/* 🌙 카드 배경 및 테두리 */
+.dark-mode .feature-card {
+    background-color: #2a2a2a;
+    border-color: #444;
+    box-shadow: 0 4px 10px rgba(255, 255, 255, 0.05);
+}
+
+/* 🌙 카드 hover 시 */
+.dark-mode .feature-card:hover {
+    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.08);
+}
+
+/* 🌙 아이콘 배경 및 색상 */
+.dark-mode .feature-icon {
+    background-color: #3a2d4f;
+    color: #b88eff;
+}
+
+/* 🌙 설명 텍스트 */
+.dark-mode .feature-desc {
+    color: #ccc;
+}

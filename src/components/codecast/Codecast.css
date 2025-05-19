@@ -145,3 +145,83 @@
     margin-top: 6px;
     text-align: left;
 }
+
+/* 🌙 전체 배경 */
+.dark-mode .broadcast-container {
+    background-color: #1e1e1e;
+    color: #f0f0f0;
+}
+
+/* 🌙 아이콘 */
+.dark-mode .broadcast-icon {
+    color: #6a0dad;
+}
+
+/* 🌙 설명 텍스트 */
+.dark-mode .broadcast-header p {
+    color: #cccccc;
+}
+
+/* 🌙 카드 배경 */
+.dark-mode .broadcast-card {
+    background-color: #2a2a2a;
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.05);
+}
+
+/* 🌙 카드 내부 텍스트 */
+.dark-mode .broadcast-card p {
+    color: #bbbbbb;
+}
+
+/* 🌙 인풋 */
+.dark-mode .input-group input,
+.dark-mode .start-input-group input {
+    background-color: #1e1e1e;
+    color: #f0f0f0;
+    border: 1px solid #555;
+}
+
+/* 🌙 참여 버튼 */
+.dark-mode .input-group button {
+    background-color: #6a0dad;
+    color: white;
+}
+
+.dark-mode .input-group button:hover {
+    background-color: #5a0099;
+}
+
+/* 🌙 새 방송 시작 버튼 */
+.dark-mode .start-btn {
+    background-color: #6a0dad;
+    color: white;
+}
+
+.dark-mode .start-btn:hover {
+    background-color: #5a0099;
+}
+
+/* 🌙 구분선 */
+.dark-mode .hr-with-text {
+    color: #aaa;
+}
+
+.dark-mode .hr-with-text::before,
+.dark-mode .hr-with-text::after {
+    border-top: 1px solid #444;
+}
+
+/* 🌙 폼 라벨 */
+.dark-mode .start-input-group label {
+    color: #ddd;
+}
+
+/* 🌙 헬프 텍스트 */
+.dark-mode .help-text {
+    color: #aaa;
+}
+
+/* 🌙 필수 표시 */
+.dark-mode .required {
+    color: #ff6b6b;
+}

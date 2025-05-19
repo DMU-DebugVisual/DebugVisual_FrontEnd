@@ -1,7 +1,7 @@
 body {
     margin: 0;
     padding: 0;
-    background-color: #f5f6fa;
+    /*background-color: #f5f6fa;*/
     font-family: 'Noto Sans KR', sans-serif;
 }
 
@@ -260,4 +260,109 @@ body {
         padding: 1rem;
     }
 
+}
+
+/* 🌙 전체 배경 및 텍스트 */
+body.dark-mode {
+    background-color: #1e1e1e;
+}
+.dark-mode .community-container {
+    background-color: #1e1e1e;
+    color: #eee;
+}
+
+/* 🌙 상단 헤더 버튼 */
+.dark-mode .new-post-button {
+    background-color: #6a0dad;
+    color: white;
+}
+
+.dark-mode .new-post-button:hover {
+    background-color: #5a0099;
+}
+
+/* 🌙 섹션 제목 */
+.dark-mode .section-title {
+    border-bottom: 2px solid #444;
+    color: #f5f5f5;
+}
+
+/* 🌙 인기 게시물 래퍼 */
+.dark-mode .popular-posts-wrapper {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.03);
+}
+
+/* 🌙 인기 게시물 카드 */
+.dark-mode .popular-post-card {
+    background-color: #1e1e1e;
+    border: 1px solid #444;
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.04);
+}
+
+.dark-mode .popular-post-card p {
+    color: #ccc;
+}
+
+.dark-mode .popular-post-card .post-meta {
+    color: #aaa;
+}
+
+/* 🌙 검색 필터 */
+.dark-mode .search-filter input {
+    background-color: #2a2a2a;
+    border: 1px solid #555;
+    color: #f0f0f0;
+}
+
+/* 🌙 필터 버튼 */
+.dark-mode .filter-buttons button {
+    background-color: #2a2a2a;
+    border: 1px solid #555;
+    color: #ccc;
+}
+
+.dark-mode .filter-buttons button:hover {
+    background-color: #333;
+}
+
+/* 🌙 게시글 카드 */
+.dark-mode .post-card {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    box-shadow: 0 2px 4px rgba(255, 255, 255, 0.03);
+}
+
+.dark-mode .post-content p {
+    color: #ccc;
+}
+
+/* 🌙 태그 */
+.dark-mode .tag {
+    background-color: #333;
+    color: #56f3a1;
+}
+
+/* 🌙 날짜 */
+.dark-mode .date {
+    color: #999;
+}
+
+/* 🌙 좋아요/댓글/공유 버튼 */
+.dark-mode .buttons button {
+    color: #ccc;
+}
+
+/* 🌙 페이지네이션 */
+.dark-mode .pagination button {
+    border: 1px solid #555;
+    color: #ccc;
+    background-color: #2a2a2a;
+}
+
+.dark-mode .pagination .active {
+    background-color: #56f3a1;
+    color: #1e1e1e;
+    border: none;
 }

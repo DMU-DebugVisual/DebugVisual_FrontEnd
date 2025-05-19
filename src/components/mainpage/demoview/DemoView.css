@@ -41,3 +41,25 @@
     font-size: 16px;
     color: #888;
 }
+
+/* 🌙 섹션 배경 */
+.dark-mode .demo-section {
+    background-color: #181818;
+    color: #f0f0f0;
+}
+
+/* 🌙 부제목 색상 */
+.dark-mode .demo-subtitle {
+    color: #aaa;
+}
+
+/* 🌙 데모 박스 배경 및 테두리 */
+.dark-mode .demo-box {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+}
+
+/* 🌙 플레이스홀더 텍스트 */
+.dark-mode .placeholder-box strong {
+    color: #bbb;
+}

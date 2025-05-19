@@ -74,3 +74,42 @@
     border-radius: 12px;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
 }
+
+/* 🌙 다크모드 전체 배경 */
+.dark-mode .intro-section {
+    background-color: #181818;
+}
+
+/* 🌙 왼쪽 텍스트 */
+.dark-mode .intro-left h1 {
+    color: #f0f0f0;
+}
+
+.dark-mode .intro-left p {
+    color: #cccccc;
+}
+
+/* 🌙 버튼 스타일 */
+.dark-mode .primary {
+    background-color: #6a0dad;
+    color: white;
+}
+
+.dark-mode .primary:hover {
+    background-color: #5a0099;
+}
+
+.dark-mode .secondary {
+    background-color: #2c2c2c;
+    color: #b88eff;
+    border: 1px solid #b88eff;
+}
+
+.dark-mode .secondary:hover {
+    background-color: #3a3a3a;
+}
+
+/* 🌙 이미지 테두리와 그림자 */
+.dark-mode .intro-right img {
+    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.06);
+}

@@ -1,4 +1,5 @@
 import { HashRouter, Route, Routes } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 import Header from "./components/header/Header";
 import Footer from "./components/footer/Footer";
@@ -14,11 +15,31 @@ import Settings from "./components/mypage/Settings";
 import Shared from "./components/mypage/Shared";
 import MyProject from "./components/mypage/MyProject";
 import MyCommunity from "./components/mypage/MyCommunity";
+import ScrollToTop from "./components/common/ScrollToTop";
 
 function App() {
+    const [isDark, setIsDark] = useState(false);
+
+    useEffect(() => {
+        document.body.classList.toggle("dark-mode", isDark);
+    }, [isDark]);
+
+    useEffect(() => {
+        const savedTheme = localStorage.getItem("theme");
+        if (savedTheme === "dark") {
+            setIsDark(true);
+        }
+    }, []);
+
+    useEffect(() => {
+        document.body.classList.toggle("dark-mode", isDark);
+        localStorage.setItem("theme", isDark ? "dark" : "light");
+    }, [isDark]);
+
     return (
         <HashRouter>
-            <Header />
+            <Header isDark={isDark} setIsDark={setIsDark} />
+            <ScrollToTop />
             <Routes>
                 <Route path="/" element={<Main />} />
                 <Route path="/login" element={<Login />} />
