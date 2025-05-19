@@ -19,8 +19,38 @@ const IDE = () => {
         { name: "untitled.py", code: '# 여기에 코드를 입력하세요' }
     ]);
 
-    // 항상 다크 모드 사용
-    const isDarkMode = true;
+    // 다크 모드 상태 - document.body의 클래스를 감지
+    const [isDarkMode, setIsDarkMode] = useState(() => {
+        // body 태그에 dark-mode 클래스가 있는지 확인
+        return document.body.classList.contains('dark-mode');
+    });
+
+    // body의 dark-mode 클래스 변화 감지
+    useEffect(() => {
+        // MutationObserver를 사용하여 body 클래스 변경 감지
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (
+                    mutation.attributeName === 'class' &&
+                    mutation.target === document.body
+                ) {
+                    const hasClass = document.body.classList.contains('dark-mode');
+                    setIsDarkMode(hasClass);
+                }
+            });
+        });
+
+        // 관찰 시작
+        observer.observe(document.body, { attributes: true });
+
+        // 초기 상태 설정
+        setIsDarkMode(document.body.classList.contains('dark-mode'));
+
+        // 클린업 함수
+        return () => {
+            observer.disconnect();
+        };
+    }, []);
 
     // 언어 선택을 위한 상태 추가
     const [selectedLanguage, setSelectedLanguage] = useState('python');
@@ -106,9 +136,35 @@ const IDE = () => {
             }
         });
 
-        // 커스텀 테마 적용
-        monaco.editor.setTheme('custom-dark');
+        // 라이트 모드 테마 정의
+        monaco.editor.defineTheme('custom-light', {
+            base: 'vs',
+            inherit: true,
+            rules: [],
+            colors: {
+                'editor.lineHighlightBackground': '#6a47b811',
+                'editor.lineHighlightBorder': '#6a47b822'
+            }
+        });
+
+        // 현재 모드에 맞는 테마 적용
+        updateEditorTheme(monaco);
     };
+
+    // 다크모드 변경 시 에디터 테마 업데이트
+    const updateEditorTheme = (monaco) => {
+        if (!monaco && !editorRef.current) return;
+
+        const m = monaco || window.monaco;
+        if (m) {
+            m.editor.setTheme(isDarkMode ? 'custom-dark' : 'custom-light');
+        }
+    };
+
+    // 다크모드 변경 감지 시 에디터 테마 업데이트
+    useEffect(() => {
+        updateEditorTheme();
+    }, [isDarkMode]);
 
     // 파일 확장자에 따른 언어 결정
     const getLanguageFromFileName = (filename) => {
@@ -204,94 +260,65 @@ const IDE = () => {
         return map;
     };
 
+    // API 엔드포인트 URL 설정 (스웨거 API로 변경)
+    const API_URL = 'http://3.38.244.234:8080/api/code/run';
+
+    // 스웨거 API에 맞게 언어 매핑 함수
+    const mapLanguageToAPI = (langId) => {
+        // 스웨거 API에서는 'python', 'java', 'c'만 지원
+        switch (langId) {
+            case 'cpp':
+                return 'c'; // C++는 C로 처리
+            case 'javascript':
+                return 'javascript'; // 스웨거 문서에 없지만, 지원할 수도 있음
+            default:
+                return langId; // python, java, c는 그대로 사용
+        }
+    };
+
     const handleRun = async () => {
         setIsRunning(true);
         setIsOutputVisible(true);
+        setOutput("실행 중...");
 
         try {
             // 현재 에디터의 값을 가져옴
             const currentCode = editorRef.current.getValue();
 
-            // HTML 예시처럼 API 호출
-            const response = await fetch('http://localhost:4000/api/run', {
+            // API 요청 본문 생성 (성공한 형식과 동일하게)
+            const requestBody = {
+                code: currentCode,
+                input: input,
+                lang: mapLanguageToAPI(selectedLanguage)
+            };
+
+            console.log('API 요청 데이터:', JSON.stringify(requestBody));
+
+            // CORS 우회를 위한 프록시 서버 사용 (개발 환경에서)
+            const apiUrl = process.env.NODE_ENV === 'development'
+                ? '/api/code/run'  // 개발 환경에서는 프록시 사용
+                : 'http://3.38.244.234:8080/api/code/run'; // 프로덕션 환경에서는 직접 호출
+
+            // API 호출
+            const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    code: currentCode,
-                    lang: selectedLanguage,
-                    input: input
-                }),
+                body: JSON.stringify(requestBody),
             });
 
-            console.log('보내는 데이터:', JSON.stringify({
-                code: currentCode,
-                lang: selectedLanguage,
-                input: input
-            }));
-
             if (!response.ok) {
-                throw new Error('API 호출 실패');
+                throw new Error(`API 요청 실패: ${response.status} ${response.statusText}`);
             }
 
-            // HTML 예시처럼 text로 응답을 받음
+            // 응답이 텍스트 형식일 것으로 예상
             const result = await response.text();
             setOutput(result || "실행 결과가 없습니다.");
+
         } catch (error) {
             console.error('코드 실행 중 오류:', error);
-
-            // API 오류 시 폴백으로 간단한 시뮬레이션
-            const currentCode = editorRef.current.getValue();
-            let simulatedOutput = "API 연결 실패로 실제 실행은 되지 않았습니다.";
-
-            // 언어별 간단한 시뮬레이션
-            switch(selectedLanguage) {
-                case 'python':
-                    if (currentCode.includes('print')) {
-                        const match = currentCode.match(/print\(['"](.*)['"]\)/);
-                        if (match) {
-                            simulatedOutput = match[1];
-                        } else {
-                            simulatedOutput = "Hello, World! (시뮬레이션된 출력)";
-                        }
-                    }
-                    break;
-                case 'java':
-                    if (currentCode.includes('System.out.println')) {
-                        const match = currentCode.match(/System\.out\.println\(['"](.*)['"]\)/);
-                        if (match) {
-                            simulatedOutput = match[1];
-                        } else {
-                            simulatedOutput = "Hello, World! (시뮬레이션된 출력)";
-                        }
-                    }
-                    break;
-                case 'cpp':
-                case 'c':
-                    if (currentCode.includes('printf') || currentCode.includes('cout')) {
-                        simulatedOutput = "Hello, World! (시뮬레이션된 출력)";
-                    }
-                    break;
-                case 'javascript':
-                    if (currentCode.includes('console.log')) {
-                        const match = currentCode.match(/console\.log\(['"](.*)['"]\)/);
-                        if (match) {
-                            simulatedOutput = match[1];
-                        } else {
-                            simulatedOutput = "Hello, World! (시뮬레이션된 출력)";
-                        }
-                    }
-                    break;
-                default:
-                    simulatedOutput = "코드가 성공적으로 실행되었습니다. (API 연결 실패로 실제 실행은 되지 않았습니다)";
-            }
-
-            if (input) {
-                simulatedOutput = "입력값: " + input + "\n\n" + simulatedOutput;
-            }
-
-            setOutput(simulatedOutput);
+            setOutput(`오류 발생: ${error.message}`);
         } finally {
             setIsRunning(false);
         }
@@ -399,7 +426,7 @@ const IDE = () => {
     };
 
     return (
-        <div className={`ide-container dark-mode`}>
+        <div className="ide-container">
             {/* 왼쪽 사이드바 - 회원/비회원 표시 */}
             <div className={`sidebar ${isLeftPanelCollapsed ? 'collapsed' : ''}`}>
                 {isLoggedIn ? (
@@ -558,7 +585,7 @@ const IDE = () => {
                                 value={code}
                                 onChange={handleEditorChange}
                                 onMount={handleEditorDidMount}
-                                theme="vs-dark"
+                                theme={isDarkMode ? "vs-dark" : "vs-light"} // 다크모드에 따라 테마 변경
                                 options={{
                                     fontSize: 14,
                                     minimap: { enabled: true },
