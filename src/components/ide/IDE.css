@@ -37,6 +37,9 @@ body.dark-mode {
 *, *::before, *::after {
     transition: none
 }
+.ide-container, .sidebar, .main-content, .right-panel {
+    overflow: hidden;
+}
 
 * {
     box-sizing: border-box;
