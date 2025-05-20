@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { NavLink, Link } from "react-router-dom";
+import { Link as ScrollLink } from "react-scroll";
 import { FaMoon, FaSun } from "react-icons/fa";
 import "./Header.css";
 
-const Header = ({ isLoggedIn, nickname, isDark, setIsDark }) => {
-    useEffect(() => {
-        document.body.classList.toggle("dark-mode", isDark);
-    }, [isDark]);
+const Header = ({ isDark, setIsDark, isLoggedIn, nickname }) => {
+    const handleLogout = () => {
+        localStorage.clear();
+        window.location.reload(); // 새로고침으로 상태 초기화
+    };
 
     return (
         <header className="custom-header">
@@ -16,6 +18,14 @@ const Header = ({ isLoggedIn, nickname, isDark, setIsDark }) => {
 
             <nav className="header-nav">
                 <NavLink to="/" end>홈</NavLink>
+                <ScrollLink
+                    to="feature"
+                    smooth
+                    duration={500}
+                    offset={-64}
+                    spy={true}
+                    activeClass="active"
+                ></ScrollLink>
                 <NavLink to="/ide">IDE</NavLink>
                 <NavLink to="/community">커뮤니티</NavLink>
                 <NavLink to="/broadcast">코드 방송</NavLink>
@@ -27,10 +37,14 @@ const Header = ({ isLoggedIn, nickname, isDark, setIsDark }) => {
                     className="theme-toggle-btn"
                     aria-label="Toggle theme"
                 >
-                    {isDark ? <FaSun/> : <FaMoon/>}
+                    {isDark ? <FaSun /> : <FaMoon />}
                 </button>
+
                 {isLoggedIn ? (
-                    <span className="user-nickname">👤 {nickname}</span>
+                    <>
+                        <span className="user-nickname">👤 {nickname} 님</span>
+                        <button onClick={handleLogout} className="btn btn-outline">로그아웃</button>
+                    </>
                 ) : (
                     <>
                         <Link to="/login" className="btn btn-outline">로그인</Link>
