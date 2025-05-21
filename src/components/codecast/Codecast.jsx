@@ -1,13 +1,11 @@
 import React from "react";
 import { FaPlus, FaArrowRight, FaDesktop } from "react-icons/fa";
 import "./Codecast.css";
-import Header from "../header/Header";
 import {Link} from "react-router-dom";
 
 const Codecast = () => {
     return (
         <div>
-            <Header />
             <section className="broadcast-container">
                 <div className="broadcast-header">
                     <FaDesktop className="broadcast-icon" />

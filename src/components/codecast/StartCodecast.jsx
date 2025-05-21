@@ -1,12 +1,10 @@
 import React from "react";
 import { FaArrowRight } from "react-icons/fa";
 import "./Codecast.css";
-import Header from "../header/Header";
 
 const StartCodecast = () => {
     return (
         <div>
-            <Header />
             <section className="broadcast-container">
                 <div className="broadcast-header">
                     <h2>새 방송 시작하기</h2>
