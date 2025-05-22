@@ -1,8 +1,114 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Editor from '@monaco-editor/react';
 import './IDE.css';
+import { Link } from 'react-router-dom';
+
 //npm install @monaco-editor/react
+
+// ResizeObserver 패치 함수 정의
+const applyResizeObserverFix = () => {
+    // 이미 패치된 경우 중복 실행 방지
+    if (window._isResizeObserverPatched) return;
+
+    // 기존 ResizeObserver 저장
+    const originalResizeObserver = window.ResizeObserver;
+
+    // 스로틀링과 오류 처리를 적용한 사용자 정의 ResizeObserver 클래스
+    class PatchedResizeObserver extends originalResizeObserver {
+        constructor(callback) {
+            // 스로틀링 적용된 콜백 함수
+            const throttledCallback = (entries, observer) => {
+                // ResizeObserver 루프 제한 오류 발생 가능성 감소
+                if (this._rafId) {
+                    cancelAnimationFrame(this._rafId);
+                }
+
+                this._rafId = requestAnimationFrame(() => {
+                    this._rafId = null;
+                    try {
+                        callback(entries, observer);
+                    } catch (e) {
+                        console.warn('ResizeObserver 콜백 오류:', e);
+                    }
+                });
+            };
+
+            super(throttledCallback);
+            this._rafId = null;
+        }
+
+        disconnect() {
+            if (this._rafId) {
+                cancelAnimationFrame(this._rafId);
+                this._rafId = null;
+            }
+            super.disconnect();
+        }
+    }
+
+    // 오류 이벤트 방지 핸들러
+    window.addEventListener('error', (e) => {
+        if (e && e.message && (
+            e.message.includes('ResizeObserver loop') ||
+            e.message.includes('ResizeObserver undelivered notifications')
+        )) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            return false;
+        }
+    }, true);
+
+    // 콘솔 오류 무시 설정
+    const originalConsoleError = console.error;
+    console.error = (...args) => {
+        if (args[0] && typeof args[0] === 'string' && args[0].includes('ResizeObserver')) {
+            return; // ResizeObserver 관련 콘솔 오류 숨김
+        }
+        originalConsoleError.apply(console, args);
+    };
+
+    // 전역 ResizeObserver 교체
+    try {
+        window.ResizeObserver = PatchedResizeObserver;
+        window._isResizeObserverPatched = true;
+    } catch (e) {
+        console.warn('ResizeObserver를 패치할 수 없습니다:', e);
+    }
+};
+
 const IDE = () => {
+    // 컴포넌트 마운트 시 ResizeObserver 패치 적용
+    useEffect(() => {
+        applyResizeObserverFix();
+
+        // Monaco Editor 레이아웃 업데이트 헬퍼 함수
+        const updateAllEditorLayouts = () => {
+            if (editorRef.current) {
+                // RAF로 싱크 맞추기
+                window.requestAnimationFrame(() => {
+                    try {
+                        editorRef.current.layout();
+                    } catch (e) {
+                        console.warn('에디터 레이아웃 업데이트 중 오류:', e);
+                    }
+                });
+            }
+        };
+
+        // 윈도우 크기 변경 이벤트 리스너 추가
+        window.addEventListener('resize', updateAllEditorLayouts);
+
+        // DOM이 완전히 로드된 후 레이아웃 강제 조정
+        const initialLayoutTimeout = setTimeout(() => {
+            updateAllEditorLayouts();
+        }, 500);
+
+        return () => {
+            window.removeEventListener('resize', updateAllEditorLayouts);
+            clearTimeout(initialLayoutTimeout);
+        };
+    }, []);
+
     // 기존 상태 유지
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [code, setCode] = useState('# 여기에 코드를 입력하세요');
@@ -110,9 +216,30 @@ const IDE = () => {
         }
     };
 
-    // 에디터 마운트 핸들러
+    // 에디터 마운트 핸들러 - 성능 개선을 위한 수정
     const handleEditorDidMount = (editor, monaco) => {
         editorRef.current = editor;
+
+        // 성능 최적화 옵션
+        const editorOptions = {
+            // 가볍게 설정
+            minimap: { enabled: false },
+            scrollBeyondLastLine: false,
+            renderLineHighlight: 'line',
+            renderWhitespace: 'none',
+            automaticLayout: false,
+            wordWrap: "bounded",
+            wordWrapColumn: 120,
+            scrollbar: {
+                vertical: 'auto',
+                horizontal: 'auto',
+                verticalScrollbarSize: 10,
+                horizontalScrollbarSize: 10
+            }
+        };
+
+        // 성능 관련 옵션 적용
+        editor.updateOptions(editorOptions);
 
         // 단축키 등록
         editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, function() {
@@ -149,6 +276,15 @@ const IDE = () => {
 
         // 현재 모드에 맞는 테마 적용
         updateEditorTheme(monaco);
+
+        // 에디터 초기 레이아웃 강제 설정
+        setTimeout(() => {
+            try {
+                editor.layout();
+            } catch (e) {
+                console.warn('에디터 초기 레이아웃 설정 중 오류:', e);
+            }
+        }, 100);
     };
 
     // 다크모드 변경 시 에디터 테마 업데이트
@@ -165,6 +301,22 @@ const IDE = () => {
     useEffect(() => {
         updateEditorTheme();
     }, [isDarkMode]);
+
+    // 레이아웃 변경 시 에디터 크기 동기화
+    useEffect(() => {
+        // 사이드바 토글, 시각화 패널 토글 시 에디터 크기 업데이트
+        const updateTimer = setTimeout(() => {
+            if (editorRef.current) {
+                try {
+                    editorRef.current.layout();
+                } catch (e) {
+                    console.warn('레이아웃 변경 후 에디터 크기 조정 중 오류:', e);
+                }
+            }
+        }, 300); // 애니메이션 완료 후 업데이트
+
+        return () => clearTimeout(updateTimer);
+    }, [isLeftPanelCollapsed, isVisualizationVisible]);
 
     // 파일 확장자에 따른 언어 결정
     const getLanguageFromFileName = (filename) => {
@@ -470,14 +622,14 @@ const IDE = () => {
                                 <p>아직 계정이 없으신가요?</p>
                             </div>
                             <div className="auth-buttons">
-                                <button className="login-button auth-button">
+                                <Link to="/login" className="login-button auth-button">
                                     <span className="icon-small">🔑</span>
                                     로그인
-                                </button>
-                                <button className="signup-button auth-button">
+                                </Link>
+                                <Link to="/signup" className="signup-button auth-button">
                                     <span className="icon-small">✏️</span>
                                     회원가입
-                                </button>
+                                </Link>
                             </div>
                         </div>
                     </div>
@@ -588,18 +740,25 @@ const IDE = () => {
                                 theme={isDarkMode ? "vs-dark" : "vs-light"} // 다크모드에 따라 테마 변경
                                 options={{
                                     fontSize: 14,
-                                    minimap: { enabled: true },
+                                    minimap: { enabled: false }, // 성능 향상을 위해 미니맵 비활성화
                                     scrollBeyondLastLine: false,
-                                    automaticLayout: true,
+                                    automaticLayout: false, // 자동 레이아웃 비활성화(성능 향상)
                                     tabSize: 4,
                                     insertSpaces: true,
-                                    cursorBlinking: "smooth",
+                                    cursorBlinking: "solid", // 깜빡임을 줄여 성능 향상
                                     folding: true,
                                     lineNumbersMinChars: 3,
                                     wordWrap: "on",
-                                    renderWhitespace: "selection",
-                                    renderLineHighlight: "all",
+                                    renderWhitespace: "none", // 성능 향상을 위해 공백 렌더링 비활성화
+                                    renderLineHighlight: "line",
                                     renderLineHighlightOnlyWhenFocus: false,
+                                    scrollbar: {
+                                        useShadows: false, // 그림자 효과 제거
+                                        vertical: 'auto',
+                                        horizontal: 'auto',
+                                        verticalScrollbarSize: 10,
+                                        horizontalScrollbarSize: 10
+                                    }
                                 }}
                             />
                         </div>

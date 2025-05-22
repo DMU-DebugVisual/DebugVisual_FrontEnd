@@ -14,11 +14,12 @@
     --text-light: #666666;
     --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     --radius: 6px;
-    --transition: all 0.2s ease-in-out;
+    --transition:none;
     --header-height: 64px;
     --footer-height: 60px;
 }
 
+/* 다크 모드 스타일 */
 /* 다크 모드 스타일 */
 body.dark-mode {
     --primary: #7e57c2;
@@ -31,14 +32,22 @@ body.dark-mode {
     --border: #444444;
     --text: #e0e0e0;
     --text-light: #aaaaaa;
+    background-color: var(--bg);
 }
 
 /* 트랜지션 효과 추가 */
 *, *::before, *::after {
     transition: none
 }
-.ide-container, .sidebar, .main-content, .right-panel {
-    overflow: hidden;
+.custom-header,
+.main-header,
+.sidebar-header,
+.file-list-header,
+.header-title,
+.section-header,
+.program-input,
+.program-output {
+    transition: var(--transition);
 }
 
 * {
@@ -49,6 +58,40 @@ body.dark-mode {
 
 body {
     font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+    background-color: var(--bg);
+    margin: 0;
+    padding: 0;
+    color: var(--text);
+    min-height: 100vh;
+}
+
+/* ResizeObserver 관련 문제 해결을 위한 코드 - 이 부분을 수정 */
+.editor-section,
+.monaco-editor-wrapper,
+.monaco-editor,
+.monaco-editor-container,
+.monaco-scrollable-element,
+.overflow-guard {
+    /* contain 속성 제거 - 이것이 ResizeObserver 문제의 주요 원인 */
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
+
+/* overflow 문제 해결을 위한 수정 */
+.ide-container,
+.sidebar,
+.main-content,
+.right-panel,
+.visualization-sidebar {
+    overflow: visible;
+    position: relative;
+}
+
+/* 중첩된 요소의 크기 계산 문제를 해결하기 위한 설정 */
+.monaco-editor .overflow-guard {
+    position: relative;
+    overflow: hidden;
 }
 
 .ide-container {
@@ -59,7 +102,8 @@ body {
     background-color: var(--bg);
     color: var(--text);
     position: relative;
-    overflow: hidden;
+    width: 100%;
+    overflow-x: hidden;
 }
 
 /* 로그인 토글을 헤더에 통합 */
@@ -222,7 +266,6 @@ body.dark-mode .sidebar-toggle-button:hover {
     height: 100%;
     z-index: 10;
     position: relative; /* position 추가 */
-    overflow: hidden; /* overflow 숨김 처리 */
 }
 
 .sidebar.collapsed {
@@ -239,7 +282,6 @@ body.dark-mode .sidebar-toggle-button:hover {
     flex: 1;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
     transition: margin-left 0.3s ease;
     position: relative;
 }
@@ -335,7 +377,6 @@ body.dark-mode .file-item.active {
     flex: 1;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
     transition: width 0.3s ease;
     position: relative;
     background-color: var(--bg);
@@ -700,21 +741,17 @@ body.dark-mode .visualization-button.active {
     flex-direction: column;
     z-index: 150;
     box-shadow: -3px 0 15px rgba(0, 0, 0, 0.1);
-    animation: slide-in 0.3s ease;
+    transform: translateX(0);
+    transition: transform 0.3s ease;
 }
 
 body.dark-mode .visualization-sidebar {
     box-shadow: -3px 0 15px rgba(0, 0, 0, 0.3);
 }
-
-@keyframes slide-in {
-    from {
-        transform: translateX(100%);
-    }
-    to {
-        transform: translateX(0);
-    }
+.visualization-sidebar.hidden {
+    transform: translateX(100%);
 }
+
 
 .visualization-header {
     display: flex;
@@ -763,6 +800,18 @@ body.dark-mode .visualization-sidebar {
 body.dark-mode .visualization-placeholder {
     background-color: rgba(0, 0, 0, 0.1);
 }
+/* 다크모드 전체 배경 적용 */
+html.dark-mode, body.dark-mode {
+    background-color: var(--bg);
+}
+
+/* 다크모드 컨테이너 배경 강제 적용 */
+body.dark-mode .ide-container,
+body.dark-mode .content-layout,
+body.dark-mode .main-content,
+body.dark-mode .editor-section {
+    background-color: var(--bg);
+}
 
 .visualization-placeholder p {
     margin: 8px 0;
@@ -803,6 +852,22 @@ body.dark-mode .visualization-placeholder {
     }
 }
 
+/* body와 html에 명시적 배경색 설정 */
+html, body {
+    background-color: var(--bg);
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+/* 다크모드에서 명시적으로 배경색 설정 */
+body.dark-mode {
+    background-color: var(--bg);
+}
+
+html.dark-mode {
+    background-color: var(--bg);
+}
 /* 기존 토글 버튼 및 패널 숨기기 */
 .visualization-toggle-closed,
 .visualization-toggle-open,
@@ -813,6 +878,7 @@ body.dark-mode .visualization-placeholder {
 
 .monaco-editor-wrapper {
     height: 100%;
+    position: relative;
 }
 
 /* 아래의 기존 출력 패널 스타일을 재정의 */
@@ -983,91 +1049,66 @@ body.dark-mode .visualization-placeholder {
 .language-item:hover {
     background-color: rgba(0, 0, 0, 0.05);
 }
-
-body.dark-mode .language-item:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+/* 전체 페이지에 다크모드 배경색 적용 */
+:root.dark-mode,
+html.dark-mode,
+html[data-theme="dark"],
+:root[data-theme="dark"] {
+    background-color: #1e1e1e;
 }
 
-.language-item.active {
-    font-weight: 600;
-}
-
-.language-item::before {
+/* 문서 최상위 요소에 다크모드 배경색 적용 */
+html::before {
     content: "";
-    display: block;
-    width: 4px;
-    position: absolute;
-    left: 0;
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
     bottom: 0;
-    transition: var(--transition);
+    z-index: -1;
+    background-color: inherit;
 }
 
-/* 언어별 색상 클래스 - 모드에 관계없이 일관적인 색상 유지 */
-.lang-python {
-    background-color: #3572A5 !important;
+body.dark-mode::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+    background-color: #1e1e1e;
 }
 
-.lang-java {
-    background-color: #B07219 !important;
-}
-
-.lang-cpp {
-    background-color: #f34b7d !important;
-}
-
-.lang-c {
-    background-color: #555555 !important;
-}
-
-.lang-javascript {
-    background-color: #f1e05a !important;
-    color: #333 !important;
-}
-
-/* 언어별 테두리 색상 */
-.lang-border-python {
-    border-left: 4px solid #3572A5 !important;
-}
-
-.lang-border-java {
-    border-left: 4px solid #B07219 !important;
-}
-
-.lang-border-cpp {
-    border-left: 4px solid #f34b7d !important;
-}
-
-.lang-border-c {
-    border-left: 4px solid #555555 !important;
-}
-
-.lang-border-javascript {
-    border-left: 4px solid #f1e05a !important;
-}
-
-/* 게스트 모드 스타일 */
-.guest-mode-text {
-    font-size: 13px;
-    color: var(--text-light);
-}
-
-/* 우선순위 문제가 있을 경우를 대비한 강제 스타일 적용 */
-body.dark-mode .ide-container,
+/* 왼쪽 흰색 부분과 사이드바 수정 */
 body.dark-mode .sidebar,
-body.dark-mode .main-content,
-body.dark-mode .auth-sidebar,
-body.dark-mode .right-panel {
-    background-color: var(--bg) !important;
-    color: var(--text) !important;
+body.dark-mode .auth-sidebar {
+    background-color: var(--element);
+}
+/* 로그아웃 버튼 스타일 */
+.logout-button {
+    background-color: transparent;
+    color: #888;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-left: 8px;
 }
 
-body.dark-mode .sidebar-header,
-body.dark-mode .auth-header,
-body.dark-mode .main-header {
-    box-shadow: 0 1px 3ptox rgba(0, 0, 0, 0.15);
+.logout-button:hover {
+    background-color: #f0f0f0;
+    color: #333;
 }
-body.dark-mode .action-buttons,
-body.dark-mode .section-header {
-    background-color: var(--element) !important;
+
+body.dark-mode .logout-button:hover {
+    background-color: #333;
+    color: #eee;
+}
+
+.login-status-container {
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
 }
