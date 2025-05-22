@@ -1,10 +1,12 @@
 /* 전체 레이아웃 */
-.mypage {
+/*.mypage {
     display: flex;
+    flex: 1;
+    overflow: hidden;
     height: 100vh;
     background-color: #f4f4f4;
     font-family: 'Pretendard', sans-serif;
-}
+}*/
 
 /* 컨테이너 */
 .settings-container {
@@ -13,6 +15,7 @@
     padding: 3rem;
     box-sizing: border-box;
     max-width: 1400px;
+    overflow-y: auto;
 }
 
 /* 제목 */
@@ -218,11 +221,113 @@
     justify-content: center;
 }
 
-
-
 /* 소셜 링크 */
 .social-links {
     display: flex;
     gap: 16px;
 }
 
+/* 🌙 전체 배경 */
+.dark-mode .mypage {
+    background-color: #1e1e1e;
+    color: #eee;
+}
+
+/* 🌙 컨테이너 내부 */
+.dark-mode .settings-container {
+    color: #eee;
+}
+
+/* 🌙 탭 버튼 */
+.dark-mode .tab {
+    background-color: #2a2a2a;
+    color: #bbb;
+}
+
+.dark-mode .tab:hover {
+    background-color: #3a3a3a;
+}
+
+.dark-mode .tab.active {
+    background-color: #b88eff;
+    color: #1e1e1e;
+    font-weight: bold;
+}
+
+/* 🌙 카드 */
+.dark-mode .settings-card {
+    background-color: #2a2a2a;
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.05);
+}
+
+/* 🌙 설명 텍스트 */
+.dark-mode .section-desc {
+    color: #bbb;
+}
+
+/* 🌙 프로필 이미지 배경 */
+.dark-mode .profile-image {
+    background-color: #444;
+}
+
+/* 🌙 업로드/삭제 버튼 */
+.dark-mode .upload-btn {
+    background-color: #b88eff;
+    color: #1e1e1e;
+}
+
+.dark-mode .delete-btn {
+    background-color: #555;
+    color: #eee;
+}
+
+.dark-mode .upload-note {
+    color: #aaa;
+}
+
+/* 🌙 입력창 */
+.dark-mode .form-group input[type="text"],
+.dark-mode .tech-input-row input {
+    background-color: #2a2a2a;
+    border: 1px solid #555;
+    color: #eee;
+}
+
+.dark-mode .form-group textarea {
+    background-color: #2a2a2a;
+    border: 1px solid #555;
+    color: #eee;
+}
+
+/* 🌙 작은 보조 텍스트 */
+.dark-mode .small-text {
+    color: #aaa;
+}
+
+/* 🌙 기술 스택 태그 */
+.dark-mode .tag {
+    background-color: #b88eff;
+    color: #1e1e1e;
+}
+
+/* 🌙 제거 X 버튼 */
+.dark-mode .remove-x {
+    color: #1e1e1e;
+}
+
+.dark-mode .remove-x:hover {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* 🌙 추가 버튼 */
+.dark-mode .add-btn {
+    background-color: #b88eff;
+    color: #1e1e1e;
+}
+
+/* 🌙 소셜 링크 입력창 */
+.dark-mode .social-links input {
+    background-color: #2a2a2a;
+    border: 1px solid #555;
+    color: #eee;
+}

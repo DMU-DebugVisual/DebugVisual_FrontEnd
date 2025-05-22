@@ -1,13 +1,17 @@
 .mycommunity-wrapper {
     display: flex;
+    flex: 1;
+    overflow: hidden;
     min-height: 100vh;
     background-color: #f9f9f9;
+    padding-top: 70px;
 }
 
-.community-container {
-    max-width: 900px;
+.mycommunity-container {
+    overflow-y: auto;
+    max-width: 100%;
     margin: 0 auto;
-    padding: 80px 20px;
+    padding: 60px;
 }
 
 .community-title {
@@ -44,7 +48,7 @@
     font-weight: bold;
 }
 
-.post-card {
+.mypost-card {
     display: flex;
     background-color: white;
     padding: 20px;
@@ -108,9 +112,87 @@
 
 .edit-btn {
     background-color: white;
+    color: black;
 }
 
 .delete-btn {
     background-color: #ffe4e4;
     color: #d32f2f;
+}
+
+/* 🌙 전체 배경 */
+.dark-mode .mycommunity-wrapper {
+    background-color: #1e1e1e;
+    color: #eee;
+}
+
+.dark-mode .mycommunity-container {
+    color: #eee;
+}
+
+/* 🌙 검색창 */
+.dark-mode .community-search {
+    background-color: #2a2a2a;
+    border: 1px solid #555;
+    color: #eee;
+}
+
+/* 🌙 탭 버튼 */
+.dark-mode .commu-tab {
+    background-color: #2a2a2a;
+    color: #ccc;
+}
+
+.dark-mode .commu-tab:hover {
+    background-color: #3a3a3a;
+}
+
+.dark-mode .commu-tab.active {
+    background-color: #b88eff;
+    color: #1e1e1e;
+}
+
+/* 🌙 게시물 카드 */
+.dark-mode .mypost-card {
+    background-color: #2a2a2a;
+    box-shadow: 0 4px 10px rgba(200, 200, 200, 0.2);
+}
+
+/* 🌙 썸네일 */
+.dark-mode .post-thumbnail {
+    background-color: #444;
+}
+
+/* 🌙 태그 */
+.dark-mode .post-tags .tag {
+    background-color: #3a3a3a;
+    color: #b88eff;
+}
+
+/* 🌙 게시물 요약 */
+.dark-mode .post-summary {
+    color: #ccc;
+}
+
+/* 🌙 메타 정보 */
+.dark-mode .post-meta {
+    color: #aaa;
+}
+
+/* 🌙 버튼 */
+.dark-mode .edit-btn {
+    background-color: #2a2a2a;
+    border: 1px solid #666;
+    color: #eee;
+}
+
+.dark-mode .delete-btn {
+    background-color: #5a2c2c;
+    border: 1px solid #aa4444;
+    color: #ffb3b3;
+}
+
+.dark-mode .delete-btn:hover {
+    background-color: #722f2f;
+    color: #ffd6d6;
 }

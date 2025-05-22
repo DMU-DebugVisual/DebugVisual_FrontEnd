@@ -1,14 +1,14 @@
 body {
     margin: 0;
     padding: 0;
-    /*background-color: #f5f6fa;*/
+    background-color: #f5f6fa;
     font-family: 'Noto Sans KR', sans-serif;
 }
 
 .community-container {
-    max-width: 90%;
+    max-width: 900px;
     margin: 0 auto;
-    padding: 2rem 3rem;
+    padding: 80px 20px;
 }
 
 .community-header {

@@ -1,8 +1,14 @@
 .sidebar {
     width: 302px;
     background-color: #ffffff;
-    padding: 20px;
+    padding: 70px 20px;
     box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar .icon {
+    margin-right: 8px;
+    vertical-align: middle;
+    color: #a684f1;
 }
 
 .sidebar .username {
@@ -51,13 +57,16 @@
 }
 
 .sidebar li a {
-    display: block;
+    display: flex; /* 수평 정렬 */
+    align-items: center; /* 세로 정렬 중앙 */
+    gap: 8px; /* 아이콘과 텍스트 사이 여백 */
     padding: 10px 12px;
-    color: #555;
+    color: #444;
     text-decoration: none;
     border-radius: 4px;
     transition: background-color 0.2s ease, color 0.2s ease;
 }
+
 
 .sidebar li a:hover {
     background-color: #f0f0f0;
@@ -67,4 +76,54 @@
     background-color: #a684f1;
     color: white;
     font-weight: bold;
+}
+
+.sidebar li a.active .icon {
+    color: white;
+}
+
+/* 🌙 사이드바 전체 배경 및 그림자 */
+.dark-mode .sidebar {
+    background-color: #2a2a2a;
+    box-shadow: 2px 0 8px rgba(255, 255, 255, 0.03);
+}
+
+/* 🌙 사용자 이름 영역 */
+.dark-mode .sidebar .username {
+    border-bottom: 1px solid #444;
+}
+
+/* 🌙 아바타 색상 */
+.dark-mode .avatar-small {
+    background-color: #666;
+}
+
+/* 🌙 사용자 텍스트 */
+.dark-mode .user-info .name {
+    color: #f5f5f5;
+}
+
+.dark-mode .user-info .email {
+    color: #aaa;
+}
+
+/* 🌙 메뉴 링크 */
+.dark-mode .sidebar li a {
+    color: #ccc;
+}
+
+.dark-mode .sidebar li a:hover {
+    background-color: #3a3a3a;
+    color: #fff;
+}
+
+/* 🌙 활성 메뉴 */
+.dark-mode .sidebar li a.active {
+    background-color: #b88eff;
+    color: #1e1e1e;
+    font-weight: bold;
+}
+
+.dark-mode .sidebar li a.active .icon {
+    color: #1e1e1e;
 }
