@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import config from '../../config';
 import './Login.css';
+import { useNavigate } from 'react-router-dom';
 
 function Login() {
     const [formData, setFormData] = useState({
         username: '',
         password: '',
     });
+
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
         setFormData({
@@ -29,13 +32,15 @@ function Login() {
 
             console.log('✅ 로그인 성공:', response.data);
 
+            // 사용자 정보 저장
             localStorage.setItem('token', token);
-            localStorage.setItem('username', name);
+            localStorage.setItem('username', name);  // ✅ 이름 저장
             localStorage.setItem('userId', userId);
             localStorage.setItem('role', role);
 
-            alert('로그인 성공!');
-            // window.location.href = '/'; // 필요한 경우 이동
+            // 메인 페이지 이동 및 상태 반영 위해 새로고침
+            navigate('/', { replace: true });
+            window.location.reload();
         } catch (error) {
             console.error('❌ 로그인 실패:', error.response?.data || error.message);
             alert(error.response?.data?.message || '로그인에 실패했습니다.');
@@ -58,6 +63,7 @@ function Login() {
                         onChange={handleChange}
                         required
                     />
+
                     <div className="password-container">
                         <label htmlFor="password">비밀번호</label>
                         <a href="/forgot-password">비밀번호 찾기</a>
@@ -84,6 +90,7 @@ function Login() {
                     <button disabled>Google</button>
                     <button disabled>Github</button>
                 </div>
+
                 <p className="signup-link">
                     계정이 없으신가요? <a href="/signup">회원가입</a>
                 </p>

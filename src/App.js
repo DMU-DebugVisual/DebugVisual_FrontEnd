@@ -19,10 +19,8 @@ import ScrollToTop from "./components/common/ScrollToTop";
 
 function App() {
     const [isDark, setIsDark] = useState(false);
-
-    useEffect(() => {
-        document.body.classList.toggle("dark-mode", isDark);
-    }, [isDark]);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [nickname, setNickname] = useState('');
 
     useEffect(() => {
         const savedTheme = localStorage.getItem("theme");
@@ -36,9 +34,22 @@ function App() {
         localStorage.setItem("theme", isDark ? "dark" : "light");
     }, [isDark]);
 
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        const name = localStorage.getItem("username"); // ✅ 이름을 불러옴
+
+        if (token && name) {
+            setIsLoggedIn(true);
+            setNickname(name); // ✅ 이름을 nickname으로 사용
+        } else {
+            setIsLoggedIn(false);
+            setNickname('');
+        }
+    }, []);
+
     return (
         <HashRouter>
-            <Header isDark={isDark} setIsDark={setIsDark} />
+            <Header isDark={isDark} setIsDark={setIsDark} isLoggedIn={isLoggedIn} nickname={nickname} />
             <ScrollToTop />
             <Routes>
                 <Route path="/" element={<Main />} />
