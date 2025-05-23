@@ -40,7 +40,7 @@ body {
 .login-form {
     display: flex;
     flex-direction: column;
-    gap: 1.2rem;
+    gap: 0.8rem;
 }
 
 .login-form label {
@@ -203,4 +203,23 @@ small {
     background-color: #333;
     border: 1px solid #555;
     color: #aaa;
+}
+.forgot-password-link {
+    text-align: right;
+    margin-top: 0.2rem;
+}
+
+.forgot-password-link a {
+    color: #6a1b9a;
+    font-size: 1rem;
+    text-decoration: none;
+}
+
+.forgot-password-link a:hover {
+    text-decoration: underline;
+}
+
+/* 🌙 다크 모드 링크 색상 */
+.dark-mode .forgot-password-link a {
+    color: #b88eff;
 }

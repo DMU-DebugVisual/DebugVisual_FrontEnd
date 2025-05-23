@@ -24,6 +24,7 @@
     font-size: 20px;
     font-weight: 600;
     color: #333;
+    text-decoration: none;  /* ✅ 추가: 밑줄 제거 */
 }
 
 /* 오른쪽: 로그인/회원가입 */
@@ -92,13 +93,25 @@
     background-color: #5a0099;
 }
 
-/* 로그인 상태일 때 닉네임 표시 */
 .user-nickname {
-    font-size: 17px;
+    display: flex;
+    align-items: center;
     font-weight: 600;
-    color: #6a0dad;
-    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 1.05rem;
 }
+
+.user-icon {
+    margin-right: 8px;
+    vertical-align: middle;
+    color: #6a1b9a; /* 다크 퍼플 */
+}
+
+/* 🌙 다크 모드에서도 잘 보이게 */
+.dark-mode .user-icon {
+    color: #f0f0f0;
+}
+
 
 .theme-toggle-btn {
     background: none;
@@ -165,4 +178,50 @@
 /* 🌙 다크모드 토글 버튼 */
 .dark-mode .theme-toggle-btn {
     color: #b88eff;
+}
+
+.user-dropdown {
+    position: absolute;
+    right: 30px;
+    top: 100%;
+    background-color: white;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-radius: 6px;
+    z-index: 1001;
+    min-width: 100px;
+    width: 120px;             /* ✅ 자동 너비로 조정 */
+    padding: 4px 0;
+}
+
+.user-dropdown button {
+    padding: 9px 1px;
+    background: none;
+    border: none;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    text-align: center;
+    width: 100%;             /* ✅ 여기 유지해도 드롭다운 너비만 좁히면 괜찮음 */
+    white-space: nowrap;     /* ✅ 줄바꿈 방지 */
+    font-weight: 600;
+}
+
+
+.user-dropdown button:hover {
+    background-color: #f5f0ff;
+}
+
+.dark-mode .user-dropdown {
+    background-color: #2a2a2a;
+    border-color: #444;
+}
+
+.dark-mode .user-dropdown button {
+    color: #ccc;
+    font-weight: 600;
+}
+
+.dark-mode .user-dropdown button:hover {
+    background-color: #333;
 }
