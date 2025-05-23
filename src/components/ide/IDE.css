@@ -1112,3 +1112,132 @@ body.dark-mode .logout-button:hover {
     align-items: center;
     margin-right: 10px;
 }
+
+
+
+
+/* 언어별 색상 스타일 */
+.lang-python .language-button,
+.language-button.lang-python {
+    background-color: #3572A5;
+}
+
+.lang-python .language-button:hover,
+.language-button.lang-python:hover {
+    background-color: #2d5a85;
+}
+
+.lang-java .language-button,
+.language-button.lang-java {
+    background-color: #B07219;
+}
+
+.lang-java .language-button:hover,
+.language-button.lang-java:hover {
+    background-color: #8f5c14;
+}
+
+.lang-cpp .language-button,
+.language-button.lang-cpp {
+    background-color: #f34b7d;
+}
+
+.lang-cpp .language-button:hover,
+.language-button.lang-cpp:hover {
+    background-color: #d93a6a;
+}
+
+.lang-c .language-button,
+.language-button.lang-c {
+    background-color: #555555;
+}
+
+.lang-c .language-button:hover,
+.language-button.lang-c:hover {
+    background-color: #444444;
+}
+
+.lang-javascript .language-button,
+.language-button.lang-javascript {
+    background-color: #f1e05a;
+    color: #333; /* JavaScript는 밝은 색이므로 텍스트를 어둡게 */
+}
+
+.lang-javascript .language-button:hover,
+.language-button.lang-javascript:hover {
+    background-color: #e6d147;
+    color: #333;
+}
+
+/* 언어별 테두리 색상 (드롭다운 아이템용) */
+.lang-border-python {
+    border-left: 3px solid #3572A5;
+}
+
+.lang-border-java {
+    border-left: 3px solid #B07219;
+}
+
+.lang-border-cpp {
+    border-left: 3px solid #f34b7d;
+}
+
+.lang-border-c {
+    border-left: 3px solid #555555;
+}
+
+.lang-border-javascript {
+    border-left: 3px solid #f1e05a;
+}
+
+/* 활성화된 언어 아이템 스타일 */
+.language-item.active.lang-border-python {
+    background-color: rgba(53, 114, 165, 0.1);
+    color: #3572A5;
+}
+
+.language-item.active.lang-border-java {
+    background-color: rgba(176, 114, 25, 0.1);
+    color: #B07219;
+}
+
+.language-item.active.lang-border-cpp {
+    background-color: rgba(243, 75, 125, 0.1);
+    color: #f34b7d;
+}
+
+.language-item.active.lang-border-c {
+    background-color: rgba(85, 85, 85, 0.1);
+    color: #555555;
+}
+
+.language-item.active.lang-border-javascript {
+    background-color: rgba(241, 224, 90, 0.1);
+    color: #b8a042;
+}
+
+/* 다크모드에서 언어별 활성화 아이템 스타일 */
+body.dark-mode .language-item.active.lang-border-python {
+    background-color: rgba(53, 114, 165, 0.2);
+    color: #5a8bc4;
+}
+
+body.dark-mode .language-item.active.lang-border-java {
+    background-color: rgba(176, 114, 25, 0.2);
+    color: #d4942a;
+}
+
+body.dark-mode .language-item.active.lang-border-cpp {
+    background-color: rgba(243, 75, 125, 0.2);
+    color: #f66b92;
+}
+
+body.dark-mode .language-item.active.lang-border-c {
+    background-color: rgba(85, 85, 85, 0.2);
+    color: #888888;
+}
+
+body.dark-mode .language-item.active.lang-border-javascript {
+    background-color: rgba(241, 224, 90, 0.2);
+    color: #f1e05a;
+}

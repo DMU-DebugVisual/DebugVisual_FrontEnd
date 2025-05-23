@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
 import './IDE.css';
-import { Link } from 'react-router-dom';
-
 //npm install @monaco-editor/react
 
 // ResizeObserver 패치 함수 정의
@@ -111,6 +110,9 @@ const IDE = () => {
 
     // 기존 상태 유지
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [username, setUsername] = useState('');
+    const navigate = useNavigate();
+
     const [code, setCode] = useState('# 여기에 코드를 입력하세요');
     const [fileName, setFileName] = useState("untitled.py");
     const [isSaved, setIsSaved] = useState(true);
@@ -124,6 +126,21 @@ const IDE = () => {
     const [savedFiles, setSavedFiles] = useState([
         { name: "untitled.py", code: '# 여기에 코드를 입력하세요' }
     ]);
+
+    // 컴포넌트 마운트 시 로그인 상태 확인
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        const storedUsername = localStorage.getItem('username');
+
+        if (token && storedUsername) {
+            setIsLoggedIn(true);
+            setUsername(storedUsername);
+            fetchFileList(); // 로그인 되어 있으면 파일 목록 불러오기
+        } else {
+            setIsLoggedIn(false);
+            setUsername('');
+        }
+    }, []);
 
     // 다크 모드 상태 - document.body의 클래스를 감지
     const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -344,6 +361,25 @@ const IDE = () => {
     const handleEditorChange = (value) => {
         setCode(value);
         setIsSaved(false);
+    };
+
+    // 로그아웃 함수
+    const handleLogout = () => {
+        // 확인 메시지
+        const confirmLogout = window.confirm('로그아웃 하시겠습니까?');
+        if (!confirmLogout) return;
+
+        // 로컬 스토리지에서 사용자 정보 제거
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('role');
+
+        setIsLoggedIn(false);
+        setUsername('');
+
+        // 로그아웃 메시지
+        toast("로그아웃 되었습니다.");
     };
 
     // 파일 목록 불러오기
@@ -680,19 +716,20 @@ const IDE = () => {
                     </div>
 
                     <div className="header-right">
-                        {/* 로그인 토글 헤더에 통합 */}
-                        <div className="login-toggle">
+                        {/* 로그인 상태 표시 (토글 버튼 대신) */}
+                        <div className="login-status-container">
                             <span className={`login-status ${isLoggedIn ? 'logged-in' : 'guest'}`}>
-                                {isLoggedIn ? '회원 모드' : '비회원 모드'}
+                                {isLoggedIn ? `${username} 님` : '비회원 모드'}
                             </span>
-                            <label className="switch">
-                                <input
-                                    type="checkbox"
-                                    checked={isLoggedIn}
-                                    onChange={() => setIsLoggedIn(!isLoggedIn)}
-                                />
-                                <span className="slider round"></span>
-                            </label>
+                            {isLoggedIn && (
+                                <button
+                                    className="logout-button"
+                                    onClick={handleLogout}
+                                    title="로그아웃"
+                                >
+                                    로그아웃
+                                </button>
+                            )}
                         </div>
 
                         {isLoggedIn ? (
