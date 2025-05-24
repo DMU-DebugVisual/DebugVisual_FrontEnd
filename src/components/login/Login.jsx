@@ -3,6 +3,8 @@ import axios from 'axios';
 import config from '../../config';
 import './Login.css';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+
 
 function Login() {
     const [formData, setFormData] = useState({
@@ -66,7 +68,6 @@ function Login() {
 
                     <div className="password-container">
                         <label htmlFor="password">비밀번호</label>
-                        <a href="/forgot-password">비밀번호 찾기</a>
                     </div>
                     <input
                         id="password"
@@ -76,6 +77,9 @@ function Login() {
                         onChange={handleChange}
                         required
                     />
+                    <div className="forgot-password-link">
+                        <a href="#" onClick={(e) => e.preventDefault()}>비밀번호 찾기</a>
+                    </div>
 
                     <div className="remember-me">
                         <input type="checkbox" id="remember" />
@@ -92,8 +96,9 @@ function Login() {
                 </div>
 
                 <p className="signup-link">
-                    계정이 없으신가요? <a href="/signup">회원가입</a>
+                    계정이 없으신가요? <Link to="/signup">회원가입</Link>
                 </p>
+
             </div>
         </div>
     );
