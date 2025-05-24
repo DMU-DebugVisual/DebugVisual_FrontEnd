@@ -12,7 +12,6 @@ const Sidebar = ({nickname}) => {
         { label: '공유됨', path: '/mypage/shared', icon: <FaShareAlt /> },
         { label: '설정', path: '/mypage/setting', icon: <FaCog /> },
     ];
-    console.log("사이드바 닉네임:", nickname);
 
     return (
         <aside
