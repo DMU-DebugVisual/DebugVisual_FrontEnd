@@ -1,50 +1,45 @@
 import React from 'react';
 import './Shared.css';
-import Sidebar from './Sidebar';
 
 const Shared = () => {
     return (
-        <div className="mypage-wrapper">
-            <div className="mypage"> {/* Sidebar와 content를 Flex로 나란히 배치 */}
-                <Sidebar/>
-                <div className="shared-projects-container">
-                    <h2 className="page-title">공유된 프로젝트</h2>
-                    <input type="text" placeholder="  프로젝트 검색..." className="search-input"/>
+        <div className="shared-projects-container">
+            <h2 className="page-title">공유된 프로젝트</h2>
+            <input type="text" placeholder="  프로젝트 검색..." className="search-input"/>
 
-                    <div className="tab-buttons">
-                        <button className="tab active">나와 공유됨</button>
-                        <button className="tab">내가 공유함</button>
-                    </div>
+            <div className="tab-buttons">
+                <button className="tab active">나와 공유됨</button>
+                <button className="tab">내가 공유함</button>
+            </div>
 
-                    <div className="cards-wrapper">
-                        <ProjectCard
-                            title="정렬 알고리즘 비교"
-                            tag="편집"
-                            language="JavaScript"
-                            date="2023. 5. 10."
-                            description="다양한 정렬 알고리즘의 성능 비교 및 시각화"
-                            collaborators="2"
-                        />
-                        <ProjectCard
-                            title="이진 탐색 트리 구현"
-                            tag="보기"
-                            language="Python"
-                            date="2023. 5. 5."
-                            description="이진 탐색 트리의 구현 및 시각화"
-                            collaborators="1"
-                        />
-                        <ProjectCard
-                            title="그래프 알고리즘 시각화"
-                            tag="댓글"
-                            language="TypeScript"
-                            date="2023. 4. 28."
-                            description="다양한 그래프 알고리즘의 시각화 및 성능 비교"
-                            collaborators="3"
-                        />
-                    </div>
-                </div>
+            <div className="cards-wrapper">
+                <ProjectCard
+                    title="정렬 알고리즘 비교"
+                    tag="편집"
+                    language="JavaScript"
+                    date="2023. 5. 10."
+                    description="다양한 정렬 알고리즘의 성능 비교 및 시각화"
+                    collaborators="2"
+                />
+                <ProjectCard
+                    title="이진 탐색 트리 구현"
+                    tag="보기"
+                    language="Python"
+                    date="2023. 5. 5."
+                    description="이진 탐색 트리의 구현 및 시각화"
+                    collaborators="1"
+                />
+                <ProjectCard
+                    title="그래프 알고리즘 시각화"
+                    tag="댓글"
+                    language="TypeScript"
+                    date="2023. 4. 28."
+                    description="다양한 그래프 알고리즘의 시각화 및 성능 비교"
+                    collaborators="3"
+                />
             </div>
         </div>
+
     );
 };
 const tagClassMap = {

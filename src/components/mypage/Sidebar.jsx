@@ -1,11 +1,9 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import './Sidebar.css';
-
-// 아이콘 import
 import { FaTachometerAlt, FaFolderOpen, FaComments, FaGlobe, FaShareAlt, FaCog } from 'react-icons/fa';
 
-const Sidebar = () => {
+const Sidebar = ({nickname}) => {
     const menuItems = [
         { label: '대시보드', path: '/mypage', icon: <FaTachometerAlt /> },
         { label: '프로젝트', path: '/mypage/project', icon: <FaFolderOpen /> },
@@ -14,6 +12,7 @@ const Sidebar = () => {
         { label: '공유됨', path: '/mypage/shared', icon: <FaShareAlt /> },
         { label: '설정', path: '/mypage/setting', icon: <FaCog /> },
     ];
+    console.log("사이드바 닉네임:", nickname);
 
     return (
         <aside
@@ -23,7 +22,7 @@ const Sidebar = () => {
             <div className="username">
                 <div className="avatar-small"/>
                 <div className="user-info">
-                    <span className="name">김코딩</span>
+                    <span className="name">{nickname}</span>
                     <span className="email">@kimcoidng</span>
                 </div>
             </div>
