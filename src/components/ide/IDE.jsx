@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation, useParams } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
 import './IDE.css';
 //npm install @monaco-editor/react
@@ -108,10 +108,12 @@ const IDE = () => {
         };
     }, []);
 
-    // 기존 상태 유지
+    // 기본 상태 및 라우팅
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [username, setUsername] = useState('');
     const navigate = useNavigate();
+    const location = useLocation();
+    const params = useParams();
 
     const [code, setCode] = useState('# 여기에 코드를 입력하세요');
     const [fileName, setFileName] = useState("untitled.py");
@@ -141,6 +143,135 @@ const IDE = () => {
             setUsername('');
         }
     }, []);
+
+    // URL 업데이트 함수
+    const updateURL = (param1, param2 = null) => {
+        let newPath;
+        if (param2) {
+            // 회원 모드: /ide/언어/파일명
+            newPath = `/ide/${param1}/${param2}`;
+        } else {
+            // 비회원 모드: /ide/언어
+            newPath = `/ide/${param1}`;
+        }
+
+        // 현재 경로와 다를 때만 업데이트
+        if (location.pathname !== newPath) {
+            navigate(newPath, { replace: true });
+        }
+    };
+
+    // 확장자에서 언어 추출 함수
+    const getLanguageFromExtension = (extension) => {
+        const extensionMap = {
+            'py': 'python',
+            'java': 'java',
+            'cpp': 'cpp',
+            'c': 'c',
+            'js': 'javascript'
+        };
+        return extensionMap[extension] || 'python';
+    };
+
+    // URL에서 언어 설정
+    const handleLanguageFromURL = (langParam) => {
+        const language = supportedLanguages.find(lang =>
+            lang.id === langParam ||
+            lang.name.toLowerCase() === langParam.toLowerCase()
+        );
+
+        if (language && language.id !== selectedLanguage) {
+            setSelectedLanguage(language.id);
+
+            if (!isLoggedIn) {
+                // 비회원일 때는 템플릿 코드로 변경
+                setCode(language.template);
+                const baseName = fileName.split('.')[0];
+                const newFileName = `${baseName}${language.extension}`;
+                setFileName(newFileName);
+            }
+        }
+    };
+
+    // URL에서 언어와 파일 설정
+    const handleLanguageAndFileFromURL = (langParam, fileParam) => {
+        // 언어 설정
+        const language = supportedLanguages.find(lang =>
+            lang.id === langParam ||
+            lang.name.toLowerCase() === langParam.toLowerCase()
+        );
+
+        if (language) {
+            setSelectedLanguage(language.id);
+        }
+
+        // 파일 설정
+        if (isLoggedIn) {
+            const file = savedFiles.find(f => f.name === fileParam);
+            if (file) {
+                setFileName(file.name);
+                setCode(file.code);
+                setActiveFile(file.name);
+                setIsSaved(true);
+            } else {
+                // 파일이 없으면 새 파일 생성
+                const newFile = {
+                    name: fileParam,
+                    code: language ? language.template : '# 여기에 코드를 입력하세요'
+                };
+                setSavedFiles(prev => [...prev, newFile]);
+                setFileName(fileParam);
+                setCode(newFile.code);
+                setActiveFile(fileParam);
+                setIsSaved(true);
+            }
+        }
+    };
+
+    // URL에서 파라미터 처리
+    useEffect(() => {
+        const { param, language, filename } = params;
+
+        // /ide/:language/:filename 형태 (회원 모드)
+        if (language && filename) {
+            if (isLoggedIn) {
+                handleLanguageAndFileFromURL(language, filename);
+            } else {
+                // 비회원이 회원 URL에 접속한 경우 언어만 적용
+                handleLanguageFromURL(language);
+            }
+        }
+        // /ide/:param 형태 (비회원 모드 또는 단일 파라미터)
+        else if (param) {
+            if (param.includes('.')) {
+                // 파일명인 경우 (확장자 포함)
+                if (isLoggedIn) {
+                    const fileExtension = param.split('.').pop().toLowerCase();
+                    const languageFromFile = getLanguageFromExtension(fileExtension);
+                    handleLanguageAndFileFromURL(languageFromFile, param);
+                } else {
+                    // 비회원이 파일 URL에 접속한 경우 언어만 적용
+                    const fileExtension = param.split('.').pop().toLowerCase();
+                    const languageFromFile = getLanguageFromExtension(fileExtension);
+                    if (languageFromFile) {
+                        handleLanguageFromURL(languageFromFile);
+                    }
+                }
+            } else {
+                // 언어명인 경우
+                handleLanguageFromURL(param);
+            }
+        }
+        // /ide 기본 경로
+        else {
+            // 기본값으로 URL 업데이트
+            if (isLoggedIn && activeFile) {
+                updateURL(selectedLanguage, activeFile);
+            } else {
+                updateURL(selectedLanguage);
+            }
+        }
+    }, [params, isLoggedIn, savedFiles]);
 
     // 다크 모드 상태 - document.body의 클래스를 감지
     const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -191,6 +322,28 @@ const IDE = () => {
     // Monaco 에디터 참조 추가
     const editorRef = useRef(null);
 
+    // 언어 변경 시 URL 업데이트
+    useEffect(() => {
+        if (isLoggedIn && activeFile) {
+            // 회원: 언어/파일명 형태
+            updateURL(selectedLanguage, activeFile);
+        } else if (!isLoggedIn) {
+            // 비회원: 언어만
+            updateURL(selectedLanguage);
+        }
+    }, [selectedLanguage, activeFile, isLoggedIn]);
+
+    // 로그인 상태 변경 시 URL 업데이트
+    useEffect(() => {
+        if (isLoggedIn && activeFile) {
+            // 로그인 시: 언어/파일명 형태로 변경
+            updateURL(selectedLanguage, activeFile);
+        } else if (!isLoggedIn) {
+            // 로그아웃 시: 언어만 남김
+            updateURL(selectedLanguage);
+        }
+    }, [isLoggedIn]);
+
     // 언어 메뉴 토글 함수
     const toggleLanguageMenu = () => {
         setIsLanguageMenuOpen(!isLanguageMenuOpen);
@@ -230,6 +383,20 @@ const IDE = () => {
             setCode(newLanguage.template);
             setIsSaved(false);
             setIsLanguageMenuOpen(false);
+
+            // 회원의 경우 새 파일명으로 activeFile도 업데이트
+            if (isLoggedIn) {
+                setActiveFile(newFileName);
+                // 새 파일을 savedFiles에 추가
+                const newFile = { name: newFileName, code: newLanguage.template };
+                setSavedFiles(prev => {
+                    const exists = prev.find(f => f.name === newFileName);
+                    if (!exists) {
+                        return [...prev, newFile];
+                    }
+                    return prev;
+                });
+            }
         }
     };
 
@@ -363,25 +530,6 @@ const IDE = () => {
         setIsSaved(false);
     };
 
-    // 로그아웃 함수
-    const handleLogout = () => {
-        // 확인 메시지
-        const confirmLogout = window.confirm('로그아웃 하시겠습니까?');
-        if (!confirmLogout) return;
-
-        // 로컬 스토리지에서 사용자 정보 제거
-        localStorage.removeItem('token');
-        localStorage.removeItem('username');
-        localStorage.removeItem('userId');
-        localStorage.removeItem('role');
-
-        setIsLoggedIn(false);
-        setUsername('');
-
-        // 로그아웃 메시지
-        toast("로그아웃 되었습니다.");
-    };
-
     // 파일 목록 불러오기
     const fetchFileList = async () => {
         // 비회원이면 API 호출 안함
@@ -433,8 +581,8 @@ const IDE = () => {
 
         // 확장자에 맞게 언어 업데이트
         const fileExtension = newFileName.split('.').pop().toLowerCase();
-        const languageFromExtension = Object.entries(getLanguageMap()).find(([_, ext]) => ext === fileExtension)?.[0];
-        if (languageFromExtension) {
+        const languageFromExtension = getLanguageFromExtension(fileExtension);
+        if (languageFromExtension !== selectedLanguage) {
             setSelectedLanguage(languageFromExtension);
         }
     };
@@ -566,7 +714,7 @@ const IDE = () => {
 
             // 파일 확장자에 맞는 언어 설정
             const langId = getLanguageFromFileName(selectedFile.name);
-            if (langId) {
+            if (langId && langId !== selectedLanguage) {
                 setSelectedLanguage(langId);
             }
         }
@@ -645,7 +793,7 @@ const IDE = () => {
                         </div>
                     </>
                 ) : (
-                    // 비회원용 사이드바 - 로그인/회원가입 버튼 (수정된 부분)
+                    // 비회원용 사이드바 - 로그인/회원가입 버튼
                     <div className="auth-sidebar">
                         <div className="auth-header">
                             <div className="auth-title">
@@ -716,20 +864,11 @@ const IDE = () => {
                     </div>
 
                     <div className="header-right">
-                        {/* 로그인 상태 표시 (토글 버튼 대신) */}
+                        {/* 로그인 상태 표시 (로그아웃 버튼 없음) */}
                         <div className="login-status-container">
                             <span className={`login-status ${isLoggedIn ? 'logged-in' : 'guest'}`}>
                                 {isLoggedIn ? `${username} 님` : '비회원 모드'}
                             </span>
-                            {isLoggedIn && (
-                                <button
-                                    className="logout-button"
-                                    onClick={handleLogout}
-                                    title="로그아웃"
-                                >
-                                    로그아웃
-                                </button>
-                            )}
                         </div>
 
                         {isLoggedIn ? (
