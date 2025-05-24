@@ -20,7 +20,6 @@
 }
 
 /* 다크 모드 스타일 */
-/* 다크 모드 스타일 */
 body.dark-mode {
     --primary: #7e57c2;
     --primary-hover: #5e35b1;
@@ -235,10 +234,6 @@ body.dark-mode .sidebar-toggle-button:hover {
     box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.1); /* 미세한 그림자 */
 }
 
-/* 호버 시 각 선에 다른 애니메이션 */
-
-
-
 /* 사이드바 토글 버튼 스타일 제거 */
 .sidebar-toggle {
     display: none;
@@ -280,6 +275,7 @@ body.dark-mode .sidebar-toggle-button:hover {
     background-color: var(--bg);
     height: 100vh; /* 전체 높이로 변경 */
     min-width: 0; /* 추가: 콘텐츠가 줄어들 수 있도록 */
+    padding-top: 76px; /* 메인 Header.css의 높이만큼 패딩 추가 */
 }
 
 /* 사이드바가 축소되었을 때 메인 콘텐츠가 왼쪽으로 확장되도록 함 */
@@ -490,7 +486,7 @@ body.dark-mode .signup-button.auth-button:hover {
     z-index: 50;
     height: var(--header-height);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    margin-top: var(--header-height); /* 헤더 높이만큼 아래로 */
+    /* margin-top 제거 */
 }
 
 .header-left {
@@ -567,10 +563,10 @@ body.dark-mode .save-button:hover {
     color: var(--success);
 }
 
-/* 새로운 레이아웃 스타일 */
+/* 새로운 레이아웃 스타일 - 보수적 높이 계산 */
 .content-layout {
     display: flex;
-    height: calc(100vh - var(--header-height) * 2); /* 헤더 2개 높이 제외 */
+    height: calc(100vh - 150px); /* 여유 공간 확보 */
     position: relative;
 }
 
