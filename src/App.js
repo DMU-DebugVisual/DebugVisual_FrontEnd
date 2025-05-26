@@ -17,6 +17,8 @@ import Shared from "./components/mypage/Shared";
 import MyProject from "./components/mypage/MyProject";
 import MyCommunity from "./components/mypage/MyCommunity";
 import ScrollToTop from "./components/common/ScrollToTop";
+import CommunityWrite from "./components/community/CommunityWrite";
+
 
 function App() {
     const [isDark, setIsDark] = useState(false);
@@ -97,16 +99,16 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<SignUp />} />
 
-                {/* IDE 라우팅 설정 */}
                 <Route path="/ide" element={<IDE />} />
                 <Route path="/ide/:param" element={<IDE />} />
                 <Route path="/ide/:language/:filename" element={<IDE />} />
 
                 <Route path="/community" element={<Community />} />
+                <Route path="/community/write" element={<CommunityWrite />} />  {/* ✅ 추가 */}
+
                 <Route path="/broadcast" element={<Codecast />} />
                 <Route path="/startbroadcast" element={<StartCodecast />} />
 
-                {/* MyPage 라우팅 설정 */}
                 <Route path="/mypage" element={<MyPageLayout nickname={nickname} />}>
                     <Route index element={<Mypage nickname={nickname} />} />
                     <Route path="project" element={<MyProject />} />
@@ -115,6 +117,7 @@ function App() {
                     <Route path="shared" element={<Shared />} />
                 </Route>
             </Routes>
+
             <Footer />
         </HashRouter>
     );

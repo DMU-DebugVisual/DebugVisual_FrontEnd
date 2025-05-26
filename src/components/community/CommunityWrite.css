@@ -1,0 +1,42 @@
+.write-container {
+    max-width: 1000px;
+    width: 100%;
+    margin: 100px auto 120px auto; /* ✅ 위아래 여백 + 가운데 정렬 */
+    padding: 2rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+
+.write-form label {
+    display: block;
+    margin-bottom: 1.5rem;
+    font-weight: bold;
+}
+
+.write-form input,
+.write-form textarea {
+    width: 100%;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-family: inherit;
+}
+
+.submit-button {
+    background-color: #845ef7;
+    color: white;
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+.submit-button:hover {
+    background-color: #6f4fd5;
+}

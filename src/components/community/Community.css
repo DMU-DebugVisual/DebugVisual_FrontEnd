@@ -6,7 +6,7 @@ body {
 }
 
 .community-container {
-    max-width: 900px;
+    max-width: 1400px; /* 또는 100%, 1000px 등 */
     margin: 0 auto;
     padding: 80px 20px;
 }
@@ -33,6 +33,7 @@ body {
     font-size: 1.25rem;           /* 글씨 키움 */
     cursor: pointer;
     transition: background-color 0.3s;
+
 }
 
 
@@ -59,7 +60,7 @@ body {
     padding: 1rem 2rem 3rem 2rem; /* 위 여백을 1.5rem으로 줄임 */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
     margin-bottom: 2rem;
-    width: 97.5%;
+    width: 100%;
     min-height: 600px;
 }
 
@@ -90,7 +91,7 @@ body {
 }
 
 .popular-post-card h3 {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: bold;
     margin: 0 0 0.5rem 0;
 }
