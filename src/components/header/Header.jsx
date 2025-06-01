@@ -3,7 +3,7 @@ import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import { FaMoon, FaSun, FaUserCircle } from "react-icons/fa";
 import "./Header.css";
 
-const Header = ({ isDark, setIsDark, isLoggedIn, nickname }) => {
+const Header = ({ isDark, setIsDark, isLoggedIn, nickname, onLoginModalOpen }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const navigate = useNavigate();
     const location = useLocation(); // ✅ 현재 경로 확인
@@ -19,7 +19,6 @@ const Header = ({ isDark, setIsDark, isLoggedIn, nickname }) => {
 
         window.location.reload(); // 상태 강제 반영
     };
-
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -67,13 +66,9 @@ const Header = ({ isDark, setIsDark, isLoggedIn, nickname }) => {
                     </div>
                 ) : (
                     <>
-                        <Link
-                            to="/login"
-                            state={{ from: location.pathname }} // ✅ 현재 경로 전달
-                            className="btn btn-outline"
-                        >
+                        <button onClick={onLoginModalOpen} className="btn btn-outline">
                             로그인
-                        </Link>
+                        </button>
                         <Link to="/signup" className="btn btn-filled">
                             회원가입
                         </Link>

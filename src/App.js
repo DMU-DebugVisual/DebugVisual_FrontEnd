@@ -1,5 +1,5 @@
-import { HashRouter, Route, Routes } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { HashRouter, Routes, Route, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 import Header from "./components/header/Header";
 import Footer from "./components/footer/Footer";
@@ -19,65 +19,30 @@ import MyCommunity from "./components/mypage/MyCommunity";
 import ScrollToTop from "./components/common/ScrollToTop";
 import CommunityWrite from "./components/community/CommunityWrite";
 
-
-function App() {
+function AppContent() {
+    const location = useLocation();
     const [isDark, setIsDark] = useState(false);
-
-    // 로그인 상태 관리 추가
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [nickname, setNickname] = useState('');
+    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
-    // 로그인 상태 확인
+    const isSignupPage = location.pathname === "/signup";
+
     useEffect(() => {
         const token = localStorage.getItem('token');
         const storedUsername = localStorage.getItem('username');
-
-        console.log('🔍 App.js 로그인 상태 확인:', { token: !!token, username: storedUsername });
-
         if (token && storedUsername) {
             setIsLoggedIn(true);
             setNickname(storedUsername);
-            console.log('✅ App.js에서 로그인 상태로 설정됨');
         } else {
             setIsLoggedIn(false);
             setNickname('');
-            console.log('❌ App.js에서 비로그인 상태로 설정됨');
         }
     }, []);
-
-    // 로그인 상태 변경을 감지하기 위한 이벤트 리스너 (선택사항)
-    useEffect(() => {
-        const handleStorageChange = () => {
-            const token = localStorage.getItem('token');
-            const storedUsername = localStorage.getItem('username');
-
-            if (token && storedUsername) {
-                setIsLoggedIn(true);
-                setNickname(storedUsername);
-            } else {
-                setIsLoggedIn(false);
-                setNickname('');
-            }
-        };
-
-        // storage 이벤트 리스너 추가
-        window.addEventListener('storage', handleStorageChange);
-
-        // 클린업
-        return () => {
-            window.removeEventListener('storage', handleStorageChange);
-        };
-    }, []);
-
-    useEffect(() => {
-        document.body.classList.toggle("dark-mode", isDark);
-    }, [isDark]);
 
     useEffect(() => {
         const savedTheme = localStorage.getItem("theme");
-        if (savedTheme === "dark") {
-            setIsDark(true);
-        }
+        if (savedTheme === "dark") setIsDark(true);
     }, []);
 
     useEffect(() => {
@@ -86,29 +51,29 @@ function App() {
     }, [isDark]);
 
     return (
-        <HashRouter>
-            <Header
-                isDark={isDark}
-                setIsDark={setIsDark}
-                isLoggedIn={isLoggedIn}
-                nickname={nickname}
-            />
+        <>
+            {!isSignupPage && (
+                <Header
+                    isDark={isDark}
+                    setIsDark={setIsDark}
+                    isLoggedIn={isLoggedIn}
+                    nickname={nickname}
+                    onLoginModalOpen={() => setIsLoginModalOpen(true)}
+                />
+            )}
+
             <ScrollToTop />
+
             <Routes>
                 <Route path="/" element={<Main />} />
-                <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<SignUp />} />
-
                 <Route path="/ide" element={<IDE />} />
                 <Route path="/ide/:param" element={<IDE />} />
                 <Route path="/ide/:language/:filename" element={<IDE />} />
-
                 <Route path="/community" element={<Community />} />
-                <Route path="/community/write" element={<CommunityWrite />} />  {/* ✅ 추가 */}
-
+                <Route path="/community/write" element={<CommunityWrite />} />
                 <Route path="/broadcast" element={<Codecast />} />
                 <Route path="/startbroadcast" element={<StartCodecast />} />
-
                 <Route path="/mypage" element={<MyPageLayout nickname={nickname} />}>
                     <Route index element={<Mypage nickname={nickname} />} />
                     <Route path="project" element={<MyProject />} />
@@ -118,9 +83,25 @@ function App() {
                 </Route>
             </Routes>
 
-            <Footer />
-        </HashRouter>
+            {!isSignupPage && <Footer />}
+
+            {isLoginModalOpen && (
+                <Login
+                    onClose={() => setIsLoginModalOpen(false)}
+                    onLoginSuccess={() => {
+                        setIsLoggedIn(true);
+                        setNickname(localStorage.getItem('username') || '');
+                    }}
+                />
+            )}
+        </>
     );
 }
 
-export default App;
+export default function App() {
+    return (
+        <HashRouter>
+            <AppContent />
+        </HashRouter>
+    );
+}
