@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import config from '../../config';
-import './Login.css';
 import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
 
-
-function Login() {
+function Login({ onClose, onLoginSuccess }) {
     const [formData, setFormData] = useState({
         username: '',
         password: '',
@@ -32,17 +29,13 @@ function Login() {
 
             const { token, name, role, userId } = response.data;
 
-            console.log('✅ 로그인 성공:', response.data);
-
-            // 사용자 정보 저장
             localStorage.setItem('token', token);
-            localStorage.setItem('username', name);  // ✅ 이름 저장
+            localStorage.setItem('username', name);
             localStorage.setItem('userId', userId);
             localStorage.setItem('role', role);
 
-            // 메인 페이지 이동 및 상태 반영 위해 새로고침
-            navigate('/', { replace: true });
-            window.location.reload();
+            onLoginSuccess();
+            onClose();
         } catch (error) {
             console.error('❌ 로그인 실패:', error.response?.data || error.message);
             alert(error.response?.data?.message || '로그인에 실패했습니다.');
@@ -50,11 +43,10 @@ function Login() {
     };
 
     return (
-        <div className="login-container">
-            <div className="login-box">
-                <h1 className="login-title">로그인</h1>
-                <p className="login-subtitle">계정에 로그인하여 CodeViz를 시작하세요</p>
-
+        <div className="modal-overlay">
+            <div className="modal-content">
+                <button className="modal-close" onClick={onClose}>×</button>
+                <h1 className="login-title">Zivorp</h1>
                 <form className="login-form" onSubmit={handleSubmit}>
                     <label htmlFor="username">아이디</label>
                     <input
@@ -66,9 +58,7 @@ function Login() {
                         required
                     />
 
-                    <div className="password-container">
-                        <label htmlFor="password">비밀번호</label>
-                    </div>
+                    <label htmlFor="password">비밀번호</label>
                     <input
                         id="password"
                         type="password"
@@ -77,8 +67,9 @@ function Login() {
                         onChange={handleChange}
                         required
                     />
+
                     <div className="forgot-password-link">
-                        <a href="#" onClick={(e) => e.preventDefault()}>비밀번호 찾기</a>
+                        <a href="/forgot-password">비밀번호 찾기</a>
                     </div>
 
                     <div className="remember-me">
@@ -96,7 +87,16 @@ function Login() {
                 </div>
 
                 <p className="signup-link">
-                    계정이 없으신가요? <Link to="/signup">회원가입</Link>
+                    계정이 없으신가요?{' '}
+                    <span
+                        className="signup-action"
+                        onClick={() => {
+                            onClose();
+                            navigate('/signup');
+                        }}
+                    >
+                        회원가입
+                     </span>
                 </p>
 
             </div>

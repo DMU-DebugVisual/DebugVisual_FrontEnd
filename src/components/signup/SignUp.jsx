@@ -48,7 +48,7 @@ function SignUp() {
         <div className="login-container">
             <div className="login-box">
                 <h1 className="login-title">회원가입</h1>
-                <p className="login-subtitle">CodeViz 계정을 만들고 코드 시각화를 시작하세요</p>
+                <p className="login-subtitle">계정을 만들고 코드 시각화를 시작하세요</p>
 
                 <form className="login-form" onSubmit={handleSubmit}>
                     <label htmlFor="username">아이디 *</label>
@@ -70,7 +70,6 @@ function SignUp() {
                         onChange={handleChange}
                         required
                     />
-                    <small>인증번호를 받을 이메일 주소를 입력해주세요.</small>
 
                     <label htmlFor="password">비밀번호 *</label>
                     <input
@@ -80,7 +79,7 @@ function SignUp() {
                         onChange={handleChange}
                         required
                     />
-                    <small>비밀번호는 8자 이상이어야 합니다.</small>
+                    <small className="form-guide">비밀번호는 8자 이상이어야 합니다.</small>
 
                     <label htmlFor="confirmPassword">비밀번호 확인 *</label>
                     <input

@@ -1,16 +1,23 @@
 import React, { useState } from "react";
-import { NavLink, Link, useNavigate } from "react-router-dom";
-import { FaMoon, FaSun, FaUserCircle } from "react-icons/fa"; // ✅ FaUserCircle 가져옴
+import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
+import { FaMoon, FaSun, FaUserCircle } from "react-icons/fa";
 import "./Header.css";
 
-const Header = ({ isDark, setIsDark, isLoggedIn, nickname }) => {
+const Header = ({ isDark, setIsDark, isLoggedIn, nickname, onLoginModalOpen }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation(); // ✅ 현재 경로 확인
 
     const handleLogout = () => {
         localStorage.clear();
-        navigate("/");
-        window.location.reload();
+
+        if (location.pathname.startsWith("/mypage")) {
+            navigate("/"); // ✅ 마이페이지일 때만 홈으로 이동
+        } else {
+            navigate(location.pathname); // 그대로 현재 페이지 유지
+        }
+
+        window.location.reload(); // 상태 강제 반영
     };
 
     const toggleMenu = () => {
@@ -47,10 +54,7 @@ const Header = ({ isDark, setIsDark, isLoggedIn, nickname }) => {
                 {isLoggedIn ? (
                     <div className="user-menu-container">
                         <span className="user-nickname" onClick={toggleMenu}>
-                            <FaUserCircle
-                                size={24}
-                                className={"user-icon"}
-                            />
+                            <FaUserCircle size={24} className="user-icon" />
                             {nickname} 님 ▾
                         </span>
                         {isMenuOpen && (
@@ -62,8 +66,12 @@ const Header = ({ isDark, setIsDark, isLoggedIn, nickname }) => {
                     </div>
                 ) : (
                     <>
-                        <Link to="/login" className="btn btn-outline">로그인</Link>
-                        <Link to="/signup" className="btn btn-filled">회원가입</Link>
+                        <button onClick={onLoginModalOpen} className="btn btn-outline">
+                            로그인
+                        </button>
+                        <Link to="/signup" className="btn btn-filled">
+                            회원가입
+                        </Link>
                     </>
                 )}
             </div>

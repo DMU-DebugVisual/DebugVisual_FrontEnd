@@ -1,17 +1,18 @@
-/* Header 전체 스타일 */
 .custom-header {
-    width: 100%;
-    padding: 12px 24px;
-    background-color: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', sans-serif;
     position: fixed;
+    top: 0;
+    width: 100%;
+    height: 64px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px;
+    background-color: white;
     z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
+
+
 
 /* 왼쪽: 로고 */
 .header-left {
@@ -33,14 +34,21 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    height: 100%;         /* 세로 정렬 일관성 */
 }
+
 
 /* 가운데: 네비게이션 */
 .header-nav {
-    justify-self: center;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     gap: 20px;
+    align-items: center;
+    height: 100%;
 }
+
 
 /* NavLink 기본 상태 */
 .header-nav a {
@@ -65,41 +73,54 @@
 }
 
 /* 로그인/회원가입 버튼 */
+/* 공통 버튼 스타일 */
 .btn {
-    padding: 6px 12px;
-    font-size: 14px;
-    border-radius: 4px;
+    display: inline-block;
+    padding: 0.5rem 1.2rem;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 6px;
     text-decoration: none;
     transition: all 0.2s ease;
+    cursor: pointer;
 }
 
+/* 테두리형 (로그인) */
 .btn-outline {
-    border: 1px solid #6a0dad;
-    color: #6a0dad;
+    color: #6a1b9a;
+    border: 1px solid #6a1b9a;
     background-color: transparent;
 }
 
 .btn-outline:hover {
-    background-color: #f5f0ff;
+    background-color: #f3e5f5;
 }
 
+/* 채움형 (회원가입) */
 .btn-filled {
-    background-color: #6a0dad;
+    background-color: #6a1b9a;
     color: white;
-    border: none;
+    border: 1px solid #6a1b9a;
 }
 
 .btn-filled:hover {
-    background-color: #5a0099;
+    background-color: #8e24aa;
+    border-color: #8e24aa;
+}
+
+
+
+.user-menu-container {
+    position: relative; /* 드롭다운 위치 기준 */
 }
 
 .user-nickname {
-    display: flex;
-    align-items: center;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 1.05rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
 }
+
 
 .user-icon {
     margin-right: 8px;
@@ -182,46 +203,45 @@
 
 .user-dropdown {
     position: absolute;
-    right: 30px;
+    right: 0;
     top: 100%;
+    margin-top: 8px;
     background-color: white;
-    border: 1px solid #ddd;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border: 1px solid #ccc;
     border-radius: 6px;
-    z-index: 1001;
-    min-width: 100px;
-    width: 120px;             /* ✅ 자동 너비로 조정 */
-    padding: 4px 0;
+    min-width: 120px; /* ✅ 너비 고정 */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* 버튼 너비가 줄었을 때 가운데 정렬 효과 보강 */
 }
 
 .user-dropdown button {
-    padding: 9px 1px;
+    padding: 0.5rem 0.75rem;
+    text-align: center;
     background: none;
     border: none;
-    font-size: 14px;
-    color: #333;
+    font-size: 1rem;
     cursor: pointer;
-    text-align: center;
-    width: 100%;             /* ✅ 여기 유지해도 드롭다운 너비만 좁히면 괜찮음 */
-    white-space: nowrap;     /* ✅ 줄바꿈 방지 */
-    font-weight: 600;
+    transition: background-color 0.2s ease;
 }
 
-
+/* ✅ Hover 효과 추가 */
 .user-dropdown button:hover {
-    background-color: #f5f0ff;
+    background-color: #f5f5f5;
 }
 
+/* 🌙 다크모드 대응 */
 .dark-mode .user-dropdown {
     background-color: #2a2a2a;
     border-color: #444;
 }
 
 .dark-mode .user-dropdown button {
-    color: #ccc;
-    font-weight: 600;
+    color: #f0f0f0;
 }
 
 .dark-mode .user-dropdown button:hover {
-    background-color: #333;
+    background-color: #3a3a3a;
 }

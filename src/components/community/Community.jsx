@@ -1,7 +1,10 @@
 import React from "react";
+import { useNavigate } from "react-router-dom"; // ✅ navigate import 추가
 import "./Community.css";
 
 export default function Community() {
+    const navigate = useNavigate(); // ✅ navigate 선언
+
     const posts = [
         {
             title: "버블 정렬 시각화 프로젝트 공유합니다",
@@ -11,7 +14,7 @@ export default function Community() {
             date: "2023. 5. 15",
             likes: 24,
             comments: 8,
-            thumbnail: "https://via.placeholder.com/300x180"
+            thumbnail: "https://unsplash.com/photos/KrYbarbAx5s/download?ixid=M3wxMjA3fDB8MXxzZWFyY2h8MTZ8fCVFQiU5NCU5NCVFQiVCMiU4NCVFQSVCOSU4NXxrb3wwfHx8fDE3NDgyNDc1NDh8MA&force=true"
         },
         {
             title: "그래프 탐색 알고리즘 비교: BFS vs DFS",
@@ -21,7 +24,7 @@ export default function Community() {
             date: "2023. 5. 17",
             likes: 32,
             comments: 12,
-            thumbnail: "https://via.placeholder.com/300x180"
+            thumbnail: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=300&h=180"
         },
         {
             title: "동적 프로그래밍 문제 해결 가이드",
@@ -31,15 +34,21 @@ export default function Community() {
             date: "2023. 5. 18",
             likes: 40,
             comments: 15,
-            thumbnail: "https://via.placeholder.com/300x180"
+            thumbnail:  "https://unsplash.com/photos/ZS67i1HLllo/download?ixid=M3wxMjA3fDB8MXxzZWFyY2h8MTV8fCVFQiU4RiU5OSVFQyVBMCU4MSUyMCVFRCU5NCU4NCVFQiVBMSU5QyVFQSVCNyVCOCVFQiU5RSU5OCVFQiVCMCU4RCUyMCVFRCU5NSVCNCVFQSVCMiVCMCUyMCVFQSVCMCU4MCVFQyU5RCVCNCVFQiU5MyU5Q3xrb3wwfHx8fDE3NDgyNDc3NjB8MA&force=true"
         }
     ];
+
 
     return (
         <div className="community-container">
             <div className="community-header">
                 <h1>커뮤니티</h1>
-                <button className="new-post-button">+  새 게시물</button>
+                <button
+                    className="new-post-button"
+                    onClick={() => navigate("/community/write")}
+                >
+                    + 새 게시물
+                </button>
             </div>
 
             <div className="popular-posts-wrapper">
@@ -86,7 +95,7 @@ export default function Community() {
                         <p>{post.summary}</p>
                         <div className="post-footer">
                             <div className="author-info">
-                                <img src="https://via.placeholder.com/32" alt="작성자" />
+                                <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="작성자" width="32" height="32" />
                                 <div>
                                     <p>{post.author}</p>
                                     <p className="date">{post.date}</p>
