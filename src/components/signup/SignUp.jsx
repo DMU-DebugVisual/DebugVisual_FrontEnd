@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import config from '../../config';
 import '../login/Login.css';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import googleIcon from '../../assets/google.png';
+import githubIcon from '../../assets/github.png';
 
 function SignUp() {
     const [formData, setFormData] = useState({
@@ -11,11 +14,11 @@ function SignUp() {
         name: '',
     });
 
+    const [showPassword, setShowPassword] = useState(false);
+
     const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.id]: e.target.value,
-        });
+        const { id, value } = e.target;
+        setFormData(prev => ({ ...prev, [id]: value }));
     };
 
     const handleSubmit = async (e) => {
@@ -35,6 +38,8 @@ function SignUp() {
             alert(error.response?.data?.message || '회원가입에 실패했습니다.');
         }
     };
+
+    const isPasswordValid = formData.password.length >= 8;
 
     return (
         <div className="signup-container">
@@ -63,15 +68,36 @@ function SignUp() {
                 />
 
                 <label htmlFor="password">비밀번호 *</label>
-                <input
-                    id="password"
-                    type="password"
-                    placeholder="********"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                />
-                <small className="form-guide">비밀번호는 8자 이상이어야 합니다.</small>
+                <div className="password-input-wrapper">
+                    <input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="********"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                    />
+                    <button
+                        type="button"
+                        className="toggle-password-btn"
+                        onClick={() => setShowPassword(prev => !prev)}
+                        aria-label="비밀번호 보기 토글"
+                    >
+                        {showPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                </div>
+
+                {formData.password.length === 0 ? (
+                    <div className="password-guide neutral">
+                        비밀번호는 8자 이상이어야 합니다.
+                    </div>
+                ) : (
+                    <div className={`password-guide ${isPasswordValid ? 'valid' : 'invalid'}`}>
+                        {isPasswordValid
+                            ? '✔️ 비밀번호는 8자 이상이어야 합니다.'
+                            : '❌ 비밀번호는 8자 이상이어야 합니다.'}
+                    </div>
+                )}
 
                 <label htmlFor="name">이름 *</label>
                 <input
@@ -93,14 +119,24 @@ function SignUp() {
                     </div>
                 </div>
 
-                <button type="submit" className="signup-button">가입하기</button>
+                <button
+                    type="submit"
+                    className="signup-button"
+                    disabled={!isPasswordValid}
+                >
+                    가입하기
+                </button>
             </form>
 
             <div className="divider">간편 회원가입</div>
 
             <div className="social-buttons">
-                <button disabled>Google</button>
-                <button disabled>Github</button>
+                <button type="button" className="social-button google">
+                    <img src={googleIcon} alt="Google 로그인" />
+                </button>
+                <button type="button" className="social-button github">
+                    <img src={githubIcon} alt="Github 로그인" />
+                </button>
             </div>
         </div>
     );

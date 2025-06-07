@@ -99,6 +99,7 @@ export default function Community() {
     ];
 
     return (
+        <div className="community-wrapper">
         <div className="community-page">
             <aside className="sidebar-left">
                 <h3>함께 공부해요.</h3>
@@ -246,6 +247,7 @@ export default function Community() {
                     </ul>
                 </div>
             </aside>
+        </div>
         </div>
     );
 }

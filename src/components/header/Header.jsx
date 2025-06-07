@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import { FaMoon, FaSun, FaUserCircle } from "react-icons/fa";
 import "./Header.css";
+import logoImage from '../../assets/logo3.png'; // 경로는 필요에 따라 조정
+
 
 const Header = ({ isDark, setIsDark, isLoggedIn, nickname, onLoginModalOpen }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -32,8 +34,11 @@ const Header = ({ isDark, setIsDark, isLoggedIn, nickname, onLoginModalOpen }) =
     return (
         <header className="custom-header">
             <div className="header-left">
-                <Link to="/" className="site-name">Zivorp</Link>
+                <Link to="/" className="site-logo-link">
+                    <img src={logoImage} alt="Zivorp Logo" className="site-logo" />
+                </Link>
             </div>
+
 
             <nav className="header-nav">
                 <NavLink to="/" end>홈</NavLink>

@@ -32,7 +32,7 @@
     font-size: 1.75rem;
     font-weight: bold;
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
 }
 
 .login-form {
@@ -115,17 +115,41 @@
     display: flex;
     justify-content: center;
     gap: 1rem;
+    margin-top: 1rem;
 }
 
-.social-buttons button {
-    flex: 1;
-    padding: 0.75rem;
-    font-size: 0.95rem;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    background-color: #f2f2f2;
-    cursor: not-allowed;
+.social-button {
+    width: 24px;
+    height: 48px;
+    padding: 0;
+    border: none;
+    border-radius: 12px;
+    background-color: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
 }
+
+.social-button:hover {
+    transform: translateY(-2px);
+}
+
+.social-button img {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.social-button.github {
+    background-color: #f5f5f5; /* 라이트 모드용 */
+}
+
+
 .dark-mode .modal-content {
     background-color: #2a2a2a;
     color: #f0f0f0;
@@ -182,7 +206,15 @@
     border: 1px solid #666;
     color: #ccc;
 }
-/* 회원가입 스타일 (간격, 정렬, 체크박스 개선) */
+
+
+/* 회원가입 스타일 */
+.login-logo {
+    width: 150px;
+    height: auto;
+    display: block;
+    margin: 0 auto 0.5rem;
+}
 
 .signup-container {
     display: flex;
@@ -191,7 +223,7 @@
     justify-content: center;
     padding: 2rem 1rem;
     min-height: 100vh;
-    background-color: #f9f9f9;
+    background-color: #ffffff;
 }
 
 .signup-title {
@@ -317,7 +349,6 @@
     cursor: not-allowed;
 }
 
-/* 다크모드 */
 .dark-mode .signup-container {
     background-color: #1e1e1e;
     color: #f0f0f0;
@@ -356,3 +387,35 @@
     color: #ccc;
     font-size: 0.75rem;
 }
+
+.password-guide {
+    font-size: 0.9rem;
+}
+
+.password-guide.neutral {
+    color: #999;
+}
+
+.password-guide.valid {
+    color: green;
+}
+
+.password-guide.invalid {
+    color: red;
+}
+.password-input-wrapper {
+    position: relative;
+}
+
+.toggle-password-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #999;
+    font-size: 1.2rem;
+}
+

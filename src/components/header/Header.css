@@ -12,14 +12,18 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
+.site-logo {
+    height: 64px;        /* 고정 높이 */
+    object-fit: contain; /* 비율 유지하며 꽉 채움 */
+    background-color: transparent !important; /* 혹시라도 배경색이 있다면 제거 */
+    padding: 2px 0;
+}
 
-
-/* 왼쪽: 로고 */
-.header-left {
-    justify-self: start;
+.site-logo-link {
     display: flex;
     align-items: center;
 }
+
 
 .site-name {
     font-size: 20px;

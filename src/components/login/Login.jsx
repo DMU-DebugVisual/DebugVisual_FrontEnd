@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import config from '../../config';
 import { useNavigate } from 'react-router-dom';
+import logoImage from '../../assets/logo3.png';
+import googleIcon from '../../assets/google.png';
+import githubIcon from '../../assets/github.png';
 
 function Login({ onClose, onLoginSuccess }) {
     const [formData, setFormData] = useState({
@@ -12,10 +15,8 @@ function Login({ onClose, onLoginSuccess }) {
     const navigate = useNavigate();
 
     const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.id]: e.target.value,
-        });
+        const { id, value } = e.target;
+        setFormData(prev => ({ ...prev, [id]: value }));
     };
 
     const handleSubmit = async (e) => {
@@ -23,7 +24,6 @@ function Login({ onClose, onLoginSuccess }) {
 
         try {
             const response = await axios.post(`${config.API_BASE_URL}/api/users/login`, {
-
                 userId: formData.username,
                 password: formData.password,
             });
@@ -47,7 +47,9 @@ function Login({ onClose, onLoginSuccess }) {
         <div className="modal-overlay">
             <div className="modal-content">
                 <button className="modal-close" onClick={onClose}>×</button>
-                <h1 className="login-title">Zivorp</h1>
+                <div className="logo-wrapper">
+                    <img src={logoImage} alt="Zivorp Logo" className="login-logo" />
+                </div>
 
                 <form className="login-form" onSubmit={handleSubmit}>
                     <input
@@ -58,14 +60,18 @@ function Login({ onClose, onLoginSuccess }) {
                         onChange={handleChange}
                         required
                     />
-                    <input
-                        id="password"
-                        type="password"
-                        placeholder="비밀번호"
-                        value={formData.password}
-                        onChange={handleChange}
-                        required
-                    />
+
+                    <div className="password-input-wrapper">
+                        <input
+                            id="password"
+                            type="password"
+                            placeholder="비밀번호"
+                            value={formData.password}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+
                     <button type="submit">로그인</button>
                 </form>
 
@@ -79,8 +85,8 @@ function Login({ onClose, onLoginSuccess }) {
                             navigate('/signup');
                         }}
                     >
-            회원가입
-          </span>
+                        회원가입
+                    </span>
                     <span className="separator">|</span>
                     <a href="/forgot-password">아이디 찾기</a>
                 </div>
@@ -88,8 +94,12 @@ function Login({ onClose, onLoginSuccess }) {
                 <div className="divider">간편 로그인</div>
 
                 <div className="social-buttons">
-                    <button disabled>Google</button>
-                    <button disabled>Github</button>
+                    <button type="button" className="social-button google">
+                        <img src={googleIcon} alt="Google 로그인" />
+                    </button>
+                    <button type="button" className="social-button github">
+                        <img src={githubIcon} alt="Github 로그인" />
+                    </button>
                 </div>
             </div>
         </div>
