@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation, useParams } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
+import CodeVisualizer from './VisualizationModal';
+import VisualizationModal from './VisualizationModal'; // 새로 추가
 import './IDE.css';
 //npm install @monaco-editor/react
 
@@ -77,6 +79,20 @@ const applyResizeObserverFix = () => {
 
 const IDE = () => {
     // 컴포넌트 마운트 시 ResizeObserver 패치 적용
+
+    const [isVisualizationModalOpen, setIsVisualizationModalOpen] = useState(false);
+    const handleVisualizationClick = () => {
+        if (!code.trim()) {
+            alert('시각화할 코드를 먼저 작성해주세요.');
+            return;
+        }
+        setIsVisualizationModalOpen(true);
+    };
+    const handleVisualizationClose = () => {
+        setIsVisualizationModalOpen(false);
+    };
+
+
     useEffect(() => {
         applyResizeObserverFix();
 
@@ -621,7 +637,7 @@ const IDE = () => {
             // 현재 에디터의 값을 가져옴
             const currentCode = editorRef.current.getValue();
 
-            // API 요청 본문 생성 (성공한 형식과 동일하게)
+            // API 요청 본문 생성
             const requestBody = {
                 code: currentCode,
                 input: input,
@@ -648,9 +664,32 @@ const IDE = () => {
                 throw new Error(`API 요청 실패: ${response.status} ${response.statusText}`);
             }
 
-            // 응답이 텍스트 형식일 것으로 예상
-            const result = await response.text();
-            setOutput(result || "실행 결과가 없습니다.");
+            // 🔥 수정된 부분: JSON 응답 파싱 후 stdout 추출
+            const result = await response.json(); // text() 대신 json() 사용
+
+            console.log('API 응답 데이터:', result); // 디버깅용 로그
+
+            // stdout 값만 추출해서 출력
+            if (result && typeof result === 'object') {
+                // stdout, Stdout, STDOUT 등 다양한 케이스 대응
+                const stdout = result.stdout || result.Stdout || result.STDOUT ||
+                    result.output || result.Output || result.OUTPUT;
+
+                if (stdout !== undefined) {
+                    setOutput(stdout || "실행 완료 (출력 없음)");
+                } else {
+                    // stdout이 없는 경우 전체 응답을 보여주되, 에러 정보 우선
+                    const errorMsg = result.stderr || result.error || result.message;
+                    if (errorMsg) {
+                        setOutput(`오류: ${errorMsg}`);
+                    } else {
+                        setOutput("실행 완료되었지만 출력이 없습니다.");
+                    }
+                }
+            } else {
+                // 응답이 객체가 아닌 경우 (문자열 등)
+                setOutput(result || "실행 결과가 없습니다.");
+            }
 
         } catch (error) {
             console.error('코드 실행 중 오류:', error);
@@ -953,8 +992,9 @@ const IDE = () => {
                                 실행 코드
                             </button>
                             <button
-                                className={`visualization-button ${isVisualizationVisible ? 'active' : ''}`}
-                                onClick={toggleVisualization}
+                                className="visualization-button"
+                                onClick={handleVisualizationClick}
+                                title="코드 시각화 모달 열기"
                             >
                                 <span className="button-icon">📊</span>
                                 코드 시각화
@@ -980,30 +1020,17 @@ const IDE = () => {
                             </pre>
                         </div>
                     </div>
-
-                    {/* 시각화 패널 (코드 시각화 버튼 클릭 시 표시) */}
-                    {isVisualizationVisible && (
-                        <div className="visualization-sidebar">
-                            <div className="visualization-header">
-                                <h3>코드 시각화</h3>
-                                <button
-                                    className="close-button"
-                                    onClick={toggleVisualization}
-                                    title="시각화 패널 닫기"
-                                >
-                                    ✕
-                                </button>
-                            </div>
-                            <div className="visualization-content">
-                                <div className="visualization-placeholder">
-                                    <p>코드 실행 결과의 시각화가 이곳에 표시됩니다.</p>
-                                    <p>현재 개발 중인 기능입니다.</p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </div>
             </div>
+
+            {/* 🎬 시각화 모달 */}
+            <VisualizationModal
+                isOpen={isVisualizationModalOpen}
+                onClose={handleVisualizationClose}
+                code={code}
+                language={selectedLanguage}
+                input={input}
+            />
 
             {/* 토스트 메시지 컨테이너 */}
             <div id="toast-container"></div>

@@ -726,8 +726,8 @@ body.dark-mode .visualization-button.active {
     position: absolute;
     top: 0;
     right: 0;
-    bottom: 0;
-    width: 65%; /* 화면의 65% 차지 */
+    bottom: 20px;
+    width: 90%; /* 화면의 65% 차지 */
     background-color: var(--element);
     border-left: 1px solid var(--border);
     display: flex;
