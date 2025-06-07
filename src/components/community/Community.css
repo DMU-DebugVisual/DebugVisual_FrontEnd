@@ -114,6 +114,24 @@
 
 /* ✅ 기존 스타일 유지 */
 /* 전체 레이아웃 */
+.community-wrapper {
+    background-color: #ffffff;
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #ffffff;
+}
+
+html {
+    background-color: #ffffff;
+}
+
 .community-page {
     display: flex;
     gap: 24px;
@@ -561,3 +579,4 @@ span.tag {
     cursor: pointer;
     white-space: nowrap;
 }
+
