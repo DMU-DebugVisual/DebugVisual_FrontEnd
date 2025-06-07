@@ -1,4 +1,7 @@
 /* 🌙 다크모드 스타일 */
+.dark-mode .community-wrapper {
+    background-color: #1e1e1e;
+}
 .dark-mode .community-page {
     background-color: #1e1e1e;
     color: #f0f0f0;
