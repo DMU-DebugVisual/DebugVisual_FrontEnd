@@ -34,6 +34,8 @@ function SignUp() {
         }
     };
 
+    const isPasswordValid = formData.password.length >= 8;
+
     return (
         <div className="signup-container">
             <h1 className="signup-title">회원가입</h1>
@@ -70,14 +72,13 @@ function SignUp() {
                     required
                 />
 
-                {/* 조건부 메시지 */}
                 {formData.password.length === 0 ? (
                     <div className="password-guide neutral">
                         비밀번호는 8자 이상이어야 합니다.
                     </div>
                 ) : (
-                    <div className={`password-guide ${formData.password.length >= 8 ? 'valid' : 'invalid'}`}>
-                        {formData.password.length >= 8
+                    <div className={`password-guide ${isPasswordValid ? 'valid' : 'invalid'}`}>
+                        {isPasswordValid
                             ? '✔️ 비밀번호는 8자 이상이어야 합니다.'
                             : '❌ 비밀번호는 8자 이상이어야 합니다.'}
                     </div>
@@ -103,7 +104,13 @@ function SignUp() {
                     </div>
                 </div>
 
-                <button type="submit" className="signup-button">가입하기</button>
+                <button
+                    type="submit"
+                    className="signup-button"
+                    disabled={!isPasswordValid}
+                >
+                    가입하기
+                </button>
             </form>
 
             <div className="divider">간편 회원가입</div>
