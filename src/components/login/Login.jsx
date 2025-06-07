@@ -23,6 +23,7 @@ function Login({ onClose, onLoginSuccess }) {
 
         try {
             const response = await axios.post(`${config.API_BASE_URL}/api/users/login`, {
+
                 userId: formData.username,
                 password: formData.password,
             });
@@ -47,47 +48,30 @@ function Login({ onClose, onLoginSuccess }) {
             <div className="modal-content">
                 <button className="modal-close" onClick={onClose}>×</button>
                 <h1 className="login-title">Zivorp</h1>
+
                 <form className="login-form" onSubmit={handleSubmit}>
-                    <label htmlFor="username">아이디</label>
                     <input
                         id="username"
                         type="text"
-                        placeholder="사용자 아이디 입력"
+                        placeholder="아이디"
                         value={formData.username}
                         onChange={handleChange}
                         required
                     />
-
-                    <label htmlFor="password">비밀번호</label>
                     <input
                         id="password"
                         type="password"
-                        placeholder="••••••••"
+                        placeholder="비밀번호"
                         value={formData.password}
                         onChange={handleChange}
                         required
                     />
-
-                    <div className="forgot-password-link">
-                        <a href="/forgot-password">비밀번호 찾기</a>
-                    </div>
-
-                    <div className="remember-me">
-                        <input type="checkbox" id="remember" />
-                        <label htmlFor="remember">로그인 상태 유지</label>
-                    </div>
-
                     <button type="submit">로그인</button>
                 </form>
 
-                <div className="divider">또는 소셜 계정으로 로그인</div>
-                <div className="social-buttons">
-                    <button disabled>Google</button>
-                    <button disabled>Github</button>
-                </div>
-
-                <p className="signup-link">
-                    계정이 없으신가요?{' '}
+                <div className="auth-links">
+                    <a href="/forgot-password">비밀번호 찾기</a>
+                    <span className="separator">|</span>
                     <span
                         className="signup-action"
                         onClick={() => {
@@ -95,10 +79,18 @@ function Login({ onClose, onLoginSuccess }) {
                             navigate('/signup');
                         }}
                     >
-                        회원가입
-                     </span>
-                </p>
+            회원가입
+          </span>
+                    <span className="separator">|</span>
+                    <a href="/forgot-password">아이디 찾기</a>
+                </div>
 
+                <div className="divider">간편 로그인</div>
+
+                <div className="social-buttons">
+                    <button disabled>Google</button>
+                    <button disabled>Github</button>
+                </div>
             </div>
         </div>
     );
