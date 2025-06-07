@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import config from '../../config';
 import { useNavigate } from 'react-router-dom';
+import logoImage from '../../assets/logo3.png';
+
 
 function Login({ onClose, onLoginSuccess }) {
     const [formData, setFormData] = useState({
@@ -47,7 +49,11 @@ function Login({ onClose, onLoginSuccess }) {
         <div className="modal-overlay">
             <div className="modal-content">
                 <button className="modal-close" onClick={onClose}>×</button>
-                <h1 className="login-title">Zivorp</h1>
+                <div className="logo-wrapper">
+                    <img src={logoImage} alt="Zivorp Logo" className="login-logo" />
+                </div>
+
+
 
                 <form className="login-form" onSubmit={handleSubmit}>
                     <input
