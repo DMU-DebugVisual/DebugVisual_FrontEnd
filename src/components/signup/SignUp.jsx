@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import config from '../../config';
 import '../login/Login.css';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import googleIcon from '../../assets/google.png';
+import githubIcon from '../../assets/github.png';
 
 function SignUp() {
     const [formData, setFormData] = useState({
@@ -10,6 +13,8 @@ function SignUp() {
         password: '',
         name: '',
     });
+
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleChange = (e) => {
         const { id, value } = e.target;
@@ -63,14 +68,24 @@ function SignUp() {
                 />
 
                 <label htmlFor="password">비밀번호 *</label>
-                <input
-                    id="password"
-                    type="password"
-                    placeholder="********"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                />
+                <div className="password-input-wrapper">
+                    <input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="********"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                    />
+                    <button
+                        type="button"
+                        className="toggle-password-btn"
+                        onClick={() => setShowPassword(prev => !prev)}
+                        aria-label="비밀번호 보기 토글"
+                    >
+                        {showPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                </div>
 
                 {formData.password.length === 0 ? (
                     <div className="password-guide neutral">
@@ -116,8 +131,12 @@ function SignUp() {
             <div className="divider">간편 회원가입</div>
 
             <div className="social-buttons">
-                <button disabled>Google</button>
-                <button disabled>Github</button>
+                <button type="button" className="social-button google">
+                    <img src={googleIcon} alt="Google 로그인" />
+                </button>
+                <button type="button" className="social-button github">
+                    <img src={githubIcon} alt="Github 로그인" />
+                </button>
             </div>
         </div>
     );
