@@ -26,10 +26,10 @@ function SignUp() {
 
         try {
             await axios.post(`${config.API_BASE_URL}/api/users/signup`, {
-                userId: formData.username,
+                userId: formData.email,
                 email: formData.email,
                 password: formData.password,
-                name: formData.name,
+                name: formData.email,
             });
 
             alert('회원가입이 완료되었습니다!');
@@ -53,16 +53,6 @@ function SignUp() {
                     type="email"
                     placeholder="name@example.com"
                     value={formData.email}
-                    onChange={handleChange}
-                    required
-                />
-
-                <label htmlFor="username">아이디 *</label>
-                <input
-                    id="username"
-                    type="text"
-                    placeholder="사용할 아이디 입력"
-                    value={formData.username}
                     onChange={handleChange}
                     required
                 />
@@ -98,16 +88,6 @@ function SignUp() {
                             : '❌ 비밀번호는 8자 이상이어야 합니다.'}
                     </div>
                 )}
-
-                <label htmlFor="name">이름 *</label>
-                <input
-                    id="name"
-                    type="text"
-                    placeholder="홍길동"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                />
 
                 <div className="signup-check">
                     <input type="checkbox" id="terms" required />
