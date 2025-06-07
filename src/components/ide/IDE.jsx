@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation, useParams } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
 import './IDE.css';
 //npm install @monaco-editor/react
-import ideConfig from '../../ideconfig';
+import config from '../../config';
 
 
 // ResizeObserver 패치 함수 정의
@@ -598,7 +598,7 @@ const IDE = () => {
         return map;
     };
 
-    const apiUrl = `${ideConfig.API_BASE_URL}/code/run`;
+    const apiUrl = `${config.API_BASE_URL}/api/code/run`;
 
     // 스웨거 API에 맞게 언어 매핑 함수
     const mapLanguageToAPI = (langId) => {
