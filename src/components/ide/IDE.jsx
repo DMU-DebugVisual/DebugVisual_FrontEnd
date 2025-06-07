@@ -3,6 +3,8 @@ import { Link, useNavigate, useLocation, useParams } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
 import './IDE.css';
 //npm install @monaco-editor/react
+import ideConfig from '../../ideconfig';
+
 
 // ResizeObserver 패치 함수 정의
 const applyResizeObserverFix = () => {
@@ -596,8 +598,7 @@ const IDE = () => {
         return map;
     };
 
-    // API 엔드포인트 URL 설정 (스웨거 API로 변경)
-    const API_URL = 'http://13.209.72.114:8080/api/code/run';
+    const apiUrl = `${ideConfig.API_BASE_URL}/code/run`;
 
     // 스웨거 API에 맞게 언어 매핑 함수
     const mapLanguageToAPI = (langId) => {
@@ -630,10 +631,6 @@ const IDE = () => {
 
             console.log('API 요청 데이터:', JSON.stringify(requestBody));
 
-            // CORS 우회를 위한 프록시 서버 사용 (개발 환경에서)
-            const apiUrl = process.env.NODE_ENV === 'development'
-                ? '/api/code/run'  // 개발 환경에서는 프록시 사용
-                : 'http://13.209.72.114:8080/api/code/run'; // 프로덕션 환경에서는 직접 호출
 
             // API 호출
             const response = await fetch(apiUrl, {
