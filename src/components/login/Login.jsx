@@ -55,7 +55,7 @@ function Login({ onClose, onLoginSuccess }) {
                     <input
                         id="username"
                         type="text"
-                        placeholder="아이디"
+                        placeholder="이메일"
                         value={formData.username}
                         onChange={handleChange}
                         required
