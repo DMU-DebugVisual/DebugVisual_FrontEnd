@@ -363,3 +363,19 @@
     color: #ccc;
     font-size: 0.75rem;
 }
+
+.password-guide {
+    font-size: 0.9rem;
+}
+
+.password-guide.neutral {
+    color: #999;
+}
+
+.password-guide.valid {
+    color: green;
+}
+
+.password-guide.invalid {
+    color: red;
+}

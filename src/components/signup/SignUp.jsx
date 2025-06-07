@@ -12,10 +12,8 @@ function SignUp() {
     });
 
     const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.id]: e.target.value,
-        });
+        const { id, value } = e.target;
+        setFormData(prev => ({ ...prev, [id]: value }));
     };
 
     const handleSubmit = async (e) => {
@@ -71,7 +69,19 @@ function SignUp() {
                     onChange={handleChange}
                     required
                 />
-                <small className="form-guide">비밀번호는 8자 이상이어야 합니다.</small>
+
+                {/* 조건부 메시지 */}
+                {formData.password.length === 0 ? (
+                    <div className="password-guide neutral">
+                        비밀번호는 8자 이상이어야 합니다.
+                    </div>
+                ) : (
+                    <div className={`password-guide ${formData.password.length >= 8 ? 'valid' : 'invalid'}`}>
+                        {formData.password.length >= 8
+                            ? '✔️ 비밀번호는 8자 이상이어야 합니다.'
+                            : '❌ 비밀번호는 8자 이상이어야 합니다.'}
+                    </div>
+                )}
 
                 <label htmlFor="name">이름 *</label>
                 <input

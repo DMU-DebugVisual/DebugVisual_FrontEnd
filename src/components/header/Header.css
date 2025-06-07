@@ -12,13 +12,11 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-
-
 .site-logo {
-    background: #ffffff;
-    height: 64px; /* 필요에 따라 조정 */
-    width: auto;
-    display: block;
+    height: 64px;        /* 고정 높이 */
+    object-fit: contain; /* 비율 유지하며 꽉 채움 */
+    background-color: transparent !important; /* 혹시라도 배경색이 있다면 제거 */
+    padding: 2px 0;
 }
 
 .site-logo-link {
