@@ -64,6 +64,7 @@ function SignUp() {
                 )}
 
                 <label htmlFor="password">비밀번호</label>
+
                 <div className="password-input-wrapper">
                     <input id="password" type={showPassword ? 'text' : 'password'} placeholder="********" value={formData.password} onChange={handleChange} required />
                     <button type="button" className="toggle-password-btn" onClick={() => setShowPassword(prev => !prev)}>{showPassword ? <FaEyeSlash /> : <FaEye />}</button>
@@ -93,6 +94,7 @@ function SignUp() {
                 <button type="submit" className="signup-button" disabled={!(isLengthValid && hasTwoTypes && noRepeatThree && isPasswordMatch && isEmailValid)}>
                     가입하기
                 </button>
+
                 <div className="signup-check">
                     <label htmlFor="terms" className="terms-label">
                         가입 시, 통합 계정 및 서비스 이용약관, 개인정보 처리방침에 동의하는 것으로 간주합니다.
