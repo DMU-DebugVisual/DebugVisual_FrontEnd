@@ -373,16 +373,19 @@ html {
 }
 
 .post-card {
+    cursor: pointer;
     background-color: transparent;
     box-shadow: none;
     border-radius: 0;
     padding: 12px 0;
     border-bottom: 1px solid #eaeaea;
+
 }
 
 .post-card:first-child {
     border-top: 1px solid #eaeaea;
 }
+
 
 .post-meta {
     display: flex;
@@ -529,6 +532,7 @@ span.tag {
     font-size: 12px !important;
     font-weight: 500;
     margin-bottom: 2px;
+    cursor: pointer;
 }
 
 .popular-posts .post-author {

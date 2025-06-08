@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import config from '../../config';
+import '../login/Login.css';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import logoImage from '../../assets/logo3.png';
 import googleIcon from '../../assets/google.png';
@@ -11,6 +13,7 @@ function Login({ onClose, onLoginSuccess }) {
         username: '',
         password: '',
     });
+    const [showPassword, setShowPassword] = useState(false);
 
     const navigate = useNavigate();
 
@@ -61,15 +64,22 @@ function Login({ onClose, onLoginSuccess }) {
                         required
                     />
 
-                    <div className="password-input-wrapper">
+                    <div className="login-password-wrapper">
                         <input
                             id="password"
-                            type="password"
+                            type={showPassword ? "text" : "password"}
                             placeholder="비밀번호"
                             value={formData.password}
                             onChange={handleChange}
                             required
                         />
+                        <span
+                            className="login-toggle-password-btn"
+                            onClick={() => setShowPassword(prev => !prev)}
+                        >
+                            {showPassword ? <FaEyeSlash /> : <FaEye />}
+                        </span>
+
                     </div>
 
                     <button type="submit">로그인</button>
@@ -96,9 +106,11 @@ function Login({ onClose, onLoginSuccess }) {
                 <div className="social-buttons">
                     <button type="button" className="social-button google">
                         <img src={googleIcon} alt="Google 로그인" />
+                        <span>Google</span>
                     </button>
                     <button type="button" className="social-button github">
                         <img src={githubIcon} alt="Github 로그인" />
+                        <span>Github</span>
                     </button>
                 </div>
             </div>
