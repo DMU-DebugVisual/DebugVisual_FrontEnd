@@ -56,18 +56,41 @@ function SignUp() {
 
             <h1 className="signup-title">회원가입</h1>
             <p className="signup-subtitle">계정을 만들고 코드 시각화를 시작하세요</p>
+
             <form className="signup-form" onSubmit={handleSubmit}>
                 <label htmlFor="email">이메일</label>
-                <input id="email" type="email" placeholder="name@example.com" value={formData.email} onChange={handleChange} required />
+                <input
+                    id="email"
+                    type="email"
+                    placeholder="name@example.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    style={{ marginBottom: emailTouched && !isEmailValid ? '0.2rem' : '1rem' }}
+                />
+
                 {emailTouched && !isEmailValid && (
                     <div className="email-guide invalid">❌ 이메일 형식이 올바르지 않습니다.</div>
                 )}
 
-                <label htmlFor="password">비밀번호</label>
 
+                <label htmlFor="password">비밀번호</label>
                 <div className="password-input-wrapper">
-                    <input id="password" type={showPassword ? 'text' : 'password'} placeholder="********" value={formData.password} onChange={handleChange} required />
-                    <button type="button" className="toggle-password-btn" onClick={() => setShowPassword(prev => !prev)}>{showPassword ? <FaEyeSlash /> : <FaEye />}</button>
+                    <input
+                        id="password"
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="********"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                    />
+                    <button
+                        type="button"
+                        className="toggle-password-btn"
+                        onClick={() => setShowPassword(prev => !prev)}
+                    >
+                        {showPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
                 </div>
 
                 <ul className="password-rules">
@@ -84,14 +107,31 @@ function SignUp() {
 
                 <label htmlFor="confirmPassword">비밀번호 확인</label>
                 <div className="password-input-wrapper">
-                    <input id="confirmPassword" type={showConfirmPassword ? 'text' : 'password'} placeholder="********" value={formData.confirmPassword} onChange={handleChange} required />
-                    <button type="button" className="toggle-password-btn" onClick={() => setShowConfirmPassword(prev => !prev)}>{showConfirmPassword ? <FaEyeSlash /> : <FaEye />}</button>
+                    <input
+                        id="confirmPassword"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        placeholder="********"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                        required
+                    />
+                    <button
+                        type="button"
+                        className="toggle-password-btn"
+                        onClick={() => setShowConfirmPassword(prev => !prev)}
+                    >
+                        {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
                 </div>
                 {formData.confirmPassword && !isPasswordMatch && (
                     <div className="confirm-password invalid">❌ 비밀번호가 일치하지 않습니다.</div>
                 )}
 
-                <button type="submit" className="signup-button" disabled={!(isLengthValid && hasTwoTypes && noRepeatThree && isPasswordMatch && isEmailValid)}>
+                <button
+                    type="submit"
+                    className="signup-button"
+                    disabled={!(isLengthValid && hasTwoTypes && noRepeatThree && isPasswordMatch && isEmailValid)}
+                >
                     가입하기
                 </button>
 
@@ -100,19 +140,25 @@ function SignUp() {
                         가입 시, 통합 계정 및 서비스 이용약관, 개인정보 처리방침에 동의하는 것으로 간주합니다.
                     </label>
                 </div>
+
                 <div className="signup-benefit">
                     <input type="checkbox" id="benefits" defaultChecked />
                     <label htmlFor="benefits" className="benefits-label">
                         통합회원 할인 혜택 및 유용한 채용 소식을 받아볼래요.
                     </label>
                 </div>
-
             </form>
 
             <div className="divider">간편 회원가입</div>
             <div className="social-buttons">
-                <button type="button" className="social-button google"><img src={googleIcon} alt="Google 로그인" /><span>Google</span></button>
-                <button type="button" className="social-button github"><img src={githubIcon} alt="Github 로그인" /><span>Github</span></button>
+                <button type="button" className="social-button google">
+                    <img src={googleIcon} alt="Google 로그인" />
+                    <span>Google</span>
+                </button>
+                <button type="button" className="social-button github">
+                    <img src={githubIcon} alt="Github 로그인" />
+                    <span>Github</span>
+                </button>
             </div>
         </div>
     );
