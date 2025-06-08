@@ -255,9 +255,9 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 0 1rem 2rem;
-    min-height: 100vh;
+    /*justify-content: center; */
+    padding: 6rem 1rem 2rem;
+    min-height: 103vh;
     background-color: #ffffff;
     margin-top: -2rem; /* 폼 전체를 위로 */
 }
@@ -282,7 +282,7 @@
     max-width: 300px;
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
+    gap: 0.4rem;
 }
 
 .signup-form label {
@@ -314,6 +314,13 @@
     line-height: 1.6;
     list-style: none;
     padding-left: 0;
+}
+.email-guide {
+    font-size: 0.8rem;
+    color: #999;
+    line-height: 1.4;
+    margin-top: 0;
+
 }
 
 /* 성공 시 */
@@ -436,8 +443,14 @@
     border-radius: 5px;
     border: 1px solid #ccc;
     background-color: #f1f1f1;
-    cursor: not-allowed;
+    cursor: pointer; /* 👈 이 부분 변경 */
+    transition: background-color 0.2s ease;
 }
+
+.social-buttons button:hover {
+    background-color: #e0e0e0; /* 👈 hover 시 배경 어둡게 */
+}
+
 
 .dark-mode .signup-container {
     background-color: #1e1e1e;
