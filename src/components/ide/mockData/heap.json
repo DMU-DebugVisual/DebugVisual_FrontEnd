@@ -1,0 +1,116 @@
+{
+  "algorithm": "heap",
+  "lang": "c",
+  "input": "",
+  "variables": [
+    { "name": "heap", "type": "heap", "initialValue": "empty", "currentValue": "empty" },
+    { "name": "e1", "type": "element", "initialValue": "{10}", "currentValue": "{10}" },
+    { "name": "e2", "type": "element", "initialValue": "{5}", "currentValue": "{5}" },
+    { "name": "e3", "type": "element", "initialValue": "{30}", "currentValue": "{30}" },
+    { "name": "e4", "type": "element", "initialValue": "undefined", "currentValue": "{30}" },
+    { "name": "e5", "type": "element", "initialValue": "undefined", "currentValue": "{10}" },
+    { "name": "e6", "type": "element", "initialValue": "undefined", "currentValue": "{5}" }
+  ],
+  "functions": [
+    { "name": "create", "params": [], "called": 1 },
+    { "name": "init", "params": ["h"], "called": 1 },
+    { "name": "insert_max_heap", "params": ["h", "item"], "called": 3 },
+    { "name": "delete_max_heap", "params": ["h"], "called": 3 }
+  ],
+  "steps": [
+    {
+      "line": 41,
+      "description": "힙 생성 및 초기화",
+      "changes": [
+        { "variable": "heap", "before": "empty", "after": "heap_size=0" }
+      ],
+      "dataStructure": {
+        "type": "heap",
+        "nodes": []
+      }
+    },
+    {
+      "line": 44,
+      "description": "10 삽입 (루트에 삽입)",
+      "changes": [
+        { "variable": "heap", "before": "heap_size=0", "after": "heap_size=1" }
+      ],
+      "dataStructure": {
+        "type": "heap",
+        "nodes": [
+          { "id": "1", "value": 10, "links": [] }
+        ]
+      }
+    },
+    {
+      "line": 45,
+      "description": "5 삽입 (부모 10보다 작아 그대로 삽입)",
+      "changes": [
+        { "variable": "heap", "before": "heap_size=1", "after": "heap_size=2" }
+      ],
+      "dataStructure": {
+        "type": "heap",
+        "nodes": [
+          { "id": "1", "value": 10, "links": ["2"] },
+          { "id": "2", "value": 5, "links": [] }
+        ]
+      }
+    },
+    {
+      "line": 46,
+      "description": "30 삽입 (부모 10보다 커서 루트로 승격)",
+      "changes": [
+        { "variable": "heap", "before": "heap_size=2", "after": "heap_size=3" }
+      ],
+      "dataStructure": {
+        "type": "heap",
+        "nodes": [
+          { "id": "1", "value": 30, "links": ["2", "3"] },
+          { "id": "2", "value": 5, "links": [] },
+          { "id": "3", "value": 10, "links": [] }
+        ]
+      }
+    },
+    {
+      "line": 48,
+      "description": "첫 번째 삭제 (루트 30 삭제, 마지막 노드 10이 루트로 이동 후 재정렬)",
+      "changes": [
+        { "variable": "e4", "before": "undefined", "after": "{30}" },
+        { "variable": "heap", "before": "heap_size=3", "after": "heap_size=2" }
+      ],
+      "dataStructure": {
+        "type": "heap",
+        "nodes": [
+          { "id": "1", "value": 10, "links": ["2"] },
+          { "id": "2", "value": 5, "links": [] }
+        ]
+      }
+    },
+    {
+      "line": 49,
+      "description": "두 번째 삭제 (루트 10 삭제, 마지막 노드 5가 루트로 이동)",
+      "changes": [
+        { "variable": "e5", "before": "undefined", "after": "{10}" },
+        { "variable": "heap", "before": "heap_size=2", "after": "heap_size=1" }
+      ],
+      "dataStructure": {
+        "type": "heap",
+        "nodes": [
+          { "id": "1", "value": 5, "links": [] }
+        ]
+      }
+    },
+    {
+      "line": 50,
+      "description": "세 번째 삭제 (루트 5 삭제, 힙 비움)",
+      "changes": [
+        { "variable": "e6", "before": "undefined", "after": "{5}" },
+        { "variable": "heap", "before": "heap_size=1", "after": "heap_size=0" }
+      ],
+      "dataStructure": {
+        "type": "heap",
+        "nodes": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,136 @@
+{
+  "algorithm": "graph",
+  "lang": "c",
+  "input": "",
+  "variables": [
+    { "name": "g", "type": "graph", "initialValue": "empty", "currentValue": "adjacency matrix filled" }
+  ],
+  "functions": [
+    { "name": "init", "params": ["g"], "called": 1 },
+    { "name": "insert_vertex", "params": ["g", "v"], "called": 4 },
+    { "name": "insert_edge", "params": ["g", "start", "end"], "called": 5 },
+    { "name": "print_adj_mat", "params": ["g"], "called": 1 }
+  ],
+  "steps": [
+    {
+      "line": 41,
+      "description": "그래프 생성 및 초기화",
+      "changes": [
+        { "variable": "g", "before": "empty", "after": "n=0, adj_mat 초기화됨" }
+      ],
+      "dataStructure": {
+        "type": "graph",
+        "nodes": []
+      }
+    },
+    {
+      "line": 43,
+      "description": "정점 0 삽입 (n=1)",
+      "changes": [
+        { "variable": "g", "before": "n=0", "after": "n=1" }
+      ],
+      "dataStructure": {
+        "type": "graph",
+        "nodes": ["0"]
+      }
+    },
+    {
+      "line": 43,
+      "description": "정점 1 삽입 (n=2)",
+      "changes": [
+        { "variable": "g", "before": "n=1", "after": "n=2" }
+      ],
+      "dataStructure": {
+        "type": "graph",
+        "nodes": ["0", "1"]
+      }
+    },
+    {
+      "line": 43,
+      "description": "정점 2 삽입 (n=3)",
+      "changes": [
+        { "variable": "g", "before": "n=2", "after": "n=3" }
+      ],
+      "dataStructure": {
+        "type": "graph",
+        "nodes": ["0", "1", "2"]
+      }
+    },
+    {
+      "line": 43,
+      "description": "정점 3 삽입 (n=4)",
+      "changes": [
+        { "variable": "g", "before": "n=3", "after": "n=4" }
+      ],
+      "dataStructure": {
+        "type": "graph",
+        "nodes": ["0", "1", "2", "3"]
+      }
+    },
+    {
+      "line": 44,
+      "description": "간선 (0,1) 추가",
+      "changes": [],
+      "dataStructure": {
+        "type": "graph",
+        "nodes": ["0", "1", "2", "3"],
+        "edges": [["0", "1"]]
+      }
+    },
+    {
+      "line": 45,
+      "description": "간선 (0,2) 추가",
+      "changes": [],
+      "dataStructure": {
+        "type": "graph",
+        "nodes": ["0", "1", "2", "3"],
+        "edges": [["0", "1"], ["0", "2"]]
+      }
+    },
+    {
+      "line": 46,
+      "description": "간선 (0,3) 추가",
+      "changes": [],
+      "dataStructure": {
+        "type": "graph",
+        "nodes": ["0", "1", "2", "3"],
+        "edges": [["0", "1"], ["0", "2"], ["0", "3"]]
+      }
+    },
+    {
+      "line": 47,
+      "description": "간선 (1,2) 추가",
+      "changes": [],
+      "dataStructure": {
+        "type": "graph",
+        "nodes": ["0", "1", "2", "3"],
+        "edges": [["0", "1"], ["0", "2"], ["0", "3"], ["1", "2"]]
+      }
+    },
+    {
+      "line": 48,
+      "description": "간선 (2,3) 추가",
+      "changes": [],
+      "dataStructure": {
+        "type": "graph",
+        "nodes": ["0", "1", "2", "3"],
+        "edges": [["0", "1"], ["0", "2"], ["0", "3"], ["1", "2"], ["2", "3"]]
+      }
+    },
+    {
+      "line": 49,
+      "description": "인접 행렬 출력",
+      "changes": [],
+      "dataStructure": {
+        "type": "graph",
+        "nodes": ["0", "1", "2", "3"],
+        "adjacencyMatrix": [
+          [0, 1, 1, 1],
+          [1, 0, 1, 0],
+          [1, 1, 0, 1],
+          [1, 0, 1, 0]
+        ]
+      }
+    }
+  ]
+}
