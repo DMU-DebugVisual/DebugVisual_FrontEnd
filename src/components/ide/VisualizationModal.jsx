@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import AnimationFactory from './AnimationFactory';
-// 🆕 JSON 매니저 import
+// 🆕 API 서비스 import
 import { ApiService } from './services/ApiService';
 
-// 애니메이션 컨트롤 훅 (기존과 동일)
+// 애니메이션 컨트롤 훅
 const useAnimationControls = (totalSteps) => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentStep, setCurrentStep] = useState(0);
@@ -62,7 +62,7 @@ const useAnimationControls = (totalSteps) => {
     };
 };
 
-// 컨트롤 버튼 컴포넌트 (기존과 동일)
+// 컨트롤 버튼 컴포넌트
 const ControlButton = ({ onClick, disabled, variant = 'default', children, title }) => {
     const getButtonStyle = () => {
         const baseStyle = {
@@ -104,7 +104,7 @@ const ControlButton = ({ onClick, disabled, variant = 'default', children, title
     );
 };
 
-// 시각화 컨트롤 컴포넌트 (기존과 동일)
+// 시각화 컨트롤 컴포넌트
 const VisualizationControls = ({
                                    isPlaying, currentStep, totalSteps, speed,
                                    onPlay, onPause, onStepBack, onStepForward, onReset, onSpeedChange, onStepChange
@@ -218,8 +218,8 @@ const VisualizationControls = ({
     );
 };
 
-// 로딩 컴포넌트 (기존과 동일)
-const LoadingAnimation = ({ message = "JSON 데이터 로딩 중...", code, language }) => (
+// 로딩 컴포넌트
+const LoadingAnimation = ({ message = "시각화 데이터 로딩 중...", code, language }) => (
     <div style={{
         width: '100%',
         height: '100%',
@@ -240,7 +240,7 @@ const LoadingAnimation = ({ message = "JSON 데이터 로딩 중...", code, lang
             animation: 'spin 1s linear infinite'
         }} />
         <h3 style={{ margin: 0, color: '#1e293b', fontSize: '18px', fontWeight: '600' }}>{message}</h3>
-        <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>JSON 파일에서 데이터를 불러오고 있습니다</p>
+        <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>API 연동 및 데이터 처리 중입니다</p>
         <div style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>
             <span style={{
                 fontSize: '12px',
@@ -266,7 +266,7 @@ const LoadingAnimation = ({ message = "JSON 데이터 로딩 중...", code, lang
     </div>
 );
 
-// 에러 컴포넌트 (기존과 동일)
+// 에러 컴포넌트
 const ErrorDisplay = ({ error, onRetry }) => (
     <div style={{
         width: '100%',
@@ -280,7 +280,7 @@ const ErrorDisplay = ({ error, onRetry }) => (
         padding: '40px'
     }}>
         <div style={{ fontSize: '64px' }}>❌</div>
-        <h3 style={{ margin: 0, color: '#1e293b', fontSize: '18px', fontWeight: '600' }}>JSON 데이터 로드 실패</h3>
+        <h3 style={{ margin: 0, color: '#1e293b', fontSize: '18px', fontWeight: '600' }}>시각화 데이터 로드 실패</h3>
         <p style={{
             margin: 0,
             color: '#64748b',
@@ -312,7 +312,7 @@ const ErrorDisplay = ({ error, onRetry }) => (
     </div>
 );
 
-// 🔥 핵심: JSON 기반 애니메이션 컴포넌트
+// 애니메이션 디스플레이 컴포넌트
 const AnimationDisplay = ({ data, currentStep, totalSteps, animationType, isPlaying }) => {
     console.log('🎬 AnimationDisplay 렌더링:', {
         animationType,
@@ -336,28 +336,52 @@ const AnimationDisplay = ({ data, currentStep, totalSteps, animationType, isPlay
     };
 
     const { icon, name } = getAnimationInfo(animationType);
-    const isImplemented = AnimationFactory.isImplemented(animationType);
+    const isImplemented = AnimationFactory?.isImplemented ? AnimationFactory.isImplemented(animationType) : false;
 
-    console.log(`🔍 Animation 정보:`, {
-        type: animationType,
-        name,
-        isImplemented,
-        factoryInfo: AnimationFactory.getFactoryInfo()
-    });
+    // 데이터 소스 표시
+    const getDataSourceBadge = () => {
+        const dataSource = data?._dataSource || 'unknown';
+        const badges = {
+            'api': { color: '#10b981', text: '🌐 API', bg: 'rgba(16, 185, 129, 0.1)' },
+            'json': { color: '#f59e0b', text: '🗂️ JSON', bg: 'rgba(245, 158, 11, 0.1)' },
+            'api+json': { color: '#8b5cf6', text: '🔗 하이브리드', bg: 'rgba(139, 92, 246, 0.1)' },
+            'api-only': { color: '#06b6d4', text: '🌐 API만', bg: 'rgba(6, 182, 212, 0.1)' },
+            'unknown': { color: '#6b7280', text: '❓ 미확인', bg: 'rgba(107, 114, 128, 0.1)' }
+        };
 
-    // 🎯 핵심: AnimationFactory 사용하여 컴포넌트 생성
+        const badge = badges[dataSource] || badges['unknown'];
+
+        return (
+            <span style={{
+                background: badge.bg,
+                color: badge.color,
+                fontSize: '12px',
+                padding: '2px 8px',
+                borderRadius: '12px',
+                border: `1px solid ${badge.color}30`
+            }}>
+                {badge.text}
+            </span>
+        );
+    };
+
+    // 애니메이션 컴포넌트 생성
     let animationComponent = null;
 
     try {
-        console.log('🏭 AnimationFactory.createAnimation 호출 중...');
-        animationComponent = AnimationFactory.createAnimation(animationType, {
-            data,
-            currentStep,
-            totalSteps,
-            isPlaying,
-            zoomLevel: 1
-        });
-        console.log('✅ 애니메이션 컴포넌트 생성됨:', animationComponent);
+        if (AnimationFactory?.createAnimation) {
+            console.log('🏭 AnimationFactory.createAnimation 호출 중...');
+            animationComponent = AnimationFactory.createAnimation(animationType, {
+                data,
+                currentStep,
+                totalSteps,
+                isPlaying,
+                zoomLevel: 1
+            });
+            console.log('✅ 애니메이션 컴포넌트 생성됨:', animationComponent);
+        } else {
+            console.warn('⚠️ AnimationFactory가 없거나 createAnimation 메서드가 없습니다');
+        }
     } catch (error) {
         console.error('❌ 애니메이션 컴포넌트 생성 실패:', error);
     }
@@ -393,13 +417,14 @@ const AnimationDisplay = ({ data, currentStep, totalSteps, animationType, isPlay
                     gap: '10px'
                 }}>
                     {icon} {name} 시각화
+                    {getDataSourceBadge()}
                     {isImplemented && <span style={{
                         background: '#10b981',
                         color: 'white',
                         fontSize: '12px',
                         padding: '2px 8px',
                         borderRadius: '12px'
-                    }}>✅ JSON 로드됨</span>}
+                    }}>✅ 활성화</span>}
                     {!isImplemented && <span style={{
                         background: '#f59e0b',
                         color: 'white',
@@ -417,7 +442,7 @@ const AnimationDisplay = ({ data, currentStep, totalSteps, animationType, isPlay
                 </p>
             </div>
 
-            {/* 🔥 메인 애니메이션 영역 */}
+            {/* 메인 애니메이션 영역 */}
             <div style={{
                 flex: 1,
                 padding: '24px',
@@ -455,11 +480,20 @@ const AnimationDisplay = ({ data, currentStep, totalSteps, animationType, isPlay
                         width: '100%',
                         maxWidth: '500px'
                     }}>
-                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>❌</div>
-                        <h3 style={{ margin: '0 0 12px 0', fontSize: '18px' }}>애니메이션 생성 실패</h3>
+                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚙️</div>
+                        <h3 style={{ margin: '0 0 12px 0', fontSize: '18px' }}>애니메이션 준비 중</h3>
                         <p style={{ margin: '0 0 16px 0', fontSize: '14px' }}>
-                            AnimationFactory에서 컴포넌트를 생성할 수 없습니다.
+                            {isImplemented ?
+                                'AnimationFactory에서 컴포넌트를 로딩 중입니다.' :
+                                '이 알고리즘 타입은 아직 개발 중입니다.'
+                            }
                         </p>
+                        {data?._dataSource && (
+                            <div style={{ marginTop: '12px' }}>
+                                <span style={{ fontSize: '12px', color: '#64748b' }}>데이터 소스: </span>
+                                {getDataSourceBadge()}
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
@@ -467,7 +501,7 @@ const AnimationDisplay = ({ data, currentStep, totalSteps, animationType, isPlay
     );
 };
 
-// 정보 패널 컴포넌트 (수정됨)
+// 정보 패널 컴포넌트
 const InfoPanel = ({ data, currentStep, totalSteps, animationType }) => {
     const InfoCard = ({ title, icon, children }) => (
         <div style={{
@@ -552,8 +586,8 @@ const InfoPanel = ({ data, currentStep, totalSteps, animationType }) => {
                 )}
             </InfoCard>
 
-            {/* JSON 데이터 정보 */}
-            <InfoCard title="JSON 데이터 정보" icon="📊">
+            {/* 데이터 정보 */}
+            <InfoCard title="시각화 데이터 정보" icon="📊">
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {[
                         { label: '알고리즘', value: data?.algorithm || 'Unknown' },
@@ -561,7 +595,8 @@ const InfoPanel = ({ data, currentStep, totalSteps, animationType }) => {
                         { label: '입력값', value: data?.input || '없음' },
                         { label: '변수 개수', value: `${data?.variables?.length || 0}개` },
                         { label: '실행 단계', value: `${totalSteps}단계` },
-                        { label: '애니메이션', value: animationType }
+                        { label: '데이터 소스', value: data?._dataSource || 'unknown' },
+                        { label: '애니메이션 타입', value: animationType }
                     ].map((item, index) => (
                         <div key={index} style={{
                             display: 'flex',
@@ -577,6 +612,51 @@ const InfoPanel = ({ data, currentStep, totalSteps, animationType }) => {
                     ))}
                 </div>
             </InfoCard>
+
+            {/* API 출력 결과 */}
+            {(data?.stdout || data?.stderr) && (
+                <InfoCard title="실행 결과" icon="💻">
+                    {data.stdout && (
+                        <div style={{
+                            background: '#f0f9ff',
+                            border: '1px solid #e0f2fe',
+                            borderRadius: '6px',
+                            padding: '8px',
+                            marginBottom: '8px'
+                        }}>
+                            <div style={{ fontSize: '11px', color: '#0369a1', marginBottom: '4px' }}>STDOUT:</div>
+                            <pre style={{
+                                margin: 0,
+                                fontSize: '12px',
+                                color: '#1e293b',
+                                whiteSpace: 'pre-wrap',
+                                wordBreak: 'break-all'
+                            }}>
+                                {data.stdout}
+                            </pre>
+                        </div>
+                    )}
+                    {data.stderr && (
+                        <div style={{
+                            background: '#fef2f2',
+                            border: '1px solid #fecaca',
+                            borderRadius: '6px',
+                            padding: '8px'
+                        }}>
+                            <div style={{ fontSize: '11px', color: '#dc2626', marginBottom: '4px' }}>STDERR:</div>
+                            <pre style={{
+                                margin: 0,
+                                fontSize: '12px',
+                                color: '#dc2626',
+                                whiteSpace: 'pre-wrap',
+                                wordBreak: 'break-all'
+                            }}>
+                                {data.stderr}
+                            </pre>
+                        </div>
+                    )}
+                </InfoCard>
+            )}
 
             {/* 변수 상태 */}
             {data?.variables && data.variables.length > 0 && (
@@ -654,7 +734,7 @@ const InfoPanel = ({ data, currentStep, totalSteps, animationType }) => {
     );
 };
 
-// 🔥 메인 모달 컴포넌트 - JSON 기반으로 수정
+// 메인 모달 컴포넌트
 const VisualizationModal = ({ isOpen, onClose, code, language, input }) => {
     const [data, setData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -665,7 +745,7 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input }) => {
     const [apiMode, setApiMode] = useState(true); // API 모드 토글
     const animationControls = useAnimationControls(totalSteps);
 
-    // 🔥 JSON 기반 데이터 가져오기 함수
+    // 시각화 데이터 가져오기 함수
     const fetchVisualizationData = async () => {
         if (!code?.trim()) {
             setError('코드가 비어있습니다.');
@@ -678,7 +758,7 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input }) => {
         try {
             console.log('🚀 하이브리드 시각화 데이터 요청 시작');
 
-            // 🌐 API 서비스 사용 (하이브리드 모드)
+            // API 서비스 사용 (하이브리드 모드)
             const visualizationData = await ApiService.requestVisualization(code, language, input);
 
             setData(visualizationData);
@@ -704,16 +784,30 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input }) => {
             setIsLoading(false);
         }
     };
+
     const toggleApiMode = () => {
         const newMode = !apiMode;
         setApiMode(newMode);
-        ApiService.setApiMode(newMode);
 
-        console.log(`🎛️ API 모드 변경: ${newMode ? 'Hybrid' : 'JSON Only'}`);
+        // ApiService 모드 변경
+        if (typeof ApiService.setApiMode === 'function') {
+            ApiService.setApiMode(newMode);
+        }
 
-        // 데이터 새로고침
+        console.log(`🎛️ API 모드 변경: ${newMode ? 'API 우선 (하이브리드)' : 'JSON 전용'}`);
+
+        // 즉시 데이터 새로고침 - 새로운 모드로 다시 요청
         if (data) {
-            fetchVisualizationData();
+            // 현재 상태 초기화
+            setData(null);
+            setError(null);
+            setTotalSteps(0);
+            animationControls.reset();
+
+            // 새 모드로 데이터 요청
+            setTimeout(() => {
+                fetchVisualizationData();
+            }, 100);
         }
     };
 
@@ -817,7 +911,7 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input }) => {
                     }}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    {/* 🎯 모달 헤더 */}
+                    {/* 모달 헤더 */}
                     <div style={{
                         display: 'flex',
                         justifyContent: 'space-between',
@@ -844,7 +938,7 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input }) => {
                             }}>
                                 {language}
                             </div>
-                            {/* 🆕 JSON 상태 표시 */}
+                            {/* 데이터 소스 상태 표시 */}
                             {data && (
                                 <div style={{
                                     background: apiMode
@@ -868,7 +962,7 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input }) => {
                             alignItems: 'center',
                             gap: '16px'
                         }}>
-                            {/* 🎮 애니메이션 컨트롤 버튼들 */}
+                            {/* 애니메이션 컨트롤 버튼들 */}
                             {data && !isLoading && (
                                 <>
                                     <button
@@ -924,7 +1018,7 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input }) => {
                                             fontSize: '16px',
                                             opacity: isLoading ? 0.5 : 1
                                         }}
-                                        title="JSON 데이터 새로고침"
+                                        title="데이터 새로고침"
                                     >
                                         🔄
                                     </button>
@@ -953,7 +1047,7 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input }) => {
                         </div>
                     </div>
 
-                    {/* 🔥 핵심: 2열 레이아웃 - 왼쪽 정보패널 + 오른쪽 애니메이션 */}
+                    {/* 2열 레이아웃 - 왼쪽 정보패널 + 오른쪽 애니메이션 */}
                     <div style={{
                         flex: 1,
                         background: '#f1f5f9',
@@ -963,7 +1057,7 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input }) => {
                         overflow: 'hidden',
                         maxHeight: 'calc(100vh - 140px)'
                     }}>
-                        {/* 📋 왼쪽: 정보 패널 */}
+                        {/* 왼쪽: 정보 패널 */}
                         <div className="visualization-modal-scrollbar" style={{
                             background: '#ffffff',
                             borderRight: '1px solid #e2e8f0',
@@ -992,13 +1086,13 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input }) => {
                                 }}>
                                     <div>
                                         <div style={{ fontSize: '48px', marginBottom: '16px' }}>🗂️</div>
-                                        <p>JSON 데이터 로딩 중...</p>
+                                        <p>데이터 로딩 중...</p>
                                     </div>
                                 </div>
                             )}
                         </div>
 
-                        {/* 🎬 오른쪽: 메인 애니메이션 영역 */}
+                        {/* 오른쪽: 메인 애니메이션 영역 */}
                         <div className="visualization-modal-scrollbar" style={{
                             background: '#ffffff',
                             padding: '20px',
@@ -1009,7 +1103,7 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input }) => {
                             flexDirection: 'column'
                         }}>
                             {isLoading ? (
-                                <LoadingAnimation message="JSON 데이터 로딩 중..." code={code} language={language} />
+                                <LoadingAnimation message="시각화 데이터 로딩 중..." code={code} language={language} />
                             ) : error ? (
                                 <ErrorDisplay error={error} onRetry={fetchVisualizationData} />
                             ) : data ? (
@@ -1031,9 +1125,9 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input }) => {
                                     gap: '20px',
                                     minHeight: '400px'
                                 }}>
-                                    <div style={{ fontSize: '64px' }}>🗂️</div>
-                                    <h3 style={{ margin: 0, color: '#1e293b' }}>JSON 기반 시각화 준비 중...</h3>
-                                    <p style={{ margin: 0, color: '#64748b' }}>패턴 매칭 및 데이터 로딩 중</p>
+                                    <div style={{ fontSize: '64px' }}>🌐</div>
+                                    <h3 style={{ margin: 0, color: '#1e293b' }}>하이브리드 시각화 준비 중...</h3>
+                                    <p style={{ margin: 0, color: '#64748b' }}>API 연동 및 데이터 처리 중</p>
                                 </div>
                             )}
                         </div>
