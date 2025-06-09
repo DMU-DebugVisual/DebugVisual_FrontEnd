@@ -1,0 +1,262 @@
+{
+  "algorithm": "fibonacci-recursion",
+  "lang": "c",
+  "input": "7",
+  "variables": [
+    { "name": "n", "type": "int", "initialValue": null, "currentValue": 7 }
+  ],
+  "functions": [
+    { "name": "fibo", "params": ["n"], "called": 25 }
+  ],
+  "steps": [
+    {
+      "line": 5,
+      "description": "입력값 n을 사용자로부터 입력받음",
+      "changes": [
+        { "variable": "n", "before": null, "after": 7 }
+      ]
+    },
+    {
+      "line": 6,
+      "description": "fibo(7) 호출",
+      "changes": [],
+      "stack": [
+        { "function": "fibo", "params": [7] }
+      ],
+      "dataStructure": {
+        "type": "recursionTree",
+        "root": {
+          "id": "fibo(7)",
+          "value": 13,
+          "children": [
+            {
+              "id": "fibo(5)",
+              "value": 5,
+              "children": [
+                {
+                  "id": "fibo(3)",
+                  "value": 2,
+                  "children": [
+                    {
+                      "id": "fibo(1)",
+                      "value": 1,
+                      "children": []
+                    },
+                    {
+                      "id": "fibo(2)",
+                      "value": 1,
+                      "children": [
+                        {
+                          "id": "fibo(0)",
+                          "value": 0,
+                          "children": []
+                        },
+                        {
+                          "id": "fibo(1)",
+                          "value": 1,
+                          "children": []
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "fibo(4)",
+                  "value": 3,
+                  "children": [
+                    {
+                      "id": "fibo(2)",
+                      "value": 1,
+                      "children": [
+                        {
+                          "id": "fibo(0)",
+                          "value": 0,
+                          "children": []
+                        },
+                        {
+                          "id": "fibo(1)",
+                          "value": 1,
+                          "children": []
+                        }
+                      ]
+                    },
+                    {
+                      "id": "fibo(3)",
+                      "value": 2,
+                      "children": [
+                        {
+                          "id": "fibo(1)",
+                          "value": 1,
+                          "children": []
+                        },
+                        {
+                          "id": "fibo(2)",
+                          "value": 1,
+                          "children": [
+                            {
+                              "id": "fibo(0)",
+                              "value": 0,
+                              "children": []
+                            },
+                            {
+                              "id": "fibo(1)",
+                              "value": 1,
+                              "children": []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "fibo(6)",
+              "value": 8,
+              "children": [
+                {
+                  "id": "fibo(4)",
+                  "value": 3,
+                  "children": [
+                    {
+                      "id": "fibo(2)",
+                      "value": 1,
+                      "children": [
+                        {
+                          "id": "fibo(0)",
+                          "value": 0,
+                          "children": []
+                        },
+                        {
+                          "id": "fibo(1)",
+                          "value": 1,
+                          "children": []
+                        }
+                      ]
+                    },
+                    {
+                      "id": "fibo(3)",
+                      "value": 2,
+                      "children": [
+                        {
+                          "id": "fibo(1)",
+                          "value": 1,
+                          "children": []
+                        },
+                        {
+                          "id": "fibo(2)",
+                          "value": 1,
+                          "children": [
+                            {
+                              "id": "fibo(0)",
+                              "value": 0,
+                              "children": []
+                            },
+                            {
+                              "id": "fibo(1)",
+                              "value": 1,
+                              "children": []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "fibo(5)",
+                  "value": 5,
+                  "children": [
+                    {
+                      "id": "fibo(3)",
+                      "value": 2,
+                      "children": [
+                        {
+                          "id": "fibo(1)",
+                          "value": 1,
+                          "children": []
+                        },
+                        {
+                          "id": "fibo(2)",
+                          "value": 1,
+                          "children": [
+                            {
+                              "id": "fibo(0)",
+                              "value": 0,
+                              "children": []
+                            },
+                            {
+                              "id": "fibo(1)",
+                              "value": 1,
+                              "children": []
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "fibo(4)",
+                      "value": 3,
+                      "children": [
+                        {
+                          "id": "fibo(2)",
+                          "value": 1,
+                          "children": [
+                            {
+                              "id": "fibo(0)",
+                              "value": 0,
+                              "children": []
+                            },
+                            {
+                              "id": "fibo(1)",
+                              "value": 1,
+                              "children": []
+                            }
+                          ]
+                        },
+                        {
+                          "id": "fibo(3)",
+                          "value": 2,
+                          "children": [
+                            {
+                              "id": "fibo(1)",
+                              "value": 1,
+                              "children": []
+                            },
+                            {
+                              "id": "fibo(2)",
+                              "value": 1,
+                              "children": [
+                                {
+                                  "id": "fibo(0)",
+                                  "value": 0,
+                                  "children": []
+                                },
+                                {
+                                  "id": "fibo(1)",
+                                  "value": 1,
+                                  "children": []
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "line": 6,
+      "description": "fibo(7)의 결과를 출력",
+      "changes": [],
+      "stack": []
+    }
+  ]
+}

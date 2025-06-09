@@ -1,0 +1,42 @@
+{
+  "algorithm": "linked-list",
+  "lang": "c",
+  "input": ["3", "5", "7", "0"],
+  "variables": [
+    { "name": "head", "type": "Node*", "initialValue": "NULL", "currentValue": "0x01" },
+    { "name": "tail", "type": "Node*", "initialValue": "NULL", "currentValue": "0x03" },
+    { "name": "cur", "type": "Node*", "initialValue": "NULL", "currentValue": "0x03" },
+    { "name": "newNode", "type": "Node*", "initialValue": "NULL", "currentValue": "0x03" },
+    { "name": "readData", "type": "int", "initialValue": null, "currentValue": 0 },
+    { "name": "delNode", "type": "Node*", "initialValue": null, "currentValue": "0x03" },
+    { "name": "delNextNode", "type": "Node*", "initialValue": null, "currentValue": null }
+  ],
+  "functions": [],
+  "steps": [
+    { "line": 15, "description": "scanf로 readData 입력받음", "changes": [{ "variable": "readData", "before": null, "after": 3 }] },
+    { "line": 19, "description": "readData>=1, malloc으로 새 노드 생성 및 초기화", "changes": [{ "variable": "newNode", "before": "NULL", "after": "0x01" }], "dataStructure": { "type": "linkedList", "nodes": [{ "id": "0x01", "value": 3, "links": [] }] } },
+    { "line": 23, "description": "head == NULL, head와 tail을 newNode로 지정", "changes": [{ "variable": "head", "before": "NULL", "after": "0x01" }, { "variable": "tail", "before": "NULL", "after": "0x01" }], "dataStructure": { "type": "linkedList", "nodes": [{ "id": "0x01", "value": 3, "links": [] }] } },
+    { "line": 15, "description": "scanf로 readData 입력받음", "changes": [{ "variable": "readData", "before": 3, "after": 5 }] },
+    { "line": 19, "description": "readData>=1, malloc으로 새 노드 생성 및 초기화", "changes": [{ "variable": "newNode", "before": "0x01", "after": "0x02" }], "dataStructure": { "type": "linkedList", "nodes": [{ "id": "0x01", "value": 3, "links": ["0x02"] }, { "id": "0x02", "value": 5, "links": [] }] } },
+    { "line": 25, "description": "head != NULL, tail->next에 newNode 연결 후 tail 갱신", "changes": [{ "variable": "tail", "before": "0x01", "after": "0x02" }], "dataStructure": { "type": "linkedList", "nodes": [{ "id": "0x01", "value": 3, "links": ["0x02"] }, { "id": "0x02", "value": 5, "links": [] }] } },
+    { "line": 15, "description": "scanf로 readData 입력받음", "changes": [{ "variable": "readData", "before": 5, "after": 7 }] },
+    { "line": 19, "description": "readData>=1, malloc으로 새 노드 생성 및 초기화", "changes": [{ "variable": "newNode", "before": "0x02", "after": "0x03" }], "dataStructure": { "type": "linkedList", "nodes": [{ "id": "0x01", "value": 3, "links": ["0x02"] }, { "id": "0x02", "value": 5, "links": ["0x03"] }, { "id": "0x03", "value": 7, "links": [] }] } },
+    { "line": 25, "description": "head != NULL, tail->next에 newNode 연결 후 tail 갱신", "changes": [{ "variable": "tail", "before": "0x02", "after": "0x03" }], "dataStructure": { "type": "linkedList", "nodes": [{ "id": "0x01", "value": 3, "links": ["0x02"] }, { "id": "0x02", "value": 5, "links": ["0x03"] }, { "id": "0x03", "value": 7, "links": [] }] } },
+    { "line": 15, "description": "scanf로 readData 입력받음", "changes": [{ "variable": "readData", "before": 7, "after": 0 }] },
+    { "line": 17, "description": "readData<1, while문 탈출" },
+    { "line": 31, "description": "head != NULL, cur을 head로 지정", "changes": [{ "variable": "cur", "before": "NULL", "after": "0x01" }] },
+    { "line": 32, "description": "첫 번째 노드 출력: 3" },
+    { "line": 34, "description": "cur->next != NULL, cur을 다음 노드로 이동", "changes": [{ "variable": "cur", "before": "0x01", "after": "0x02" }] },
+    { "line": 35, "description": "데이터 출력: 5" },
+    { "line": 34, "description": "cur->next != NULL, cur을 다음 노드로 이동", "changes": [{ "variable": "cur", "before": "0x02", "after": "0x03" }] },
+    { "line": 35, "description": "데이터 출력: 7" },
+    { "line": 34, "description": "cur->next == NULL, 출력 종료" },
+    { "line": 42, "description": "head != NULL, 삭제 단계 진입. delNode=head, delNextNode=head->next 지정", "changes": [{ "variable": "delNode", "before": null, "after": "0x01" }, { "variable": "delNextNode", "before": null, "after": "0x02" }] },
+    { "line": 45, "description": "첫 번째 노드(3) 삭제", "dataStructure": { "type": "linkedList", "nodes": [{ "id": "0x02", "value": 5, "links": ["0x03"] }, { "id": "0x03", "value": 7, "links": [] }] } },
+    { "line": 47, "description": "두 번째 노드 존재, 삭제 준비. delNode=delNextNode, delNextNode=delNextNode->next", "changes": [{ "variable": "delNode", "before": "0x01", "after": "0x02" }, { "variable": "delNextNode", "before": "0x02", "after": "0x03" }] },
+    { "line": 50, "description": "두 번째 노드(5) 삭제", "dataStructure": { "type": "linkedList", "nodes": [{ "id": "0x03", "value": 7, "links": [] }] } },
+    { "line": 47, "description": "세 번째 노드 존재, 삭제 준비. delNode=delNextNode, delNextNode=delNextNode->next", "changes": [{ "variable": "delNode", "before": "0x02", "after": "0x03" }, { "variable": "delNextNode", "before": "0x03", "after": null }] },
+    { "line": 50, "description": "세 번째 노드(7) 삭제", "dataStructure": { "type": "linkedList", "nodes": [] } },
+    { "line": 54, "description": "프로그램 종료" }
+  ]
+}
