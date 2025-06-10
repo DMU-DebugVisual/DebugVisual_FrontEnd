@@ -1,12 +1,14 @@
 // ==============================================
 // 📄 src/components/ide/services/ApiService.js
 // ==============================================
+import config from '../../../config'; // 정확한 상대경로 사용
+
 
 /**
  * 🌐 API 서비스 클래스 - 실제 API와 JSON Mock 하이브리드
  */
 export class ApiService {
-    static API_BASE_URL = 'http://13.209.72.114:8080/api/code';
+    static API_BASE_URL = `${config.API_BASE_URL}/api/code`;
     static USE_REAL_API = true; // 🎛️ true로 설정하면 실제 API 먼저 시도
 
     /**
