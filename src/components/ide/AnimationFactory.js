@@ -2,13 +2,13 @@
 import React from 'react';
 
 // 실제 애니메이션 컴포넌트들 import
-import BubbleSortAnimation from './animations/BubbleSortAnimation';
+import BubbleSortAnimation from './animations/SortAnimation';
 import LinkedListAnimation from "./animations/LinkedListAnimation";
 import {Link} from "react-router-dom";
 import BinaryTreeAnimation from "./animations/BinaryTreeAnimation";
 import HeapAnimation from "./animations/HeapAnimation";
 import GraphAnimation from "./animations/GraphAnimation";
-import FibonacciRecursionAnimation from "./animations/FibonacciRecursionAnimation";
+import FibonacciRecursionAnimation from "./animations/RecursionAnimation";
 // import FibonacciAnimation from './animations/FibonacciAnimation'; // 나중에 필요할 때 추가
 
 /**
