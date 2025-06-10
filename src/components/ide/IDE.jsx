@@ -1,31 +1,23 @@
+// IDE.jsx - 코드파일과 JSON파일 분리 및 시각화 로직 개선
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation, useParams } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
-import CodeVisualizer from './VisualizationModal';
-import VisualizationModal from './VisualizationModal'; // 새로 추가
+import VisualizationModal from './VisualizationModal';
 import './IDE.css';
-//npm install @monaco-editor/react
 import config from '../../config';
 
-
-// ResizeObserver 패치 함수 정의
+// ResizeObserver 패치 함수 (기존과 동일)
 const applyResizeObserverFix = () => {
-    // 이미 패치된 경우 중복 실행 방지
     if (window._isResizeObserverPatched) return;
-
-    // 기존 ResizeObserver 저장
     const originalResizeObserver = window.ResizeObserver;
 
-    // 스로틀링과 오류 처리를 적용한 사용자 정의 ResizeObserver 클래스
     class PatchedResizeObserver extends originalResizeObserver {
         constructor(callback) {
-            // 스로틀링 적용된 콜백 함수
             const throttledCallback = (entries, observer) => {
-                // ResizeObserver 루프 제한 오류 발생 가능성 감소
                 if (this._rafId) {
                     cancelAnimationFrame(this._rafId);
                 }
-
                 this._rafId = requestAnimationFrame(() => {
                     this._rafId = null;
                     try {
@@ -35,7 +27,6 @@ const applyResizeObserverFix = () => {
                     }
                 });
             };
-
             super(throttledCallback);
             this._rafId = null;
         }
@@ -49,7 +40,6 @@ const applyResizeObserverFix = () => {
         }
     }
 
-    // 오류 이벤트 방지 핸들러
     window.addEventListener('error', (e) => {
         if (e && e.message && (
             e.message.includes('ResizeObserver loop') ||
@@ -61,16 +51,14 @@ const applyResizeObserverFix = () => {
         }
     }, true);
 
-    // 콘솔 오류 무시 설정
     const originalConsoleError = console.error;
     console.error = (...args) => {
         if (args[0] && typeof args[0] === 'string' && args[0].includes('ResizeObserver')) {
-            return; // ResizeObserver 관련 콘솔 오류 숨김
+            return;
         }
         originalConsoleError.apply(console, args);
     };
 
-    // 전역 ResizeObserver 교체
     try {
         window.ResizeObserver = PatchedResizeObserver;
         window._isResizeObserverPatched = true;
@@ -80,73 +68,13 @@ const applyResizeObserverFix = () => {
 };
 
 const IDE = () => {
-    // 컴포넌트 마운트 시 ResizeObserver 패치 적용
-
+    // 🆕 파일 타입 구분을 위한 상태 추가
     const [isVisualizationModalOpen, setIsVisualizationModalOpen] = useState(false);
-    const handleVisualizationClick = () => {
-        if (!code.trim()) {
-            alert('시각화할 코드를 먼저 작성해주세요.');
-            return;
-        }
-        setIsVisualizationModalOpen(true);
-    };
-    const handleVisualizationClose = () => {
-        setIsVisualizationModalOpen(false);
-    };
-    const handleDummyFileSelect = (file) => {
-        if (!isSaved) {
-            const shouldContinue = window.confirm('현재 파일에 저장되지 않은 변경사항이 있습니다. 예제 파일을 불러오시겠습니까?');
-            if (!shouldContinue) return;
-        }
+    const [selectedJsonData, setSelectedJsonData] = useState(null);
+    const [isExampleFile, setIsExampleFile] = useState(false);
+    const [currentFileType, setCurrentFileType] = useState('code'); // 'code' 또는 'json'
 
-        setCode(file.code);
-        setFileName(file.name);
-
-        const extension = file.name.split('.').pop().toLowerCase();
-        const languageFromExtension = getLanguageFromExtension(extension);
-        if (languageFromExtension && languageFromExtension !== selectedLanguage) {
-            setSelectedLanguage(languageFromExtension);
-        }
-
-        setIsSaved(false);
-        setActiveFile(''); // 예제 파일이므로 activeFile 초기화
-
-        toast('예제 파일을 불러왔습니다. 저장하려면 "저장" 버튼을 클릭하세요.');
-    };
-
-
-    useEffect(() => {
-        applyResizeObserverFix();
-
-        // Monaco Editor 레이아웃 업데이트 헬퍼 함수
-        const updateAllEditorLayouts = () => {
-            if (editorRef.current) {
-                // RAF로 싱크 맞추기
-                window.requestAnimationFrame(() => {
-                    try {
-                        editorRef.current.layout();
-                    } catch (e) {
-                        console.warn('에디터 레이아웃 업데이트 중 오류:', e);
-                    }
-                });
-            }
-        };
-
-        // 윈도우 크기 변경 이벤트 리스너 추가
-        window.addEventListener('resize', updateAllEditorLayouts);
-
-        // DOM이 완전히 로드된 후 레이아웃 강제 조정
-        const initialLayoutTimeout = setTimeout(() => {
-            updateAllEditorLayouts();
-        }, 500);
-
-        return () => {
-            window.removeEventListener('resize', updateAllEditorLayouts);
-            clearTimeout(initialLayoutTimeout);
-        };
-    }, []);
-
-    // 기본 상태 및 라우팅
+    // 기본 상태들
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [username, setUsername] = useState('');
     const navigate = useNavigate();
@@ -160,12 +88,14 @@ const IDE = () => {
     const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
     const [isRunning, setIsRunning] = useState(false);
     const [output, setOutput] = useState("");
-    const [isOutputVisible, setIsOutputVisible] = useState(false);
-    const [isVisualizationVisible, setIsVisualizationVisible] = useState(false);
     const [input, setInput] = useState("");
+
+    // 🆕 파일 목록을 코드파일과 JSON파일로 분리 관리
     const [savedFiles, setSavedFiles] = useState([
-        { name: "untitled.py", code: '# 여기에 코드를 입력하세요' }
+        { name: "untitled.py", code: '# 여기에 코드를 입력하세요', type: 'code' }
     ]);
+
+    // 🆕 더미 파일도 분리하여 관리 (코드파일 + 해당 JSON파일)
     const [dummyFiles] = useState([
         {
             name: "untitled.py",
@@ -199,7 +129,8 @@ const IDE = () => {
                 "    }",
                 "    return 0;",
                 "}"
-            ].join('\n')
+            ].join('\n'),
+            type: "code"
         },
         {
             name: "linked_list.c",
@@ -271,7 +202,8 @@ const IDE = () => {
                 "    ",
                 "    return 0;",
                 "}"
-            ].join('\n')
+            ].join('\n'),
+            type: "code"
         },
         {
             name: "fibonacci.c",
@@ -291,7 +223,8 @@ const IDE = () => {
                 "    printf(\"fibo(%d) = %d\\n\", n, fibo(n));",
                 "    return 0;",
                 "}"
-            ].join('\n')
+            ].join('\n'),
+            type: "code"
         },
         {
             name: "binary_tree.c",
@@ -346,7 +279,8 @@ const IDE = () => {
                 "    ",
                 "    return 0;",
                 "}"
-            ].join('\n')
+            ].join('\n'),
+            type: "code"
         },
         {
             name: "heap.c",
@@ -429,7 +363,8 @@ const IDE = () => {
                 "    free(heap);",
                 "    return 0;",
                 "}"
-            ].join('\n')
+            ].join('\n'),
+            type: "code"
         },
         {
             name: "graph.c",
@@ -497,59 +432,503 @@ const IDE = () => {
                 "    free(g);",
                 "    return 0;",
                 "}"
-            ].join('\n')
+            ].join('\n'),
+            type: "code"
+        },
+        {
+            name: "bubble_sort.json",
+            code: JSON.stringify({
+                "algorithm": "bubble-sort",
+                "lang": "c",
+                "input": "",
+                "variables": [
+                    { "name": "MAX_SIZE", "type": "int", "initialValue": null, "currentValue": 5 },
+                    { "name": "i", "type": "int", "initialValue": null, "currentValue": 0 },
+                    { "name": "n", "type": "int", "initialValue": null, "currentValue": 5 },
+                    { "name": "list", "type": "array", "initialValue": null, "currentValue": [5, 1, 7, 4, 3] },
+                    { "name": "j", "type": "int", "initialValue": null, "currentValue": 0 },
+                    { "name": "temp", "type": "int", "initialValue": null, "currentValue": 0 }
+                ],
+                "functions": [
+                    { "name": "bubble_sort", "params": ["list", "n"] }
+                ],
+                "steps": [
+                    { "line": 21, "description": "함수 bubble_sort 호출", "stack": [{ "function": "bubble_sort", "params": [[5, 1, 7, 4, 3], 5] }] },
+                    { "line": 8, "description": "i=n-1로 초기화", "changes": [{ "variable": "i", "before": null, "after": 4 }] },
+                    { "line": 8, "description": "i 조건 검사 (4>0)", "condition": { "expression": "i>0", "result": true } },
+                    { "line": 10, "description": "j=0으로 초기화", "changes": [{ "variable": "j", "before": null, "after": 0 }] },
+                    { "line": 10, "description": "j 조건 검사 (0<4)", "condition": { "expression": "j<4", "result": true } },
+                    { "line": 12, "description": "조건 검사 (list[0]<list[1]: 5<1)", "condition": { "expression": "list[j]<list[j+1]", "result": false } },
+                    { "line": 10, "description": "j++", "changes": [{ "variable": "j", "before": 0, "after": 1 }] },
+                    { "line": 10, "description": "j 조건 검사 (1<4)", "condition": { "expression": "j<4", "result": true } },
+                    { "line": 12, "description": "조건 검사 (list[1]<list[2]: 1<7)", "condition": { "expression": "list[j]<list[j+1]", "result": true } },
+                    { "line": 13, "description": "temp=list[1]=1", "changes": [{ "variable": "temp", "before": null, "after": 1 }] },
+                    { "line": 14, "description": "list[1]=list[2]=7", "changes": [{ "variable": "list", "before": [5, 1, 7, 4, 3], "after": [5, 7, 7, 4, 3] }] },
+                    { "line": 15, "description": "list[2]=temp=1", "changes": [{ "variable": "list", "before": [5, 7, 7, 4, 3], "after": [5, 7, 1, 4, 3] }] },
+                    { "line": 10, "description": "j++", "changes": [{ "variable": "j", "before": 1, "after": 2 }] },
+                    { "line": 10, "description": "j 조건 검사 (2<4)", "condition": { "expression": "j<4", "result": true } },
+                    { "line": 12, "description": "조건 검사 (list[2]<list[3]: 1<4)", "condition": { "expression": "list[j]<list[j+1]", "result": true } },
+                    { "line": 13, "description": "temp=list[2]=1", "changes": [{ "variable": "temp", "before": 1, "after": 1 }] },
+                    { "line": 14, "description": "list[2]=list[3]=4", "changes": [{ "variable": "list", "before": [5, 7, 1, 4, 3], "after": [5, 7, 4, 4, 3] }] },
+                    { "line": 15, "description": "list[3]=temp=1", "changes": [{ "variable": "list", "before": [5, 7, 4, 4, 3], "after": [5, 7, 4, 1, 3] }] },
+                    { "line": 10, "description": "j++", "changes": [{ "variable": "j", "before": 2, "after": 3 }] },
+                    { "line": 10, "description": "j 조건 검사 (3<4)", "condition": { "expression": "j<4", "result": true } },
+                    { "line": 12, "description": "조건 검사 (list[3]<list[4]: 1<3)", "condition": { "expression": "list[j]<list[j+1]", "result": true } },
+                    { "line": 13, "description": "temp=list[3]=1", "changes": [{ "variable": "temp", "before": 1, "after": 1 }] },
+                    { "line": 14, "description": "list[3]=list[4]=3", "changes": [{ "variable": "list", "before": [5, 7, 4, 1, 3], "after": [5, 7, 4, 3, 3] }] },
+                    { "line": 15, "description": "list[4]=temp=1", "changes": [{ "variable": "list", "before": [5, 7, 4, 3, 3], "after": [5, 7, 4, 3, 1] }] },
+                    { "line": 10, "description": "j++", "changes": [{ "variable": "j", "before": 3, "after": 4 }] },
+                    { "line": 10, "description": "j 조건 검사 (4<4)", "condition": { "expression": "j<4", "result": false } },
+                    { "line": 8, "description": "i--", "changes": [{ "variable": "i", "before": 4, "after": 3 }] },
+                    { "line": 8, "description": "i 조건 검사 (3>0)", "condition": { "expression": "i>0", "result": true } },
+                    { "line": 10, "description": "j=0으로 초기화", "changes": [{ "variable": "j", "before": 4, "after": 0 }] },
+                    { "line": 10, "description": "j 조건 검사 (0<3)", "condition": { "expression": "j<3", "result": true } },
+                    { "line": 12, "description": "조건 검사 (list[0]<list[1]: 5<7)", "condition": { "expression": "list[j]<list[j+1]", "result": true } },
+                    { "line": 13, "description": "temp=list[0]=5", "changes": [{ "variable": "temp", "before": 1, "after": 5 }] },
+                    { "line": 14, "description": "list[0]=list[1]=7", "changes": [{ "variable": "list", "before": [5, 7, 4, 3, 1], "after": [7, 7, 4, 3, 1] }] },
+                    { "line": 15, "description": "list[1]=temp=5", "changes": [{ "variable": "list", "before": [7, 7, 4, 3, 1], "after": [7, 5, 4, 3, 1] }] },
+                    { "line": 10, "description": "j++", "changes": [{ "variable": "j", "before": 0, "after": 1 }] },
+                    { "line": 10, "description": "j 조건 검사 (1<3)", "condition": { "expression": "j<3", "result": true } },
+                    { "line": 12, "description": "조건 검사 (list[1]<list[2]: 5<4)", "condition": { "expression": "list[j]<list[j+1]", "result": false } },
+                    { "line": 10, "description": "j++", "changes": [{ "variable": "j", "before": 1, "after": 2 }] },
+                    { "line": 10, "description": "j 조건 검사 (2<3)", "condition": { "expression": "j<3", "result": true } },
+                    { "line": 12, "description": "조건 검사 (list[2]<list[3]: 4<3)", "condition": { "expression": "list[j]<list[j+1]", "result": false } },
+                    { "line": 10, "description": "j++", "changes": [{ "variable": "j", "before": 2, "after": 3 }] },
+                    { "line": 10, "description": "j 조건 검사 (3<3)", "condition": { "expression": "j<3", "result": false } },
+                    { "line": 8, "description": "i--", "changes": [{ "variable": "i", "before": 3, "after": 2 }] },
+                    { "line": 8, "description": "i 조건 검사 (2>0)", "condition": { "expression": "i>0", "result": true } },
+                    { "line": 10, "description": "j=0으로 초기화", "changes": [{ "variable": "j", "before": 3, "after": 0 }] },
+                    { "line": 10, "description": "j 조건 검사 (0<2)", "condition": { "expression": "j<2", "result": true } },
+                    { "line": 12, "description": "조건 검사 (list[0]<list[1]: 7<5)", "condition": { "expression": "list[j]<list[j+1]", "result": false } },
+                    { "line": 10, "description": "j++", "changes": [{ "variable": "j", "before": 0, "after": 1 }] },
+                    { "line": 10, "description": "j 조건 검사 (1<2)", "condition": { "expression": "j<2", "result": true } },
+                    { "line": 12, "description": "조건 검사 (list[1]<list[2]: 5<4)", "condition": { "expression": "list[j]<list[j+1]", "result": false } },
+                    { "line": 10, "description": "j++", "changes": [{ "variable": "j", "before": 1, "after": 2 }] },
+                    { "line": 10, "description": "j 조건 검사 (2<2)", "condition": { "expression": "j<2", "result": false } },
+                    { "line": 8, "description": "i--", "changes": [{ "variable": "i", "before": 2, "after": 1 }] },
+                    { "line": 8, "description": "i 조건 검사 (1>0)", "condition": { "expression": "i>0", "result": true } },
+                    { "line": 10, "description": "j=0으로 초기화", "changes": [{ "variable": "j", "before": 2, "after": 0 }] },
+                    { "line": 10, "description": "j 조건 검사 (0<1)", "condition": { "expression": "j<1", "result": true } },
+                    { "line": 12, "description": "조건 검사 (list[0]<list[1]: 7<5)", "condition": { "expression": "list[j]<list[j+1]", "result": false } },
+                    { "line": 10, "description": "j++", "changes": [{ "variable": "j", "before": 0, "after": 1 }] },
+                    { "line": 10, "description": "j 조건 검사 (1<1)", "condition": { "expression": "j<1", "result": false } },
+                    { "line": 8, "description": "i--", "changes": [{ "variable": "i", "before": 1, "after": 0 }] },
+                    { "line": 8, "description": "i 조건 검사 (0>0)", "condition": { "expression": "i>0", "result": false } },
+                    { "line": 22, "description": "함수 bubble_sort 반환", "stack": [] },
+                    { "line": 25, "description": "정렬된 배열 출력 (list: [7, 5, 4, 3, 1])" }
+                ]
+            }, null, 2),
+            type: "json"
         }
     ]);
 
-    // 컴포넌트 마운트 시 로그인 상태 확인
-    useEffect(() => {
-        const checkAuth = () => {
-            const token = localStorage.getItem('token');
-            const storedUsername = localStorage.getItem('username');
+    // 🆕 파일 타입 감지 함수
+    const getFileType = (filename) => {
+        const extension = filename.split('.').pop().toLowerCase();
+        return extension === 'json' ? 'json' : 'code';
+    };
 
-            const newIsLoggedIn = !!(token && storedUsername);
-            const newUsername = storedUsername || '';
+    // 🆕 현재 파일과 매칭되는 JSON 파일명 생성
+    const getMatchingJsonFileName = (codeFileName) => {
+        const baseName = codeFileName.split('.')[0];
+        return `${baseName}.json`;
+    };
 
-            // 상태가 실제로 변경된 경우에만 업데이트
-            if (newIsLoggedIn !== isLoggedIn) {
-                setIsLoggedIn(newIsLoggedIn);
-                if (newIsLoggedIn) {
-                    fetchFileList();
-                }
-            }
+    // 🆕 현재 파일과 매칭되는 코드 파일명 생성
+    const getMatchingCodeFileName = (jsonFileName) => {
+        const baseName = jsonFileName.split('.')[0];
+        // 기본적으로 .c 확장자를 사용하지만, 실제로는 매칭되는 파일을 찾아야 함
+        const possibleExtensions = ['.c', '.cpp', '.py', '.java', '.js'];
 
-            if (newUsername !== username) {
-                setUsername(newUsername);
-            }
-        };
-
-        // 즉시 체크
-        checkAuth();
-
-        // 500ms마다 체크 (로그인 상태 실시간 감지)
-        const interval = setInterval(checkAuth, 500);
-
-        return () => clearInterval(interval);
-    }, [isLoggedIn, username]); // 의존성 배열에 현재 상태 포함s
-
-    // URL 업데이트 함수
-    const updateURL = (param1, param2 = null) => {
-        let newPath;
-        if (param2) {
-            // 회원 모드: /ide/언어/파일명
-            newPath = `/ide/${param1}/${param2}`;
-        } else {
-            // 비회원 모드: /ide/언어
-            newPath = `/ide/${param1}`;
+        for (const ext of possibleExtensions) {
+            const candidateName = `${baseName}${ext}`;
+            const exists = savedFiles.find(f => f.name === candidateName) ||
+                dummyFiles.find(f => f.name === candidateName);
+            if (exists) return candidateName;
         }
 
-        // 현재 경로와 다를 때만 업데이트
-        if (location.pathname !== newPath) {
-            navigate(newPath, { replace: true });
+        return `${baseName}.c`; // 기본값
+    };
+
+    // 🆕 JSON 파일 생성/업데이트 함수
+    const createOrUpdateJsonFile = async (jsonFileName, visualizationData) => {
+        try {
+            const jsonContent = JSON.stringify(visualizationData, null, 2);
+
+            // savedFiles에서 기존 JSON 파일 찾기
+            const existingFileIndex = savedFiles.findIndex(f => f.name === jsonFileName);
+
+            if (existingFileIndex >= 0) {
+                // 기존 파일 업데이트
+                const updatedFiles = [...savedFiles];
+                updatedFiles[existingFileIndex] = {
+                    name: jsonFileName,
+                    code: jsonContent,
+                    type: 'json'
+                };
+                setSavedFiles(updatedFiles);
+                console.log(`✅ JSON 파일 업데이트됨: ${jsonFileName}`);
+            } else {
+                // 새 JSON 파일 생성
+                const newJsonFile = {
+                    name: jsonFileName,
+                    code: jsonContent,
+                    type: 'json'
+                };
+                setSavedFiles(prev => [...prev, newJsonFile]);
+                console.log(`✅ JSON 파일 생성됨: ${jsonFileName}`);
+            }
+
+            return jsonContent;
+        } catch (error) {
+            console.error('❌ JSON 파일 생성/업데이트 실패:', error);
+            throw error;
         }
     };
 
-    // 확장자에서 언어 추출 함수
+    // 🆕 개선된 시각화 클릭 핸들러
+    const handleVisualizationClick = async () => {
+        if (!code.trim()) {
+            alert('시각화할 코드를 먼저 작성해주세요.');
+            return;
+        }
+
+        const fileType = getFileType(fileName);
+        setCurrentFileType(fileType);
+
+        if (fileType === 'json') {
+            // JSON 파일인 경우: API 호출 없이 에디터 내용을 직접 파싱
+            console.log('📄 JSON 파일 시각화 - API 호출 없음');
+            try {
+                const jsonData = JSON.parse(code);
+                setSelectedJsonData(jsonData);
+                setIsExampleFile(false);
+                setIsVisualizationModalOpen(true);
+            } catch (error) {
+                alert(`JSON 형식이 올바르지 않습니다: ${error.message}`);
+                return;
+            }
+        } else {
+            // 코드 파일인 경우: API 호출 후 JSON 파일 생성/덮어쓰기
+            console.log('💻 코드 파일 시각화 - API 호출 후 JSON 생성');
+
+            try {
+                // API 호출
+                const apiUrl = config.API_ENDPOINTS.VISUALIZE_CODE || `${config.API_BASE_URL}/visualize`;
+                const requestBody = {
+                    code: code,
+                    input: input,
+                    lang: mapLanguageToAPI(selectedLanguage)
+                };
+
+                console.log('🚀 시각화 API 호출:', requestBody);
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API 요청 실패: ${response.status} ${response.statusText}`);
+                }
+
+                const visualizationData = await response.json();
+                console.log('✅ 시각화 데이터 수신:', visualizationData);
+
+                // 매칭되는 JSON 파일명 생성
+                const jsonFileName = getMatchingJsonFileName(fileName);
+
+                // JSON 파일 생성/업데이트
+                await createOrUpdateJsonFile(jsonFileName, visualizationData);
+
+                // 시각화 모달 열기
+                setSelectedJsonData(visualizationData);
+                setIsExampleFile(false);
+                setIsVisualizationModalOpen(true);
+
+                toast(`시각화 완료! ${jsonFileName} 파일이 생성/업데이트되었습니다.`);
+
+            } catch (error) {
+                console.error('❌ 시각화 실패:', error);
+                alert(`시각화 실패: ${error.message}`);
+            }
+        }
+    };
+
+    // 🆕 개선된 파일 선택 핸들러
+    const handleFileSelect = (name) => {
+        if (!isSaved) {
+            const shouldSave = window.confirm('변경 사항을 저장하시겠습니까?');
+            if (shouldSave) {
+                handleSave();
+            }
+        }
+
+        const selectedFile = savedFiles.find((file) => file.name === name);
+        if (selectedFile) {
+            setFileName(selectedFile.name);
+            setCode(selectedFile.code);
+            setActiveFile(selectedFile.name);
+            setIsSaved(true);
+
+            // 파일 타입 설정
+            const fileType = getFileType(selectedFile.name);
+            setCurrentFileType(fileType);
+
+            // 일반 파일 선택 시 예제 파일 상태 초기화
+            setSelectedJsonData(null);
+            setIsExampleFile(false);
+
+            // 파일 확장자에 맞는 언어 설정
+            const langId = getLanguageFromFileName(selectedFile.name);
+            if (langId && langId !== selectedLanguage) {
+                setSelectedLanguage(langId);
+            }
+
+            console.log(`📁 파일 선택: ${name} (타입: ${fileType})`);
+        }
+    };
+
+    // 🆕 더미 파일 선택 핸들러 개선
+    const handleDummyFileSelect = (file) => {
+        if (!isSaved) {
+            const shouldContinue = window.confirm('현재 파일에 저장되지 않은 변경사항이 있습니다. 예제 파일을 불러오시겠습니까?');
+            if (!shouldContinue) return;
+        }
+
+        setCode(file.code);
+        setFileName(file.name);
+
+        // 파일 타입 설정
+        const fileType = getFileType(file.name);
+        setCurrentFileType(fileType);
+
+        if (file.type === 'json') {
+            // JSON 예제 파일인 경우
+            try {
+                const jsonData = JSON.parse(file.code);
+                setSelectedJsonData(jsonData);
+                setIsExampleFile(true);
+                console.log('🗂️ JSON 예제 파일 선택:', file.name);
+                toast(`JSON 예제 파일 "${file.name}"을 불러왔습니다.`);
+            } catch (error) {
+                console.error('JSON 파싱 실패:', error);
+                setSelectedJsonData(null);
+                setIsExampleFile(false);
+            }
+        } else {
+            // 코드 예제 파일인 경우
+            setSelectedJsonData(null);
+            setIsExampleFile(false);
+            toast(`코드 예제 파일 "${file.name}"을 불러왔습니다.`);
+        }
+
+        // 언어 설정
+        const extension = file.name.split('.').pop().toLowerCase();
+        const languageFromExtension = getLanguageFromExtension(extension);
+        if (languageFromExtension && languageFromExtension !== selectedLanguage) {
+            setSelectedLanguage(languageFromExtension);
+        }
+
+        setIsSaved(false);
+        setActiveFile('');
+
+        console.log(`📚 예제 파일 선택: ${file.name} (타입: ${fileType})`);
+    };
+
+    // 🆕 파일 생성 시 자동으로 매칭 파일 확인
+    const handleNewFile = () => {
+        const currentLang = supportedLanguages.find(lang => lang.id === selectedLanguage) || supportedLanguages[0];
+        const defaultName = `untitled${savedFiles.length + 1}${currentLang.extension}`;
+        const newFileName = prompt('새 파일 이름을 입력하세요:', defaultName);
+
+        if (!newFileName) return;
+
+        if (savedFiles.some(file => file.name === newFileName)) {
+            alert('이미 존재하는 파일 이름입니다.');
+            return;
+        }
+
+        const fileType = getFileType(newFileName);
+        const newFile = {
+            name: newFileName,
+            code: fileType === 'json' ? '{}' : currentLang.template,
+            type: fileType
+        };
+
+        setSavedFiles([...savedFiles, newFile]);
+        setFileName(newFileName);
+        setCode(newFile.code);
+        setActiveFile(newFileName);
+        setIsSaved(true);
+        setCurrentFileType(fileType);
+
+        // 새 파일 생성 시 예제 파일 상태 초기화
+        setSelectedJsonData(null);
+        setIsExampleFile(false);
+
+        // JSON 파일이 아닌 경우에만 언어 업데이트
+        if (fileType !== 'json') {
+            const fileExtension = newFileName.split('.').pop().toLowerCase();
+            const languageFromExtension = getLanguageFromExtension(fileExtension);
+            if (languageFromExtension !== selectedLanguage) {
+                setSelectedLanguage(languageFromExtension);
+            }
+        }
+
+        console.log(`✨ 새 파일 생성: ${newFileName} (타입: ${fileType})`);
+    };
+
+    // 🆕 파일 목록을 타입별로 분리하여 렌더링
+    const renderFilesByType = () => {
+        const codeFiles = savedFiles.filter(f => f.type === 'code');
+        const jsonFiles = savedFiles.filter(f => f.type === 'json');
+
+        return (
+            <>
+                {/* 코드 파일 섹션 */}
+                <div className="file-type-section">
+                    <div className="file-type-header">
+                        <span className="icon-small">💻</span>
+                        <span>코드 파일</span>
+                        <span className="file-count">({codeFiles.length})</span>
+                    </div>
+                    <div className="file-list">
+                        {codeFiles.map((file) => (
+                            <div
+                                key={file.name}
+                                className={`file-item ${activeFile === file.name ? 'active' : ''}`}
+                                onClick={() => handleFileSelect(file.name)}
+                            >
+                                <span className="icon-small">📄</span>
+                                <span>{file.name}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* JSON 파일 섹션 */}
+                {jsonFiles.length > 0 && (
+                    <div className="file-type-section">
+                        <div className="file-type-header">
+                            <span className="icon-small">🗂️</span>
+                            <span>JSON 파일</span>
+                            <span className="file-count">({jsonFiles.length})</span>
+                        </div>
+                        <div className="file-list">
+                            {jsonFiles.map((file) => (
+                                <div
+                                    key={file.name}
+                                    className={`file-item json-file ${activeFile === file.name ? 'active' : ''}`}
+                                    onClick={() => handleFileSelect(file.name)}
+                                >
+                                    <span className="icon-small">📊</span>
+                                    <span>{file.name}</span>
+                                    <span className="file-type-badge">JSON</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </>
+        );
+    };
+
+    // 🆕 예제 파일도 타입별로 분리
+    const renderExampleFilesByType = () => {
+        const codeExamples = dummyFiles.filter(f => f.type === 'code');
+        const jsonExamples = dummyFiles.filter(f => f.type === 'json');
+
+        return (
+            <>
+                {/* 코드 예제 */}
+                <div className="example-subsection">
+                    <div className="example-subsection-header">
+                        <span className="icon-small">💻</span>
+                        <span>코드 예제</span>
+                    </div>
+                    {codeExamples.map((file, index) => (
+                        <div
+                            key={`code-${index}`}
+                            className={`example-file-item ${fileName === file.name && !activeFile ? 'active' : ''}`}
+                            onClick={() => handleDummyFileSelect(file)}
+                        >
+                            <span className="icon-small">📝</span>
+                            <span className="file-name">{file.name}</span>
+                        </div>
+                    ))}
+                </div>
+
+                {/* JSON 예제 */}
+                <div className="example-subsection">
+                    <div className="example-subsection-header">
+                        <span className="icon-small">🗂️</span>
+                        <span>JSON 예제</span>
+                    </div>
+                    {jsonExamples.map((file, index) => (
+                        <div
+                            key={`json-${index}`}
+                            className={`example-file-item json-example ${fileName === file.name && !activeFile ? 'active' : ''}`}
+                            onClick={() => handleDummyFileSelect(file)}
+                        >
+                            <span className="icon-small">📊</span>
+                            <span className="file-name">{file.name}</span>
+                            <span className="file-type-badge">JSON</span>
+                        </div>
+                    ))}
+                </div>
+            </>
+        );
+    };
+
+    // 나머지 기존 함수들 (useEffect, 언어 관련, 에디터 관련 등)은 그대로 유지
+    // ... (기존 코드 유지)
+
+    const [isDarkMode, setIsDarkMode] = useState(() => {
+        return document.body.classList.contains('dark-mode');
+    });
+
+    const [selectedLanguage, setSelectedLanguage] = useState('python');
+    const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
+
+    const supportedLanguages = [
+        { id: 'python', name: 'Python', extension: '.py', template: '# 여기에 Python 코드를 입력하세요', color: '#3572A5' },
+        { id: 'java', name: 'Java', extension: '.java', template: '// 여기에 Java 코드를 입력하세요\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello World");\n    }\n}', color: '#B07219' },
+        { id: 'cpp', name: 'C++', extension: '.cpp', template: '// 여기에 C++ 코드를 입력하세요\n#include <iostream>\n\nint main() {\n    std::cout << "Hello World" << std::endl;\n    return 0;\n}', color: '#f34b7d' },
+        { id: 'c', name: 'C', extension: '.c', template: '// 여기에 C 코드를 입력하세요\n#include <stdio.h>\n\nint main() {\n    printf("Hello World\\n");\n    return 0;\n}', color: '#555555' },
+        { id: 'javascript', name: 'JavaScript', extension: '.js', template: '// 여기에 JavaScript 코드를 입력하세요\nconsole.log("Hello World");', color: '#f1e05a' },
+    ];
+
+    const editorRef = useRef(null);
+
+    // 기존 useEffect들과 다른 함수들 유지
+    useEffect(() => {
+        applyResizeObserverFix();
+        const updateAllEditorLayouts = () => {
+            if (editorRef.current) {
+                window.requestAnimationFrame(() => {
+                    try {
+                        editorRef.current.layout();
+                    } catch (e) {
+                        console.warn('에디터 레이아웃 업데이트 중 오류:', e);
+                    }
+                });
+            }
+        };
+        window.addEventListener('resize', updateAllEditorLayouts);
+        const initialLayoutTimeout = setTimeout(() => {
+            updateAllEditorLayouts();
+        }, 500);
+        return () => {
+            window.removeEventListener('resize', updateAllEditorLayouts);
+            clearTimeout(initialLayoutTimeout);
+        };
+    }, []);
+
+    // 기존의 다른 유지 함수들
     const getLanguageFromExtension = (extension) => {
         const extensionMap = {
             'py': 'python',
@@ -561,339 +940,8 @@ const IDE = () => {
         return extensionMap[extension] || 'python';
     };
 
-    // URL에서 언어 설정
-    const handleLanguageFromURL = (langParam) => {
-        const language = supportedLanguages.find(lang =>
-            lang.id === langParam ||
-            lang.name.toLowerCase() === langParam.toLowerCase()
-        );
-
-        if (language && language.id !== selectedLanguage) {
-            setSelectedLanguage(language.id);
-
-            if (!isLoggedIn) {
-                // 비회원일 때는 템플릿 코드로 변경
-                setCode(language.template);
-                const baseName = fileName.split('.')[0];
-                const newFileName = `${baseName}${language.extension}`;
-                setFileName(newFileName);
-            }
-        }
-    };
-
-    // URL에서 언어와 파일 설정
-    const handleLanguageAndFileFromURL = (langParam, fileParam) => {
-        // 언어 설정
-        const language = supportedLanguages.find(lang =>
-            lang.id === langParam ||
-            lang.name.toLowerCase() === langParam.toLowerCase()
-        );
-
-        if (language) {
-            setSelectedLanguage(language.id);
-        }
-
-        // 파일 설정
-        if (isLoggedIn) {
-            const file = savedFiles.find(f => f.name === fileParam);
-            if (file) {
-                setFileName(file.name);
-                setCode(file.code);
-                setActiveFile(file.name);
-                setIsSaved(true);
-            } else {
-                // 파일이 없으면 새 파일 생성
-                const newFile = {
-                    name: fileParam,
-                    code: language ? language.template : '# 여기에 코드를 입력하세요'
-                };
-                setSavedFiles(prev => [...prev, newFile]);
-                setFileName(fileParam);
-                setCode(newFile.code);
-                setActiveFile(fileParam);
-                setIsSaved(true);
-            }
-        }
-    };
-
-    // URL에서 파라미터 처리
-    useEffect(() => {
-        const { param, language, filename } = params;
-
-        // /ide/:language/:filename 형태 (회원 모드)
-        if (language && filename) {
-            if (isLoggedIn) {
-                handleLanguageAndFileFromURL(language, filename);
-            } else {
-                // 비회원이 회원 URL에 접속한 경우 언어만 적용
-                handleLanguageFromURL(language);
-            }
-        }
-        // /ide/:param 형태 (비회원 모드 또는 단일 파라미터)
-        else if (param) {
-            if (param.includes('.')) {
-                // 파일명인 경우 (확장자 포함)
-                if (isLoggedIn) {
-                    const fileExtension = param.split('.').pop().toLowerCase();
-                    const languageFromFile = getLanguageFromExtension(fileExtension);
-                    handleLanguageAndFileFromURL(languageFromFile, param);
-                } else {
-                    // 비회원이 파일 URL에 접속한 경우 언어만 적용
-                    const fileExtension = param.split('.').pop().toLowerCase();
-                    const languageFromFile = getLanguageFromExtension(fileExtension);
-                    if (languageFromFile) {
-                        handleLanguageFromURL(languageFromFile);
-                    }
-                }
-            } else {
-                // 언어명인 경우
-                handleLanguageFromURL(param);
-            }
-        }
-        // /ide 기본 경로
-        else {
-            // 기본값으로 URL 업데이트
-            if (isLoggedIn && activeFile) {
-                updateURL(selectedLanguage, activeFile);
-            } else {
-                updateURL(selectedLanguage);
-            }
-        }
-    }, [params, isLoggedIn, savedFiles]);
-
-    // 다크 모드 상태 - document.body의 클래스를 감지
-    const [isDarkMode, setIsDarkMode] = useState(() => {
-        // body 태그에 dark-mode 클래스가 있는지 확인
-        return document.body.classList.contains('dark-mode');
-    });
-
-    // body의 dark-mode 클래스 변화 감지
-    useEffect(() => {
-        // MutationObserver를 사용하여 body 클래스 변경 감지
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (
-                    mutation.attributeName === 'class' &&
-                    mutation.target === document.body
-                ) {
-                    const hasClass = document.body.classList.contains('dark-mode');
-                    setIsDarkMode(hasClass);
-                }
-            });
-        });
-
-        // 관찰 시작
-        observer.observe(document.body, { attributes: true });
-
-        // 초기 상태 설정
-        setIsDarkMode(document.body.classList.contains('dark-mode'));
-
-        // 클린업 함수
-        return () => {
-            observer.disconnect();
-        };
-    }, []);
-
-    // 언어 선택을 위한 상태 추가
-    const [selectedLanguage, setSelectedLanguage] = useState('python');
-    const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
-
-    // 지원하는 언어 목록
-    const supportedLanguages = [
-        { id: 'python', name: 'Python', extension: '.py', template: '# 여기에 Python 코드를 입력하세요', color: '#3572A5' },
-        { id: 'java', name: 'Java', extension: '.java', template: '// 여기에 Java 코드를 입력하세요\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello World");\n    }\n}', color: '#B07219' },
-        { id: 'cpp', name: 'C++', extension: '.cpp', template: '// 여기에 C++ 코드를 입력하세요\n#include <iostream>\n\nint main() {\n    std::cout << "Hello World" << std::endl;\n    return 0;\n}', color: '#f34b7d' },
-        { id: 'c', name: 'C', extension: '.c', template: '// 여기에 C 코드를 입력하세요\n#include <stdio.h>\n\nint main() {\n    printf("Hello World\\n");\n    return 0;\n}', color: '#555555' },
-        { id: 'javascript', name: 'JavaScript', extension: '.js', template: '// 여기에 JavaScript 코드를 입력하세요\nconsole.log("Hello World");', color: '#f1e05a' },
-    ];
-
-    // Monaco 에디터 참조 추가
-    const editorRef = useRef(null);
-
-    // 언어 변경 시 URL 업데이트
-    useEffect(() => {
-        if (isLoggedIn && activeFile) {
-            // 회원: 언어/파일명 형태
-            updateURL(selectedLanguage, activeFile);
-        } else if (!isLoggedIn) {
-            // 비회원: 언어만
-            updateURL(selectedLanguage);
-        }
-    }, [selectedLanguage, activeFile, isLoggedIn]);
-
-    // 로그인 상태 변경 시 URL 업데이트
-    useEffect(() => {
-        if (isLoggedIn && activeFile) {
-            // 로그인 시: 언어/파일명 형태로 변경
-            updateURL(selectedLanguage, activeFile);
-        } else if (!isLoggedIn) {
-            // 로그아웃 시: 언어만 남김
-            updateURL(selectedLanguage);
-        }
-    }, [isLoggedIn]);
-
-    // 언어 메뉴 토글 함수
-    const toggleLanguageMenu = () => {
-        setIsLanguageMenuOpen(!isLanguageMenuOpen);
-    };
-
-    // 시각화 패널 토글
-    const toggleVisualization = () => {
-        setIsVisualizationVisible(!isVisualizationVisible);
-    };
-
-    // 현재 선택된 언어의 색상 클래스 가져오기
-    const getCurrentLanguageColorClass = () => {
-        const langId = selectedLanguage || 'python';
-        return `lang-${langId}`;
-    };
-
-    // 언어 선택 함수
-    const selectLanguage = (langId) => {
-        const newLanguage = supportedLanguages.find(lang => lang.id === langId);
-
-        if (newLanguage) {
-            // 저장되지 않은 변경사항이 있는지 확인
-            if (!isSaved) {
-                const shouldChange = window.confirm('저장되지 않은 변경사항이 있습니다. 언어를 변경하시겠습니까?');
-                if (!shouldChange) {
-                    setIsLanguageMenuOpen(false);
-                    return;
-                }
-            }
-
-            // 새 언어에 맞게 파일명 변경
-            const baseName = fileName.split('.')[0];
-            const newFileName = `${baseName}${newLanguage.extension}`;
-
-            setSelectedLanguage(langId);
-            setFileName(newFileName);
-            setCode(newLanguage.template);
-            setIsSaved(false);
-            setIsLanguageMenuOpen(false);
-
-            // 회원의 경우 새 파일명으로 activeFile도 업데이트
-            if (isLoggedIn) {
-                setActiveFile(newFileName);
-                // 새 파일을 savedFiles에 추가
-                const newFile = { name: newFileName, code: newLanguage.template };
-                setSavedFiles(prev => {
-                    const exists = prev.find(f => f.name === newFileName);
-                    if (!exists) {
-                        return [...prev, newFile];
-                    }
-                    return prev;
-                });
-            }
-        }
-    };
-
-    // 에디터 마운트 핸들러 - 성능 개선을 위한 수정
-    const handleEditorDidMount = (editor, monaco) => {
-        editorRef.current = editor;
-
-        // 성능 최적화 옵션
-        const editorOptions = {
-            // 가볍게 설정
-            minimap: { enabled: false },
-            scrollBeyondLastLine: false,
-            renderLineHighlight: 'line',
-            renderWhitespace: 'none',
-            automaticLayout: false,
-            wordWrap: "bounded",
-            wordWrapColumn: 120,
-            scrollbar: {
-                vertical: 'auto',
-                horizontal: 'auto',
-                verticalScrollbarSize: 10,
-                horizontalScrollbarSize: 10
-            }
-        };
-
-        // 성능 관련 옵션 적용
-        editor.updateOptions(editorOptions);
-
-        // 단축키 등록
-        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, function() {
-            handleSave();
-        });
-
-        editor.addCommand(monaco.KeyCode.F5, function() {
-            handleRun();
-        });
-
-        // 현재 줄 하이라이트 색상 테마 설정
-        monaco.editor.defineTheme('custom-dark', {
-            base: 'vs-dark',
-            inherit: true,
-            rules: [],
-            colors: {
-                // 라인 하이라이트 배경색 (연보라색)
-                'editor.lineHighlightBackground': '#7e57c233',
-                // 라인 하이라이트 테두리 색상 (약간 더 진한 연보라색)
-                'editor.lineHighlightBorder': '#7e57c244'
-            }
-        });
-
-        // 라이트 모드 테마 정의
-        monaco.editor.defineTheme('custom-light', {
-            base: 'vs',
-            inherit: true,
-            rules: [],
-            colors: {
-                'editor.lineHighlightBackground': '#6a47b811',
-                'editor.lineHighlightBorder': '#6a47b822'
-            }
-        });
-
-        // 현재 모드에 맞는 테마 적용
-        updateEditorTheme(monaco);
-
-        // 에디터 초기 레이아웃 강제 설정
-        setTimeout(() => {
-            try {
-                editor.layout();
-            } catch (e) {
-                console.warn('에디터 초기 레이아웃 설정 중 오류:', e);
-            }
-        }, 100);
-    };
-
-    // 다크모드 변경 시 에디터 테마 업데이트
-    const updateEditorTheme = (monaco) => {
-        if (!monaco && !editorRef.current) return;
-
-        const m = monaco || window.monaco;
-        if (m) {
-            m.editor.setTheme(isDarkMode ? 'custom-dark' : 'custom-light');
-        }
-    };
-
-    // 다크모드 변경 감지 시 에디터 테마 업데이트
-    useEffect(() => {
-        updateEditorTheme();
-    }, [isDarkMode]);
-
-    // 레이아웃 변경 시 에디터 크기 동기화
-    useEffect(() => {
-        // 사이드바 토글, 시각화 패널 토글 시 에디터 크기 업데이트
-        const updateTimer = setTimeout(() => {
-            if (editorRef.current) {
-                try {
-                    editorRef.current.layout();
-                } catch (e) {
-                    console.warn('레이아웃 변경 후 에디터 크기 조정 중 오류:', e);
-                }
-            }
-        }, 300); // 애니메이션 완료 후 업데이트
-
-        return () => clearTimeout(updateTimer);
-    }, [isLeftPanelCollapsed, isVisualizationVisible]);
-
-    // 파일 확장자에 따른 언어 결정
     const getLanguageFromFileName = (filename) => {
         const extension = filename.split('.').pop().toLowerCase();
-
         const languageMap = {
             'py': 'python',
             'js': 'javascript',
@@ -908,187 +956,111 @@ const IDE = () => {
             'rb': 'ruby',
             'ts': 'typescript'
         };
-
         return languageMap[extension] || 'plaintext';
     };
 
-    // 코드 변경 감지 함수
+    const mapLanguageToAPI = (langId) => {
+        switch (langId) {
+            case 'cpp':
+                return 'c';
+            case 'javascript':
+                return 'javascript';
+            default:
+                return langId;
+        }
+    };
+
     const handleEditorChange = (value) => {
         setCode(value);
         setIsSaved(false);
     };
 
-    // 파일 목록 불러오기
-    const fetchFileList = async () => {
-        // 비회원이면 API 호출 안함
-        if (!isLoggedIn) return;
+    const handleEditorDidMount = (editor, monaco) => {
+        editorRef.current = editor;
+        const editorOptions = {
+            minimap: { enabled: false },
+            scrollBeyondLastLine: false,
+            renderLineHighlight: 'line',
+            renderWhitespace: 'none',
+            automaticLayout: false,
+            wordWrap: "bounded",
+            wordWrapColumn: 120,
+            scrollbar: {
+                vertical: 'auto',
+                horizontal: 'auto',
+                verticalScrollbarSize: 10,
+                horizontalScrollbarSize: 10
+            }
+        };
+        editor.updateOptions(editorOptions);
 
-        // 임시 로컬 파일 목록 사용
-        const localFiles = [
-            { name: "untitled.py", code: '# 여기에 코드를 입력하세요' },
-            { name: "example.py", code: 'print("Hello, World!")' },
-            { name: "test.js", code: 'console.log("Testing JavaScript");' }
-        ];
-
-        setSavedFiles(localFiles);
-    };
-
-    // 회원 상태가 변경될 때 파일 목록 갱신
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    useEffect(() => {
-        if (isLoggedIn) {
-            fetchFileList();
-        }
-    }, [isLoggedIn]);
-
-    // 새 파일 생성
-    const handleNewFile = () => {
-        // 현재 선택된 언어의 확장자와 템플릿 가져오기
-        const currentLang = supportedLanguages.find(lang => lang.id === selectedLanguage) || supportedLanguages[0];
-
-        const defaultName = `untitled${savedFiles.length + 1}${currentLang.extension}`;
-        const newFileName = prompt('새 파일 이름을 입력하세요:', defaultName);
-
-        if (!newFileName) return;
-
-        // 중복 파일 이름 확인
-        if (savedFiles.some(file => file.name === newFileName)) {
-            alert('이미 존재하는 파일 이름입니다.');
-            return;
-        }
-
-        // 새 파일 추가
-        const newFile = { name: newFileName, code: currentLang.template };
-        setSavedFiles([...savedFiles, newFile]);
-
-        // 새 파일 선택
-        setFileName(newFileName);
-        setCode(currentLang.template);
-        setActiveFile(newFileName);
-        setIsSaved(true);
-
-        // 확장자에 맞게 언어 업데이트
-        const fileExtension = newFileName.split('.').pop().toLowerCase();
-        const languageFromExtension = getLanguageFromExtension(fileExtension);
-        if (languageFromExtension !== selectedLanguage) {
-            setSelectedLanguage(languageFromExtension);
-        }
-    };
-
-    // 확장자와 언어 ID 매핑 함수
-    const getLanguageMap = () => {
-        const map = {};
-        supportedLanguages.forEach(lang => {
-            map[lang.id] = lang.extension.replace('.', '');
+        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, function() {
+            handleSave();
         });
-        return map;
-    };
 
-    const apiUrl = config.API_ENDPOINTS.RUN_CODE;
-
-    // 스웨거 API에 맞게 언어 매핑 함수
-    const mapLanguageToAPI = (langId) => {
-        // 스웨거 API에서는 'python', 'java', 'c'만 지원
-        switch (langId) {
-            case 'cpp':
-                return 'c'; // C++는 C로 처리
-            case 'javascript':
-                return 'javascript'; // 스웨거 문서에 없지만, 지원할 수도 있음
-            default:
-                return langId; // python, java, c는 그대로 사용
-        }
-    };
-
-    const handleRun = async () => {
-        setIsRunning(true);
-        setIsOutputVisible(true);
-        setOutput("실행 중...");
-
-        try {
-            // 현재 에디터의 값을 가져옴
-            const currentCode = editorRef.current.getValue();
-
-            // API 요청 본문 생성
-            const requestBody = {
-                code: currentCode,
-                input: input,
-                lang: mapLanguageToAPI(selectedLanguage)
-            };
-
-            console.log('API 요청 데이터:', JSON.stringify(requestBody));
-
-
-            // API 호출
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestBody),
-            });
-
-            if (!response.ok) {
-                throw new Error(`API 요청 실패: ${response.status} ${response.statusText}`);
+        monaco.editor.defineTheme('custom-dark', {
+            base: 'vs-dark',
+            inherit: true,
+            rules: [],
+            colors: {
+                'editor.lineHighlightBackground': '#7e57c233',
+                'editor.lineHighlightBorder': '#7e57c244'
             }
+        });
 
-            // 🔥 수정된 부분: JSON 응답 파싱 후 stdout 추출
-            const result = await response.json(); // text() 대신 json() 사용
-
-            console.log('API 응답 데이터:', result); // 디버깅용 로그
-
-            // stdout 값만 추출해서 출력
-            if (result && typeof result === 'object') {
-                // stdout, Stdout, STDOUT 등 다양한 케이스 대응
-                const stdout = result.stdout || result.Stdout || result.STDOUT ||
-                    result.output || result.Output || result.OUTPUT;
-
-                if (stdout !== undefined) {
-                    setOutput(stdout || "실행 완료 (출력 없음)");
-                } else {
-                    // stdout이 없는 경우 전체 응답을 보여주되, 에러 정보 우선
-                    const errorMsg = result.stderr || result.error || result.message;
-                    if (errorMsg) {
-                        setOutput(`오류: ${errorMsg}`);
-                    } else {
-                        setOutput("실행 완료되었지만 출력이 없습니다.");
-                    }
-                }
-            } else {
-                // 응답이 객체가 아닌 경우 (문자열 등)
-                setOutput(result || "실행 결과가 없습니다.");
+        monaco.editor.defineTheme('custom-light', {
+            base: 'vs',
+            inherit: true,
+            rules: [],
+            colors: {
+                'editor.lineHighlightBackground': '#6a47b811',
+                'editor.lineHighlightBorder': '#6a47b822'
             }
+        });
 
-        } catch (error) {
-            console.error('코드 실행 중 오류:', error);
-            setOutput(`오류 발생: ${error.message}`);
-        } finally {
-            setIsRunning(false);
-        }
+        const updateEditorTheme = (monaco) => {
+            if (!monaco && !editorRef.current) return;
+            const m = monaco || window.monaco;
+            if (m) {
+                m.editor.setTheme(isDarkMode ? 'custom-dark' : 'custom-light');
+            }
+        };
+
+        updateEditorTheme(monaco);
+
+        setTimeout(() => {
+            try {
+                editor.layout();
+            } catch (e) {
+                console.warn('에디터 초기 레이아웃 설정 중 오류:', e);
+            }
+        }, 100);
     };
 
-    // 파일 저장 함수
     const handleSave = () => {
-        // 비회원은 로그인 유도
         if (!isLoggedIn) {
             alert("로그인 후 이용 가능한 기능입니다.");
             return;
         }
 
         try {
-            // 현재 에디터의 값을 가져옴
             const currentCode = editorRef.current.getValue();
-
-            // 로컬 상태 업데이트
             const existingFileIndex = savedFiles.findIndex((file) => file.name === fileName);
 
             if (existingFileIndex >= 0) {
-                // 기존 파일 업데이트
                 const updatedFiles = [...savedFiles];
-                updatedFiles[existingFileIndex] = { name: fileName, code: currentCode };
+                updatedFiles[existingFileIndex] = {
+                    name: fileName,
+                    code: currentCode,
+                    type: getFileType(fileName)
+                };
                 setSavedFiles(updatedFiles);
             } else {
-                // 새 파일 추가
-                setSavedFiles([...savedFiles, { name: fileName, code: currentCode }]);
+                setSavedFiles([...savedFiles, {
+                    name: fileName,
+                    code: currentCode,
+                    type: getFileType(fileName)
+                }]);
             }
 
             setIsSaved(true);
@@ -1100,46 +1072,108 @@ const IDE = () => {
         }
     };
 
-    // 파일 선택 함수
-    const handleFileSelect = (name) => {
-        // 현재 파일에 변경사항이 있으면 저장
-        if (!isSaved) {
-            const shouldSave = window.confirm('변경 사항을 저장하시겠습니까?');
-            if (shouldSave) {
-                handleSave();
-            }
+    const handleRun = async () => {
+        // JSON 파일은 실행할 수 없음
+        if (currentFileType === 'json') {
+            alert('JSON 파일은 실행할 수 없습니다. 시각화 버튼을 사용해주세요.');
+            return;
         }
 
-        // 로컬 상태에서 파일 찾기
-        const selectedFile = savedFiles.find((file) => file.name === name);
-        if (selectedFile) {
-            setFileName(selectedFile.name);
-            setCode(selectedFile.code);
-            setActiveFile(selectedFile.name);
-            setIsSaved(true);
+        setIsRunning(true);
+        setOutput("실행 중...");
 
-            // 파일 확장자에 맞는 언어 설정
-            const langId = getLanguageFromFileName(selectedFile.name);
-            if (langId && langId !== selectedLanguage) {
-                setSelectedLanguage(langId);
+        try {
+            const currentCode = editorRef.current.getValue();
+            const requestBody = {
+                code: currentCode,
+                input: input,
+                lang: mapLanguageToAPI(selectedLanguage)
+            };
+
+            const response = await fetch(config.API_ENDPOINTS.RUN_CODE, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody),
+            });
+
+            if (!response.ok) {
+                throw new Error(`API 요청 실패: ${response.status} ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            const stdout = result.stdout || result.Stdout || result.STDOUT ||
+                result.output || result.Output || result.OUTPUT;
+
+            if (stdout !== undefined) {
+                setOutput(stdout || "실행 완료 (출력 없음)");
+            } else {
+                const errorMsg = result.stderr || result.error || result.message;
+                if (errorMsg) {
+                    setOutput(`오류: ${errorMsg}`);
+                } else {
+                    setOutput("실행 완료되었지만 출력이 없습니다.");
+                }
+            }
+
+        } catch (error) {
+            console.error('코드 실행 중 오류:', error);
+            setOutput(`오류 발생: ${error.message}`);
+        } finally {
+            setIsRunning(false);
+        }
+    };
+
+    const toggleLanguageMenu = () => {
+        setIsLanguageMenuOpen(!isLanguageMenuOpen);
+    };
+
+    const selectLanguage = (langId) => {
+        const newLanguage = supportedLanguages.find(lang => lang.id === langId);
+
+        if (newLanguage) {
+            if (!isSaved) {
+                const shouldChange = window.confirm('저장되지 않은 변경사항이 있습니다. 언어를 변경하시겠습니까?');
+                if (!shouldChange) {
+                    setIsLanguageMenuOpen(false);
+                    return;
+                }
+            }
+
+            const baseName = fileName.split('.')[0];
+            const newFileName = `${baseName}${newLanguage.extension}`;
+
+            setSelectedLanguage(langId);
+            setFileName(newFileName);
+            setCode(newLanguage.template);
+            setIsSaved(false);
+            setIsLanguageMenuOpen(false);
+
+            if (isLoggedIn) {
+                setActiveFile(newFileName);
+                const newFile = { name: newFileName, code: newLanguage.template, type: 'code' };
+                setSavedFiles(prev => {
+                    const exists = prev.find(f => f.name === newFileName);
+                    if (!exists) {
+                        return [...prev, newFile];
+                    }
+                    return prev;
+                });
             }
         }
     };
 
-    // 토스트 메시지 표시 함수
     const toast = (message) => {
-        // 기존 토스트 메시지가 있으면 모두 제거
         const existingToasts = document.querySelectorAll('.toast');
         existingToasts.forEach(toast => {
             document.getElementById('toast-container')?.removeChild(toast);
         });
 
-        // 새 토스트 메시지 생성
         const toastElement = document.createElement('div');
         toastElement.className = 'toast toast-success';
         toastElement.textContent = message;
 
-        // 토스트 컨테이너에 추가
         const container = document.getElementById('toast-container');
         if (!container) {
             const newContainer = document.createElement('div');
@@ -1150,12 +1184,10 @@ const IDE = () => {
             container.appendChild(toastElement);
         }
 
-        // 토스트 표시 애니메이션
         setTimeout(() => {
             toastElement.classList.add('show');
         }, 10);
 
-        // 자동 제거
         setTimeout(() => {
             toastElement.classList.remove('show');
             setTimeout(() => {
@@ -1167,13 +1199,33 @@ const IDE = () => {
         }, 3000);
     };
 
+    // 로그인 체크, URL 처리 등 기존 useEffect들 (간소화)
+    useEffect(() => {
+        const checkAuth = () => {
+            const token = localStorage.getItem('token');
+            const storedUsername = localStorage.getItem('username');
+            const newIsLoggedIn = !!(token && storedUsername);
+            const newUsername = storedUsername || '';
+
+            if (newIsLoggedIn !== isLoggedIn) {
+                setIsLoggedIn(newIsLoggedIn);
+            }
+            if (newUsername !== username) {
+                setUsername(newUsername);
+            }
+        };
+
+        checkAuth();
+        const interval = setInterval(checkAuth, 500);
+        return () => clearInterval(interval);
+    }, [isLoggedIn, username]);
+
     return (
         <div className="ide-container">
             <div className={`sidebar ${isLeftPanelCollapsed ? 'collapsed' : ''}`}>
                 {isLoggedIn ? (
-                    // 회원용 사이드바 - 내 파일 + 예제 파일
                     <>
-                        {/* 내 파일 섹션 */}
+                        {/* 내 파일 섹션 - 타입별로 분리 */}
                         <div className="my-files-section">
                             <div className="sidebar-header">
                                 <div className="file-list-header">
@@ -1184,45 +1236,21 @@ const IDE = () => {
                                     </button>
                                 </div>
                             </div>
-
-                            <div className="file-list">
-                                {savedFiles.map((file) => (
-                                    <div
-                                        key={file.name}
-                                        className={`file-item ${activeFile === file.name ? 'active' : ''}`}
-                                        onClick={() => handleFileSelect(file.name)}
-                                    >
-                                        <span className="icon-small">📄</span>
-                                        <span>{file.name}</span>
-                                    </div>
-                                ))}
-                            </div>
+                            {renderFilesByType()}
                         </div>
 
-                        {/* 예제 파일 섹션 */}
+                        {/* 예제 파일 섹션 - 타입별로 분리 */}
                         <div className="example-files-section">
                             <div className="example-files-header">
                                 <span className="icon-small">📚</span>
                                 <span>예제 파일</span>
                             </div>
-
                             <div className="example-files-list">
-                                {dummyFiles.map((file, index) => (
-                                    <div
-                                        key={`dummy-${index}`}
-                                        className={`example-file-item ${fileName === file.name && !activeFile ? 'active' : ''}`}
-                                        onClick={() => handleDummyFileSelect(file)}
-                                        title="클릭하여 예제 불러오기 (저장하려면 저장 버튼 클릭)"
-                                    >
-                                        <span className="icon-small">📄</span>
-                                        <span className="file-name">{file.name}</span>
-                                    </div>
-                                ))}
+                                {renderExampleFilesByType()}
                             </div>
                         </div>
                     </>
                 ) : (
-                    // 비회원용 사이드바 (팀원 코드 유지)
                     <div className="auth-sidebar">
                         <div className="auth-header">
                             <div className="auth-title">
@@ -1248,12 +1276,12 @@ const IDE = () => {
                     </div>
                 )}
             </div>
+
             {/* 메인 콘텐츠 */}
             <div className={`main-content ${!isLoggedIn ? 'guest-mode' : ''}`}>
                 {/* 상단 헤더 */}
                 <div className="main-header">
                     <div className="header-left">
-                        {/* 햄버거 메뉴 버튼 */}
                         <button
                             onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}
                             className="sidebar-toggle-button"
@@ -1265,7 +1293,6 @@ const IDE = () => {
                             </div>
                         </button>
 
-                        {/* 언어 선택 드롭다운 */}
                         <div className="language-selector">
                             <button
                                 className={`language-button lang-${selectedLanguage}`}
@@ -1289,10 +1316,16 @@ const IDE = () => {
                                 </div>
                             )}
                         </div>
+
+                        {/* 🆕 현재 파일 타입 표시 */}
+                        <div className="file-type-indicator">
+                            <span className={`file-type-badge ${currentFileType === 'json' ? 'json-type' : 'code-type'}`}>
+                                {currentFileType === 'json' ? '📊 JSON' : '💻 코드'}
+                            </span>
+                        </div>
                     </div>
 
                     <div className="header-right">
-                        {/* 로그인 상태 표시 (로그아웃 버튼 없음) */}
                         <div className="login-status-container">
                             <span className={`login-status ${isLoggedIn ? 'logged-in' : 'guest'}`}>
                                 {isLoggedIn ? `${username} 님` : '비회원 모드'}
@@ -1300,7 +1333,6 @@ const IDE = () => {
                         </div>
 
                         {isLoggedIn ? (
-                            // 회원용 헤더 컨트롤
                             <>
                                 <input
                                     type="text"
@@ -1309,10 +1341,7 @@ const IDE = () => {
                                     className="filename-input"
                                     placeholder="파일명.확장자"
                                 />
-                                <button
-                                    className="save-button"
-                                    onClick={handleSave}
-                                >
+                                <button className="save-button" onClick={handleSave}>
                                     저장
                                 </button>
                                 <span className={`save-indicator ${isSaved ? 'saved' : ''}`}>
@@ -1320,7 +1349,6 @@ const IDE = () => {
                                 </span>
                             </>
                         ) : (
-                            // 비회원용 헤더 컨트롤
                             <div className="guest-controls">
                                 <span className="guest-mode-text">제한된 기능으로 실행 중입니다</span>
                             </div>
@@ -1328,36 +1356,35 @@ const IDE = () => {
                     </div>
                 </div>
 
-                {/* 코드 에디터와 출력 영역 레이아웃 변경 */}
+                {/* 코드 에디터와 출력 영역 */}
                 <div className="content-layout">
-                    {/* 좌측 에디터 영역 */}
                     <div className="editor-section">
                         <div className="monaco-editor-wrapper">
                             <Editor
                                 height="100%"
-                                defaultLanguage={selectedLanguage}
+                                defaultLanguage={currentFileType === 'json' ? 'json' : selectedLanguage}
                                 defaultValue={code}
-                                language={selectedLanguage}
+                                language={currentFileType === 'json' ? 'json' : selectedLanguage}
                                 value={code}
                                 onChange={handleEditorChange}
                                 onMount={handleEditorDidMount}
-                                theme={isDarkMode ? "vs-dark" : "vs-light"} // 다크모드에 따라 테마 변경
+                                theme={isDarkMode ? "vs-dark" : "vs-light"}
                                 options={{
                                     fontSize: 14,
-                                    minimap: { enabled: false }, // 성능 향상을 위해 미니맵 비활성화
+                                    minimap: { enabled: false },
                                     scrollBeyondLastLine: false,
-                                    automaticLayout: false, // 자동 레이아웃 비활성화(성능 향상)
+                                    automaticLayout: false,
                                     tabSize: 4,
                                     insertSpaces: true,
-                                    cursorBlinking: "solid", // 깜빡임을 줄여 성능 향상
+                                    cursorBlinking: "solid",
                                     folding: true,
                                     lineNumbersMinChars: 3,
                                     wordWrap: "on",
-                                    renderWhitespace: "none", // 성능 향상을 위해 공백 렌더링 비활성화
+                                    renderWhitespace: "none",
                                     renderLineHighlight: "line",
                                     renderLineHighlightOnlyWhenFocus: false,
                                     scrollbar: {
-                                        useShadows: false, // 그림자 효과 제거
+                                        useShadows: false,
                                         vertical: 'auto',
                                         horizontal: 'auto',
                                         verticalScrollbarSize: 10,
@@ -1368,60 +1395,69 @@ const IDE = () => {
                         </div>
                     </div>
 
-                    {/* 우측 입력/출력/버튼 영역 */}
                     <div className="right-panel">
-                        {/* 실행 및 시각화 버튼 */}
                         <div className="action-buttons">
                             <button
                                 className="run-code-button"
                                 onClick={handleRun}
-                                disabled={isRunning}
+                                disabled={isRunning || currentFileType === 'json'}
+                                title={currentFileType === 'json' ? 'JSON 파일은 실행할 수 없습니다' : '코드 실행'}
                             >
                                 <span className="button-icon">▶</span>
-                                실행 코드
+                                {currentFileType === 'json' ? '실행 불가' : '실행 코드'}
                             </button>
                             <button
                                 className="visualization-button"
                                 onClick={handleVisualizationClick}
-                                title="코드 시각화 모달 열기"
+                                title={currentFileType === 'json' ? 'JSON 데이터 시각화' : 'API를 통한 코드 시각화'}
                             >
                                 <span className="button-icon">📊</span>
-                                코드 시각화
+                                {currentFileType === 'json' ? 'JSON 시각화' : '코드 시각화'}
                             </button>
                         </div>
 
-                        {/* 입력 영역 */}
                         <div className="input-section">
-                            <div className="section-header">프로그램 입력</div>
+                            <div className="section-header">
+                                {currentFileType === 'json' ? 'JSON 데이터 (읽기 전용)' : '프로그램 입력'}
+                            </div>
                             <textarea
                                 className="program-input"
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
-                                placeholder="프로그램 실행 시 필요한 입력값을 여기에 작성하세요"
+                                placeholder={currentFileType === 'json' ?
+                                    'JSON 파일에서는 입력값이 사용되지 않습니다' :
+                                    '프로그램 실행 시 필요한 입력값을 여기에 작성하세요'
+                                }
+                                disabled={currentFileType === 'json'}
                             ></textarea>
                         </div>
 
-                        {/* 출력 영역 */}
                         <div className="output-section">
-                            <div className="section-header">프로그램 출력</div>
+                            <div className="section-header">
+                                {currentFileType === 'json' ? 'JSON 정보' : '프로그램 출력'}
+                            </div>
                             <pre className="program-output">
-                                {isRunning ? "실행 중..." : (output || "코드를 실행하면 결과가 여기에 표시됩니다.")}
+                                {currentFileType === 'json' ?
+                                    'JSON 파일에서는 시각화 버튼을 사용하여 데이터를 확인하세요.' :
+                                    (isRunning ? "실행 중..." : (output || "코드를 실행하면 결과가 여기에 표시됩니다."))
+                                }
                             </pre>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* 🎬 시각화 모달 */}
+            {/* 시각화 모달 */}
             <VisualizationModal
                 isOpen={isVisualizationModalOpen}
-                onClose={handleVisualizationClose}
+                onClose={() => setIsVisualizationModalOpen(false)}
                 code={code}
                 language={selectedLanguage}
                 input={input}
+                preloadedJsonData={isExampleFile ? selectedJsonData : null}
+                isJsonFile={currentFileType === 'json'}
             />
 
-            {/* 토스트 메시지 컨테이너 */}
             <div id="toast-container"></div>
         </div>
     );
