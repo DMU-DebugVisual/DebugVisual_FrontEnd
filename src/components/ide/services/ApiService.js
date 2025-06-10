@@ -247,9 +247,18 @@ export class ApiService {
      */
     static async checkApiHealth() {
         try {
-            const response = await fetch(`${this.API_BASE_URL}/health`, {
-                method: 'GET',
-                signal: AbortSignal.timeout(5000) // 5초 타임아웃
+            const response = await fetch(`${this.API_BASE_URL}/visualize`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    code: 'console.log("test");',
+                    input: "",
+                    lang: "javascript"
+                }),
+                signal: AbortSignal.timeout(5000)
             });
 
             return {
