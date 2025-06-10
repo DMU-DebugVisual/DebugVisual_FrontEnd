@@ -93,6 +93,26 @@ const IDE = () => {
     const handleVisualizationClose = () => {
         setIsVisualizationModalOpen(false);
     };
+    const handleDummyFileSelect = (file) => {
+        if (!isSaved) {
+            const shouldContinue = window.confirm('현재 파일에 저장되지 않은 변경사항이 있습니다. 예제 파일을 불러오시겠습니까?');
+            if (!shouldContinue) return;
+        }
+
+        setCode(file.code);
+        setFileName(file.name);
+
+        const extension = file.name.split('.').pop().toLowerCase();
+        const languageFromExtension = getLanguageFromExtension(extension);
+        if (languageFromExtension && languageFromExtension !== selectedLanguage) {
+            setSelectedLanguage(languageFromExtension);
+        }
+
+        setIsSaved(false);
+        setActiveFile(''); // 예제 파일이므로 activeFile 초기화
+
+        toast('예제 파일을 불러왔습니다. 저장하려면 "저장" 버튼을 클릭하세요.');
+    };
 
 
     useEffect(() => {
@@ -146,21 +166,371 @@ const IDE = () => {
     const [savedFiles, setSavedFiles] = useState([
         { name: "untitled.py", code: '# 여기에 코드를 입력하세요' }
     ]);
+    const [dummyFiles] = useState([
+        {
+            name: "untitled.py",
+            code: "# 여기에 코드를 입력하세요"
+        },
+        {
+            name: "bubble_sort.c",
+            code: [
+                "#include <stdio.h>",
+                "",
+                "void bubble_sort(int list[], int n) {",
+                "    int i, j, temp;",
+                "    for (i = n-1; i > 0; i--) {",
+                "        for (j = 0; j < i; j++) {",
+                "            if (list[j] < list[j+1]) {",
+                "                temp = list[j];",
+                "                list[j] = list[j+1];",
+                "                list[j+1] = temp;",
+                "            }",
+                "        }",
+                "    }",
+                "}",
+                "",
+                "int main(void) {",
+                "    int list[] = {5, 1, 7, 4, 3};",
+                "    int n = 5;",
+                "    bubble_sort(list, n);",
+                "    printf(\"정렬된 배열: \");",
+                "    for (int i = 0; i < n; i++) {",
+                "        printf(\"%d \", list[i]);",
+                "    }",
+                "    return 0;",
+                "}"
+            ].join('\n')
+        },
+        {
+            name: "linked_list.c",
+            code: [
+                "#include <stdio.h>",
+                "#include <stdlib.h>",
+                "",
+                "typedef struct Node {",
+                "    int data;",
+                "    struct Node* next;",
+                "} Node;",
+                "",
+                "int main(void) {",
+                "    Node* head = NULL;",
+                "    Node* tail = NULL;",
+                "    Node* cur = NULL;",
+                "    Node* newNode = NULL;",
+                "    Node* delNode = NULL;",
+                "    Node* delNextNode = NULL;",
+                "    int readData;",
+                "    ",
+                "    while(1) {",
+                "        printf(\"자연수 입력: \");",
+                "        scanf(\"%d\", &readData);",
+                "        if(readData < 1) break;",
+                "        ",
+                "        newNode = (Node*)malloc(sizeof(Node));",
+                "        newNode->data = readData;",
+                "        newNode->next = NULL;",
+                "        ",
+                "        if(head == NULL) {",
+                "            head = newNode;",
+                "            tail = newNode;",
+                "        } else {",
+                "            tail->next = newNode;",
+                "            tail = newNode;",
+                "        }",
+                "    }",
+                "    ",
+                "    printf(\"입력받은 데이터의 전체출력! \\n\");",
+                "    if(head == NULL) {",
+                "        printf(\"저장된 자연수가 존재하지 않습니다. \\n\");",
+                "    } else {",
+                "        cur = head;",
+                "        printf(\"%d \", cur->data);",
+                "        ",
+                "        while(cur->next != NULL) {",
+                "            cur = cur->next;",
+                "            printf(\"%d \", cur->data);",
+                "        }",
+                "    }",
+                "    printf(\"\\n\");",
+                "    ",
+                "    if(head != NULL) {",
+                "        delNode = head;",
+                "        delNextNode = head->next;",
+                "        ",
+                "        printf(\"%d을(를) 삭제합니다. \\n\", delNode->data);",
+                "        free(delNode);",
+                "        ",
+                "        while(delNextNode != NULL) {",
+                "            delNode = delNextNode;",
+                "            delNextNode = delNextNode->next;",
+                "            ",
+                "            printf(\"%d을(를) 삭제합니다. \\n\", delNode->data);",
+                "            free(delNode);",
+                "        }",
+                "    }",
+                "    ",
+                "    return 0;",
+                "}"
+            ].join('\n')
+        },
+        {
+            name: "fibonacci.c",
+            code: [
+                "#include <stdio.h>",
+                "",
+                "int fibo(int n) {",
+                "    if(n == 0) return 0;",
+                "    if(n == 1) return 1;",
+                "    return (fibo(n-1) + fibo(n-2));",
+                "}",
+                "",
+                "int main(void) {",
+                "    int n;",
+                "    printf(\"숫자를 입력하세요: \");",
+                "    scanf(\"%d\", &n);",
+                "    printf(\"fibo(%d) = %d\\n\", n, fibo(n));",
+                "    return 0;",
+                "}"
+            ].join('\n')
+        },
+        {
+            name: "binary_tree.c",
+            code: [
+                "#include <stdio.h>",
+                "#include <stdlib.h>",
+                "",
+                "typedef struct TreeNode {",
+                "    int data;",
+                "    struct TreeNode* left, *right;",
+                "} TreeNode;",
+                "",
+                "TreeNode* createNode(int data) {",
+                "    TreeNode* newNode = (TreeNode*)malloc(sizeof(TreeNode));",
+                "    newNode->data = data;",
+                "    newNode->left = newNode->right = NULL;",
+                "    return newNode;",
+                "}",
+                "",
+                "TreeNode* insert(TreeNode* root, int data) {",
+                "    if(root == NULL) {",
+                "        return createNode(data);",
+                "    }",
+                "    ",
+                "    if(data < root->data)",
+                "        root->left = insert(root->left, data);",
+                "    else if(data > root->data)",
+                "        root->right = insert(root->right, data);",
+                "    ",
+                "    return root;",
+                "}",
+                "",
+                "void inorder(TreeNode* root) {",
+                "    if(root) {",
+                "        inorder(root->left);",
+                "        printf(\"%d \", root->data);",
+                "        inorder(root->right);",
+                "    }",
+                "}",
+                "",
+                "int main() {",
+                "    TreeNode* root = NULL;",
+                "    root = insert(root, 50);",
+                "    insert(root, 30);",
+                "    insert(root, 70);",
+                "    insert(root, 20);",
+                "    insert(root, 40);",
+                "    ",
+                "    printf(\"Inorder Traversal: \");",
+                "    inorder(root);",
+                "    printf(\"\\n\");",
+                "    ",
+                "    return 0;",
+                "}"
+            ].join('\n')
+        },
+        {
+            name: "heap.c",
+            code: [
+                "#include <stdio.h>",
+                "#include <stdlib.h>",
+                "#define MAX_SIZE 100",
+                "",
+                "typedef struct {",
+                "    int key;",
+                "} element;",
+                "",
+                "typedef struct {",
+                "    element heap[MAX_SIZE];",
+                "    int heap_size;",
+                "} HeapType;",
+                "",
+                "HeapType* create() {",
+                "    return (HeapType*)malloc(sizeof(HeapType));",
+                "}",
+                "",
+                "void init(HeapType* h) {",
+                "    h->heap_size = 0;",
+                "}",
+                "",
+                "void insert_max_heap(HeapType* h, element item) {",
+                "    int i;",
+                "    i = ++(h->heap_size);",
+                "    ",
+                "    while((i != 1) && (item.key > h->heap[i/2].key)) {",
+                "        h->heap[i] = h->heap[i/2];",
+                "        i /= 2;",
+                "    }",
+                "    h->heap[i] = item;",
+                "}",
+                "",
+                "element delete_max_heap(HeapType* h) {",
+                "    int parent, child;",
+                "    element item, temp;",
+                "    ",
+                "    item = h->heap[1];",
+                "    temp = h->heap[(h->heap_size)--];",
+                "    parent = 1;",
+                "    child = 2;",
+                "    ",
+                "    while(child <= h->heap_size) {",
+                "        if((child < h->heap_size) && ",
+                "           (h->heap[child].key < h->heap[child+1].key))",
+                "            child++;",
+                "        if(temp.key >= h->heap[child].key) break;",
+                "        ",
+                "        h->heap[parent] = h->heap[child];",
+                "        parent = child;",
+                "        child *= 2;",
+                "    }",
+                "    h->heap[parent] = temp;",
+                "    return item;",
+                "}",
+                "",
+                "int main(void) {",
+                "    HeapType* heap;",
+                "    element e1 = {10}, e2 = {5}, e3 = {30};",
+                "    element e4, e5, e6;",
+                "    ",
+                "    heap = create();",
+                "    init(heap);",
+                "    ",
+                "    insert_max_heap(heap, e1);",
+                "    insert_max_heap(heap, e2);",
+                "    insert_max_heap(heap, e3);",
+                "    ",
+                "    e4 = delete_max_heap(heap);",
+                "    printf(\"<%d> \", e4.key);",
+                "    e5 = delete_max_heap(heap);",
+                "    printf(\"<%d> \", e5.key);",
+                "    e6 = delete_max_heap(heap);",
+                "    printf(\"<%d> \", e6.key);",
+                "    printf(\"\\n\");",
+                "    ",
+                "    free(heap);",
+                "    return 0;",
+                "}"
+            ].join('\n')
+        },
+        {
+            name: "graph.c",
+            code: [
+                "#include <stdio.h>",
+                "#include <stdlib.h>",
+                "#define MAX_VERTICES 50",
+                "",
+                "typedef struct GraphType {",
+                "    int n;",
+                "    int adj_mat[MAX_VERTICES][MAX_VERTICES];",
+                "} GraphType;",
+                "",
+                "void init(GraphType* g) {",
+                "    int r, c;",
+                "    g->n = 0;",
+                "    for(r = 0; r < MAX_VERTICES; r++)",
+                "        for(c = 0; c < MAX_VERTICES; c++)",
+                "            g->adj_mat[r][c] = 0;",
+                "}",
+                "",
+                "void insert_vertex(GraphType* g, int v) {",
+                "    if(((g->n) + 1) > MAX_VERTICES) {",
+                "        fprintf(stderr, \"그래프: 정점의 개수 초과\");",
+                "        return;",
+                "    }",
+                "    g->n++;",
+                "}",
+                "",
+                "void insert_edge(GraphType* g, int start, int end) {",
+                "    if(start >= g->n || end >= g->n) {",
+                "        fprintf(stderr, \"그래프: 정점 번호 오류\");",
+                "        return;",
+                "    }",
+                "    g->adj_mat[start][end] = 1;",
+                "    g->adj_mat[end][start] = 1;",
+                "}",
+                "",
+                "void print_adj_mat(GraphType* g) {",
+                "    for(int i = 0; i < g->n; i++) {",
+                "        for(int j = 0; j < g->n; j++) {",
+                "            printf(\"%2d \", g->adj_mat[i][j]);",
+                "        }",
+                "        printf(\"\\n\");",
+                "    }",
+                "}",
+                "",
+                "int main(void) {",
+                "    GraphType *g;",
+                "    g = (GraphType *)malloc(sizeof(GraphType));",
+                "    init(g);",
+                "    ",
+                "    for(int i = 0; i < 4; i++)",
+                "        insert_vertex(g, i);",
+                "    ",
+                "    insert_edge(g, 0, 1);",
+                "    insert_edge(g, 0, 2);",
+                "    insert_edge(g, 0, 3);",
+                "    insert_edge(g, 1, 2);",
+                "    insert_edge(g, 2, 3);",
+                "    ",
+                "    printf(\"인접 행렬\\n\");",
+                "    print_adj_mat(g);",
+                "    ",
+                "    free(g);",
+                "    return 0;",
+                "}"
+            ].join('\n')
+        }
+    ]);
 
     // 컴포넌트 마운트 시 로그인 상태 확인
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        const storedUsername = localStorage.getItem('username');
+        const checkAuth = () => {
+            const token = localStorage.getItem('token');
+            const storedUsername = localStorage.getItem('username');
 
-        if (token && storedUsername) {
-            setIsLoggedIn(true);
-            setUsername(storedUsername);
-            fetchFileList(); // 로그인 되어 있으면 파일 목록 불러오기
-        } else {
-            setIsLoggedIn(false);
-            setUsername('');
-        }
-    }, []);
+            const newIsLoggedIn = !!(token && storedUsername);
+            const newUsername = storedUsername || '';
+
+            // 상태가 실제로 변경된 경우에만 업데이트
+            if (newIsLoggedIn !== isLoggedIn) {
+                setIsLoggedIn(newIsLoggedIn);
+                if (newIsLoggedIn) {
+                    fetchFileList();
+                }
+            }
+
+            if (newUsername !== username) {
+                setUsername(newUsername);
+            }
+        };
+
+        // 즉시 체크
+        checkAuth();
+
+        // 500ms마다 체크 (로그인 상태 실시간 감지)
+        const interval = setInterval(checkAuth, 500);
+
+        return () => clearInterval(interval);
+    }, [isLoggedIn, username]); // 의존성 배열에 현재 상태 포함s
 
     // URL 업데이트 함수
     const updateURL = (param1, param2 = null) => {
@@ -614,7 +984,7 @@ const IDE = () => {
         return map;
     };
 
-    const apiUrl = `${config.API_BASE_URL}/api/code/run`;
+    const apiUrl = config.API_ENDPOINTS.RUN_CODE;
 
     // 스웨거 API에 맞게 언어 매핑 함수
     const mapLanguageToAPI = (langId) => {
@@ -799,37 +1169,60 @@ const IDE = () => {
 
     return (
         <div className="ide-container">
-            {/* 왼쪽 사이드바 - 회원/비회원 표시 */}
             <div className={`sidebar ${isLeftPanelCollapsed ? 'collapsed' : ''}`}>
                 {isLoggedIn ? (
-                    // 회원용 사이드바 - 파일 목록
+                    // 회원용 사이드바 - 내 파일 + 예제 파일
                     <>
-                        <div className="sidebar-header">
-                            <div className="file-list-header">
-                                <span className="icon-small">📁</span>
-                                <span>파일 목록</span>
-                                <button className="icon-button" onClick={handleNewFile}>
-                                    <span className="icon-small">+</span>
-                                </button>
+                        {/* 내 파일 섹션 */}
+                        <div className="my-files-section">
+                            <div className="sidebar-header">
+                                <div className="file-list-header">
+                                    <span className="icon-small">📁</span>
+                                    <span>내 파일</span>
+                                    <button className="icon-button" onClick={handleNewFile}>
+                                        <span className="icon-small">+</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="file-list">
+                                {savedFiles.map((file) => (
+                                    <div
+                                        key={file.name}
+                                        className={`file-item ${activeFile === file.name ? 'active' : ''}`}
+                                        onClick={() => handleFileSelect(file.name)}
+                                    >
+                                        <span className="icon-small">📄</span>
+                                        <span>{file.name}</span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
 
-                        {/* 파일 목록 */}
-                        <div className="file-list">
-                            {savedFiles.map((file) => (
-                                <div
-                                    key={file.name}
-                                    className={`file-item ${activeFile === file.name ? 'active' : ''}`}
-                                    onClick={() => handleFileSelect(file.name)}
-                                >
-                                    <span className="icon-small">📄</span>
-                                    <span>{file.name}</span>
-                                </div>
-                            ))}
+                        {/* 예제 파일 섹션 */}
+                        <div className="example-files-section">
+                            <div className="example-files-header">
+                                <span className="icon-small">📚</span>
+                                <span>예제 파일</span>
+                            </div>
+
+                            <div className="example-files-list">
+                                {dummyFiles.map((file, index) => (
+                                    <div
+                                        key={`dummy-${index}`}
+                                        className={`example-file-item ${fileName === file.name && !activeFile ? 'active' : ''}`}
+                                        onClick={() => handleDummyFileSelect(file)}
+                                        title="클릭하여 예제 불러오기 (저장하려면 저장 버튼 클릭)"
+                                    >
+                                        <span className="icon-small">📄</span>
+                                        <span className="file-name">{file.name}</span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </>
                 ) : (
-                    // 비회원용 사이드바 - 로그인/회원가입 버튼
+                    // 비회원용 사이드바 (팀원 코드 유지)
                     <div className="auth-sidebar">
                         <div className="auth-header">
                             <div className="auth-title">
@@ -855,7 +1248,6 @@ const IDE = () => {
                     </div>
                 )}
             </div>
-
             {/* 메인 콘텐츠 */}
             <div className={`main-content ${!isLoggedIn ? 'guest-mode' : ''}`}>
                 {/* 상단 헤더 */}

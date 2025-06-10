@@ -1234,3 +1234,194 @@ body.dark-mode .language-item.active.lang-border-javascript {
     background-color: rgba(241, 224, 90, 0.2);
     color: #f1e05a;
 }
+.my-files-section {
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+}
+
+.example-files-section {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0; /* 플렉스 스크롤을 위해 필요 */
+}
+
+.example-files-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 12px 16px;
+    font-weight: 600;
+    color: var(--text-light);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0.5rem;
+    background-color: var(--element-light);
+    font-size: 14px;
+}
+
+.example-files-list {
+    padding: 0 12px;
+}
+
+.example-file-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: var(--radius);
+    transition: var(--transition);
+    font-size: 13px;
+    color: var(--text-light);
+    margin-bottom: 2px;
+    border-left: 3px solid transparent;
+}
+
+.example-file-item:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+    color: var(--text);
+}
+
+body.dark-mode .example-file-item:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+    color: var(--text);
+}
+
+.example-file-item.active {
+    background-color: rgba(126, 87, 194, 0.08);
+    color: var(--primary);
+    border-left-color: var(--primary);
+    font-weight: 500;
+}
+
+body.dark-mode .example-file-item.active {
+    background-color: rgba(126, 87, 194, 0.12);
+}
+
+.example-file-item .file-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.example-file-item .icon-small {
+    opacity: 0.6;
+    font-size: 14px;
+}
+
+.example-file-item.active .icon-small {
+    opacity: 1;
+}
+
+/* 사이드바 전체 레이아웃 조정 */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* 내 파일과 예제 파일 구분을 위한 스타일링 */
+.file-item {
+    border-left: 3px solid transparent;
+}
+
+.file-item.active {
+    border-left-color: var(--success);
+}
+
+/* 예제 파일 호버 효과 개선 */
+.example-file-item {
+    position: relative;
+}
+
+.example-file-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background-color: transparent;
+    transition: var(--transition);
+}
+
+.example-file-item:hover::before {
+    background-color: rgba(126, 87, 194, 0.3);
+}
+
+.example-file-item.active::before {
+    background-color: var(--primary);
+}
+
+/* 스크롤바 스타일링 */
+.example-files-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.example-files-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.example-files-list::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+}
+
+.example-files-list::-webkit-scrollbar-thumb:hover {
+    background: var(--text-light);
+}
+
+/* 예제 파일 아이콘별 색상 구분 */
+.example-file-item[data-extension="c"] .icon-small {
+    color: #555555;
+}
+
+.example-file-item[data-extension="py"] .icon-small {
+    color: #3572A5;
+}
+
+.example-file-item[data-extension="java"] .icon-small {
+    color: #B07219;
+}
+
+.example-file-item[data-extension="cpp"] .icon-small {
+    color: #f34b7d;
+}
+
+.example-file-item[data-extension="js"] .icon-small {
+    color: #f1e05a;
+}
+
+/* 예제 파일 툴팁 스타일 */
+.example-file-item[title] {
+    position: relative;
+}
+
+/* 반응형: 모바일에서 예제 파일 섹션 조정 */
+@media (max-width: 768px) {
+    .example-files-header {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    .example-file-item {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    .my-files-section {
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+}
+
+/* 다크모드에서 예제 파일 섹션 스타일 개선 */
+body.dark-mode .example-files-header {
+    background-color: var(--element-light);
+}
+
+body.dark-mode .example-file-item[data-extension="js"] .icon-small {
+    color: #d4c441; /* 다크모드에서 더 어둡게 */
+}
