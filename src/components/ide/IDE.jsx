@@ -94,30 +94,23 @@ const IDE = () => {
         setIsVisualizationModalOpen(false);
     };
     const handleDummyFileSelect = (file) => {
-        // 현재 파일에 변경사항이 있으면 확인
         if (!isSaved) {
             const shouldContinue = window.confirm('현재 파일에 저장되지 않은 변경사항이 있습니다. 예제 파일을 불러오시겠습니까?');
             if (!shouldContinue) return;
         }
 
-        // 예제 파일을 에디터에만 로드 (savedFiles에 추가하지 않음)
         setCode(file.code);
         setFileName(file.name);
 
-        // 파일 확장자에 맞는 언어 설정
         const extension = file.name.split('.').pop().toLowerCase();
         const languageFromExtension = getLanguageFromExtension(extension);
         if (languageFromExtension && languageFromExtension !== selectedLanguage) {
             setSelectedLanguage(languageFromExtension);
         }
 
-        // 예제 파일은 저장되지 않은 상태로 설정
         setIsSaved(false);
+        setActiveFile(''); // 예제 파일이므로 activeFile 초기화
 
-        // activeFile은 설정하지 않음 (예제 파일이므로)
-        setActiveFile(''); // 또는 null
-
-        // 선택적: 예제 파일임을 사용자에게 알림
         toast('예제 파일을 불러왔습니다. 저장하려면 "저장" 버튼을 클릭하세요.');
     };
 
@@ -508,21 +501,36 @@ const IDE = () => {
         }
     ]);
 
-
     // 컴포넌트 마운트 시 로그인 상태 확인
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        const storedUsername = localStorage.getItem('username');
+        const checkAuth = () => {
+            const token = localStorage.getItem('token');
+            const storedUsername = localStorage.getItem('username');
 
-        if (token && storedUsername) {
-            setIsLoggedIn(true);
-            setUsername(storedUsername);
-            fetchFileList(); // 로그인 되어 있으면 파일 목록 불러오기
-        } else {
-            setIsLoggedIn(false);
-            setUsername('');
-        }
-    }, []);
+            const newIsLoggedIn = !!(token && storedUsername);
+            const newUsername = storedUsername || '';
+
+            // 상태가 실제로 변경된 경우에만 업데이트
+            if (newIsLoggedIn !== isLoggedIn) {
+                setIsLoggedIn(newIsLoggedIn);
+                if (newIsLoggedIn) {
+                    fetchFileList();
+                }
+            }
+
+            if (newUsername !== username) {
+                setUsername(newUsername);
+            }
+        };
+
+        // 즉시 체크
+        checkAuth();
+
+        // 500ms마다 체크 (로그인 상태 실시간 감지)
+        const interval = setInterval(checkAuth, 500);
+
+        return () => clearInterval(interval);
+    }, [isLoggedIn, username]); // 의존성 배열에 현재 상태 포함s
 
     // URL 업데이트 함수
     const updateURL = (param1, param2 = null) => {
@@ -976,7 +984,7 @@ const IDE = () => {
         return map;
     };
 
-    const apiUrl = `${config.API_BASE_URL}/api/code/run`;
+    const apiUrl = config.API_ENDPOINTS.RUN_CODE;
 
     // 스웨거 API에 맞게 언어 매핑 함수
     const mapLanguageToAPI = (langId) => {
@@ -1161,12 +1169,11 @@ const IDE = () => {
 
     return (
         <div className="ide-container">
-            {/* 왼쪽 사이드바 - 회원/비회원 표시 */}
             <div className={`sidebar ${isLeftPanelCollapsed ? 'collapsed' : ''}`}>
                 {isLoggedIn ? (
-                    // 회원용 사이드바 - 내 파일 목록 + 예제 파일들
+                    // 회원용 사이드바 - 내 파일 + 예제 파일
                     <>
-                        {/* 내 파일 목록 섹션 */}
+                        {/* 내 파일 섹션 */}
                         <div className="my-files-section">
                             <div className="sidebar-header">
                                 <div className="file-list-header">
@@ -1203,8 +1210,9 @@ const IDE = () => {
                                 {dummyFiles.map((file, index) => (
                                     <div
                                         key={`dummy-${index}`}
-                                        className={`example-file-item ${fileName === file.name ? 'active' : ''}`}
+                                        className={`example-file-item ${fileName === file.name && !activeFile ? 'active' : ''}`}
                                         onClick={() => handleDummyFileSelect(file)}
+                                        title="클릭하여 예제 불러오기 (저장하려면 저장 버튼 클릭)"
                                     >
                                         <span className="icon-small">📄</span>
                                         <span className="file-name">{file.name}</span>
@@ -1214,7 +1222,7 @@ const IDE = () => {
                         </div>
                     </>
                 ) : (
-                    // 비회원용 사이드바 (기존 코드 그대로)
+                    // 비회원용 사이드바 (팀원 코드 유지)
                     <div className="auth-sidebar">
                         <div className="auth-header">
                             <div className="auth-title">
@@ -1240,8 +1248,6 @@ const IDE = () => {
                     </div>
                 )}
             </div>
-
-
             {/* 메인 콘텐츠 */}
             <div className={`main-content ${!isLoggedIn ? 'guest-mode' : ''}`}>
                 {/* 상단 헤더 */}
@@ -1338,7 +1344,7 @@ const IDE = () => {
                                 theme={isDarkMode ? "vs-dark" : "vs-light"} // 다크모드에 따라 테마 변경
                                 options={{
                                     fontSize: 14,
-                                    minimap: {enabled: false}, // 성능 향상을 위해 미니맵 비활성화
+                                    minimap: { enabled: false }, // 성능 향상을 위해 미니맵 비활성화
                                     scrollBeyondLastLine: false,
                                     automaticLayout: false, // 자동 레이아웃 비활성화(성능 향상)
                                     tabSize: 4,
