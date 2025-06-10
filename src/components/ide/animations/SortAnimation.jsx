@@ -11,19 +11,26 @@ const SortAnimation = ({
     const svgRef = useRef(null);
     const [intervalId, setIntervalId] = useState(null);
 
-    // 🎯 알고리즘 추론 함수
-    const inferAlgorithm = (steps) => {
-        if (!steps) return 'unknown';
-        if (steps.some(step => step.condition?.expression?.includes('pivot'))) return 'quick';
-        if (steps.some(step => step.condition?.expression?.includes('merge') || step.description?.includes('merge'))) return 'merge';
-        if (steps.some(step => step.changes?.some(c => c.variable === 'min'))) return 'selection';
-        if (steps.some(step => step.condition?.expression?.includes('list[i] < list[j-1]'))) return 'insertion';
-        if (steps.some(step => step.condition?.expression?.includes('list[i] > list[j]'))) return 'bubble';
-        return 'unknown';
+    // 🎯 함수 이름에서 알고리즘 매핑
+    const getAlgorithmFromFunction = (functions) => {
+        if (!functions || !functions[0]?.name) return 'unknown';
+        const functionName = functions[0].name.toLowerCase();
+        const algorithmMap = {
+            'bubble_sort': 'bubble',
+            'selection_sort': 'selection',
+            'insertion_sort': 'insertion',
+            'merge_sort': 'merge',
+            'quick_sort': 'quick',
+            'heap_sort': 'heap'
+        };
+        return algorithmMap[functionName] || 'unknown';
     };
 
+    const algorithm = getAlgorithmFromFunction(data?.functions);
+
     console.log('🔄 SortAnimation 렌더링:', {
-        inferredAlgorithm: inferAlgorithm(data?.steps),
+        functionName: data?.functions?.[0]?.name || 'none',
+        algorithm,
         currentStep,
         totalSteps,
         hasData: !!data,
@@ -32,7 +39,6 @@ const SortAnimation = ({
 
     // 🎯 Generic step conversion function
     const convertSteps = (rawSteps) => {
-        const algorithm = inferAlgorithm(rawSteps);
         const result = [];
         let currentList = [];
 
@@ -44,44 +50,44 @@ const SortAnimation = ({
             const change = step.changes?.find(c => c.variable === 'list');
             if (change?.after) currentList = change.after;
 
+            // 기본적으로 JSON의 description 사용
+            let description = step.description || '단계 처리 중';
+
             if (step.condition) {
-                let description = '';
                 const match = step.condition.expression?.match(/list\[(\d+)\](?:.*list\[(\d+)\])?/) || [];
                 const indices = match ? [parseInt(match[1]), parseInt(match[2])].filter(i => !isNaN(i)) : [];
 
                 if (algorithm === 'bubble' || algorithm === 'selection' || algorithm === 'insertion') {
                     const resultStr = step.condition.result ? 'true' : 'false';
-                    const isSwap = next?.description?.includes('list') ?? false;
+                    const isSwap = next?.changes?.some(c => c.variable === 'list') ?? false;
                     const action = isSwap ? '→ 교환' : '→ 교환 없음';
                     if (indices.length === 2) {
-                        description = `list[${indices[0]}]=${currentList[indices[0]]}, list[${indices[1]}]=${currentList[indices[1]]} 비교 → ${resultStr} ${action}`;
+                        description = `${description} (list[${indices[0]}]=${currentList[indices[0]]}, list[${indices[1]}]=${currentList[indices[1]]} 비교 → ${resultStr} ${action})`;
                     } else if (indices.length === 1) {
-                        description = `list[${indices[0]}]=${currentList[indices[0]]} 처리 → ${resultStr} ${action}`;
+                        description = `${description} (list[${indices[0]}]=${currentList[indices[0]]} 처리 → ${resultStr} ${action})`;
                     }
                 } else if (algorithm === 'quick') {
-                    description = step.condition?.expression?.includes('pivot')
+                    const quickDesc = step.condition?.expression?.includes('pivot')
                         ? `피벗 list[${indices[0]}]=${currentList[indices[0]]} 처리`
                         : indices.length > 0
                             ? `list[${indices.join(', ')}] 파티션 처리`
                             : '파티션 처리 중';
+                    description = `${description} (${quickDesc})`;
                 } else if (algorithm === 'merge') {
-                    description = step.condition?.expression?.includes('merge') || step.description?.includes('merge')
+                    const mergeDesc = step.condition?.expression?.includes('merge') || step.description?.includes('merge')
                         ? `구간 [${indices.join(', ')}] 병합`
                         : indices.length > 0
                             ? `list[${indices.join(', ')}] 분할`
                             : '분할/병합 중';
-                } else {
-                    description = step.description ||
-                        (indices.length > 0
-                            ? `list[${indices.join(', ')}] 처리`
-                            : '배열 처리 중');
+                    description = `${description} (${mergeDesc})`;
+                } else if (indices.length > 0) {
+                    description = `${description} (list[${indices.join(', ')}] 처리)`;
                 }
-
-                newStep.description = description;
             } else if (step.description?.includes('정렬된 배열 출력')) {
-                newStep.description = '정렬 완료: 최종 배열 출력';
+                description = '정렬 완료: 최종 배열 출력';
             }
 
+            newStep.description = description;
             result.push(newStep);
         }
 
@@ -93,7 +99,7 @@ const SortAnimation = ({
 
         if (data?.variables) {
             data.variables.forEach(v => {
-                vars[v.name] = v.initialValue;
+                vars[v.name] = v.currentValue ?? v.initialValue;
             });
         }
 
@@ -121,7 +127,6 @@ const SortAnimation = ({
         if (!data?.steps) return;
 
         const steps = convertSteps(data.steps);
-        const algorithm = inferAlgorithm(data.steps);
         const step = steps[stepIndex];
         if (!step) return;
 
@@ -137,7 +142,6 @@ const SortAnimation = ({
         const comparingIndices = match ? [parseInt(match[1]), parseInt(match[2])].filter(i => !isNaN(i)) : [];
         const isFinalStep = step.description?.includes('정렬 완료');
 
-        // Handle pivot for quicksort
         const pivotIndex = step.condition?.expression?.includes('pivot') && comparingIndices.length > 0
             ? comparingIndices[0]
             : null;
@@ -153,7 +157,7 @@ const SortAnimation = ({
             if (isFinalStep) fill = '#2ecc71';
             else if (changedIndices.includes(i)) fill = '#845ef7';
             else if (comparingIndices.includes(i)) fill = '#f1c40f';
-            else if (i === pivotIndex) fill = '#e74c3c'; // Red for pivot
+            else if (i === pivotIndex) fill = '#e74c3c';
 
             const rect = group
                 .append('rect')
@@ -248,7 +252,6 @@ const SortAnimation = ({
             }
         }
 
-        // Draw merge sort partitions
         if (algorithm === 'merge' && step.condition?.expression?.includes('merge')) {
             const match = step.condition.expression.match(/\[(\d+):(\d+)\]/);
             if (match) {
@@ -295,7 +298,6 @@ const SortAnimation = ({
     const steps = data?.steps ? convertSteps(data.steps) : [];
     const currentVariables = data?.steps ? getVariableStateAt(currentStep, steps) : {};
     const stepData = steps[currentStep];
-    const algorithm = inferAlgorithm(data?.steps);
 
     return (
         <div style={{
@@ -471,7 +473,8 @@ const SortAnimation = ({
                     maxHeight: '150px'
                 }}>
                     {JSON.stringify({
-                        inferredAlgorithm: algorithm,
+                        functionName: data?.functions?.[0]?.name || 'none',
+                        algorithm,
                         currentStep,
                         totalSteps,
                         currentVariables,
