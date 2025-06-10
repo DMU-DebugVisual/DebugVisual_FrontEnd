@@ -614,7 +614,7 @@ const IDE = () => {
         return map;
     };
 
-    const apiUrl = config.API_ENDPOINTS.RUN_CODE;
+    const apiUrl = `${config.API_BASE_URL}/api/code/run`;
 
     // 스웨거 API에 맞게 언어 매핑 함수
     const mapLanguageToAPI = (langId) => {
