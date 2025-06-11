@@ -5,6 +5,7 @@ const API_ENDPOINTS = {
     LOGIN: `${API_BASE_URL}/api/auth/login`,
     SIGNUP: `${API_BASE_URL}/api/auth/signup`,
     RUN_CODE: `${API_BASE_URL}/api/code/run`,
+    ISUALIZE_CODE: `${API_BASE_URL}/api/code/visualize`
     // 필요시 다른 엔드포인트도 추가
 };
 

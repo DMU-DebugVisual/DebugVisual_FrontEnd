@@ -586,77 +586,127 @@ const IDE = () => {
         }
     };
 
-    // 🆕 개선된 시각화 클릭 핸들러
-    const handleVisualizationClick = async () => {
-        if (!code.trim()) {
-            alert('시각화할 코드를 먼저 작성해주세요.');
+
+
+// 🆕 개선된 시각화 클릭 핸들러 (AST 부분만 저장)
+// IDE.jsx의 handleVisualizationClick 함수에서 수정할 부분
+
+// 🆕 개선된 시각화 클릭 핸들러 (AST 부분만 저장)
+// 🆕 JSON 파일 생성/업데이트 함수 (문자열 그대로 저장)
+const createOrUpdateJsonFileRaw = async (jsonFileName, content) => {
+    try {
+        // savedFiles에서 기존 JSON 파일 찾기
+        const existingFileIndex = savedFiles.findIndex(f => f.name === jsonFileName);
+
+        if (existingFileIndex >= 0) {
+            // 기존 파일 업데이트
+            const updatedFiles = [...savedFiles];
+            updatedFiles[existingFileIndex] = {
+                name: jsonFileName,
+                code: content, // JSON.stringify 없이 직접 저장
+                type: 'json'
+            };
+            setSavedFiles(updatedFiles);
+            console.log(`✅ JSON 파일 업데이트됨: ${jsonFileName}`);
+        } else {
+            // 새 JSON 파일 생성
+            const newJsonFile = {
+                name: jsonFileName,
+                code: content, // JSON.stringify 없이 직접 저장
+                type: 'json'
+            };
+            setSavedFiles(prev => [...prev, newJsonFile]);
+            console.log(`✅ JSON 파일 생성됨: ${jsonFileName}`);
+        }
+
+        return content;
+    } catch (error) {
+        console.error('❌ JSON 파일 생성/업데이트 실패:', error);
+        throw error;
+    }
+};
+
+// 🆕 개선된 시각화 클릭 핸들러 (AST 부분만 저장)
+const handleVisualizationClick = async () => {
+    if (!code.trim()) {
+        alert('시각화할 코드를 먼저 작성해주세요.');
+        return;
+    }
+
+    const fileType = getFileType(fileName);
+    setCurrentFileType(fileType);
+
+    if (fileType === 'json') {
+        // JSON 파일인 경우: API 호출 없이 에디터 내용을 직접 파싱
+        console.log('📄 JSON 파일 시각화 - API 호출 없음');
+        try {
+            const jsonData = JSON.parse(code);
+            setSelectedJsonData(jsonData);
+            setIsExampleFile(false);
+            setIsVisualizationModalOpen(true);
+        } catch (error) {
+            alert(`JSON 형식이 올바르지 않습니다: ${error.message}`);
             return;
         }
+    } else {
+        // 코드 파일인 경우: API 호출 후 AST 부분만 JSON 파일로 생성/덮어쓰기
+        console.log('💻 코드 파일 시각화 - API 호출 후 AST만 JSON 생성');
 
-        const fileType = getFileType(fileName);
-        setCurrentFileType(fileType);
+        try {
+            // API 호출
+            const apiUrl = config.API_ENDPOINTS.VISUALIZE_CODE || `${config.API_BASE_URL}/visualize`;
+            const requestBody = {
+                code: code,
+                input: input,
+                lang: mapLanguageToAPI(selectedLanguage)
+            };
 
-        if (fileType === 'json') {
-            // JSON 파일인 경우: API 호출 없이 에디터 내용을 직접 파싱
-            console.log('📄 JSON 파일 시각화 - API 호출 없음');
-            try {
-                const jsonData = JSON.parse(code);
-                setSelectedJsonData(jsonData);
-                setIsExampleFile(false);
-                setIsVisualizationModalOpen(true);
-            } catch (error) {
-                alert(`JSON 형식이 올바르지 않습니다: ${error.message}`);
-                return;
+            console.log('🚀 시각화 API 호출:', requestBody);
+
+            const response = await fetch(`${config.API_BASE_URL}/api/code/visualize`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody),
+            });
+
+            if (!response.ok) {
+                throw new Error(`API 요청 실패: ${response.status} ${response.statusText}`);
             }
-        } else {
-            // 코드 파일인 경우: API 호출 후 JSON 파일 생성/덮어쓰기
-            console.log('💻 코드 파일 시각화 - API 호출 후 JSON 생성');
 
-            try {
-                // API 호출
-                const apiUrl = config.API_ENDPOINTS.VISUALIZE_CODE || `${config.API_BASE_URL}/visualize`;
-                const requestBody = {
-                    code: code,
-                    input: input,
-                    lang: mapLanguageToAPI(selectedLanguage)
-                };
+            const apiResponse = await response.json();
+            console.log('✅ API 응답 수신:', apiResponse);
 
-                console.log('🚀 시각화 API 호출:', requestBody);
-
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(requestBody),
-                });
-
-                if (!response.ok) {
-                    throw new Error(`API 요청 실패: ${response.status} ${response.statusText}`);
-                }
-
-                const visualizationData = await response.json();
-                console.log('✅ 시각화 데이터 수신:', visualizationData);
-
-                // 매칭되는 JSON 파일명 생성
-                const jsonFileName = getMatchingJsonFileName(fileName);
-
-                // JSON 파일 생성/업데이트
-                await createOrUpdateJsonFile(jsonFileName, visualizationData);
-
-                // 시각화 모달 열기
-                setSelectedJsonData(visualizationData);
-                setIsExampleFile(false);
-                setIsVisualizationModalOpen(true);
-
-                toast(`시각화 완료! ${jsonFileName} 파일이 생성/업데이트되었습니다.`);
-
-            } catch (error) {
-                console.error('❌ 시각화 실패:', error);
-                alert(`시각화 실패: ${error.message}`);
+            // 🔥 핵심 변경: AST 부분만 추출 (API에서 온 따옴표 제거)
+            let visualizationData = apiResponse.ast || "AST 데이터가 없습니다.";
+            
+            // API에서 온 양 끝 따옴표 제거
+            if (typeof visualizationData === 'string' && visualizationData.startsWith('"') && visualizationData.endsWith('"')) {
+                visualizationData = visualizationData.slice(1, -1);
             }
+            
+            console.log('📊 AST 데이터 추출 (따옴표 제거 후):', visualizationData);
+
+            // 매칭되는 JSON 파일명 생성
+            const jsonFileName = getMatchingJsonFileName(fileName);
+
+            // AST 데이터를 JSON 파일로 생성/업데이트 (JSON.stringify 없이 직접 저장)
+            await createOrUpdateJsonFileRaw(jsonFileName, visualizationData);
+
+            // 시각화 모달 열기
+            setSelectedJsonData(visualizationData);
+            setIsExampleFile(false);
+            setIsVisualizationModalOpen(true);
+
+            toast(`시각화 완료! ${jsonFileName} 파일이 생성/업데이트되었습니다.`);
+
+        } catch (error) {
+            console.error('❌ 시각화 실패:', error);
+            alert(`시각화 실패: ${error.message}`);
         }
-    };
+    }
+};
 
     // 🆕 개선된 파일 선택 핸들러
     const handleFileSelect = (name) => {

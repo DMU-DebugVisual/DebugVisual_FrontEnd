@@ -593,6 +593,8 @@ const InfoPanel = ({ data, currentStep, totalSteps, animationType }) => {
                     {[
                         { label: '알고리즘', value: data?.algorithm || 'Unknown' },
                         { label: '언어', value: data?.lang || 'Unknown' },
+                        { label: '⏰ 시간복잡도', value: data?.TimeComplexity || 'O(?)', isComplexity: true, complexityType: 'time' },
+                        { label: '💾 공간복잡도', value: data?.SpaceComplexity || 'O(?)', isComplexity: true, complexityType: 'space' },
                         { label: '입력값', value: data?.input || '없음' },
                         { label: '변수 개수', value: `${data?.variables?.length || 0}개` },
                         { label: '실행 단계', value: `${totalSteps}단계` },
@@ -603,17 +605,38 @@ const InfoPanel = ({ data, currentStep, totalSteps, animationType }) => {
                             display: 'flex',
                             justifyContent: 'space-between',
                             padding: '6px 8px',
-                            background: '#f8fafc',
+                            background: item.isComplexity 
+                                ? (item.complexityType === 'time' 
+                                    ? 'linear-gradient(135deg, #fef3c7, #fde68a)' 
+                                    : 'linear-gradient(135deg, #dbeafe, #bfdbfe)')
+                                : '#f8fafc',
                             borderRadius: '6px',
-                            fontSize: '12px'
+                            fontSize: '12px',
+                            border: item.isComplexity 
+                                ? (item.complexityType === 'time' ? '1px solid #f59e0b' : '1px solid #3b82f6')
+                                : 'none'
                         }}>
-                            <span style={{ color: '#64748b' }}>{item.label}:</span>
-                            <span style={{ fontWeight: '600', color: '#1e293b' }}>{item.value}</span>
+                            <span style={{ 
+                                color: item.isComplexity 
+                                    ? (item.complexityType === 'time' ? '#92400e' : '#1e40af')
+                                    : '#64748b',
+                                fontWeight: item.isComplexity ? '600' : 'normal'
+                            }}>
+                                {item.label}:
+                            </span>
+                            <span style={{ 
+                                fontWeight: '600', 
+                                color: item.isComplexity 
+                                    ? (item.complexityType === 'time' ? '#92400e' : '#1e40af')
+                                    : '#1e293b',
+                                fontFamily: item.isComplexity ? 'monospace' : 'inherit'
+                            }}>
+                                {item.value}
+                            </span>
                         </div>
                     ))}
                 </div>
             </InfoCard>
-
             {/* API 출력 결과 */}
             {(data?.stdout || data?.stderr) && (
                 <InfoCard title="실행 결과" icon="💻">
