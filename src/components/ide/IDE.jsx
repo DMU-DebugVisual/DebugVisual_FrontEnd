@@ -898,11 +898,17 @@ const handleVisualizationClick = async () => {
             // 🔥 핵심 변경: AST 부분만 추출 (API에서 온 따옴표 제거)
             let visualizationData = apiResponse.ast || "AST 데이터가 없습니다.";
             
-            // API에서 온 양 끝 따옴표 제거
-            if (typeof visualizationData === 'string' && visualizationData.startsWith('"') && visualizationData.endsWith('"')) {
-                visualizationData = visualizationData.slice(1, -1);
+            if (typeof visualizationData === 'string') {
+                // 앞부분 제거
+                if (visualizationData.startsWith('```json\n')) {
+                    visualizationData = visualizationData.slice(7); // "```json\n"는 7글자
+                }
+
+                // 뒷부분 제거
+                if (visualizationData.endsWith('\n```')) {
+                    visualizationData = visualizationData.slice(0, -4); // "\n```"는 4글자
+                }
             }
-            
             console.log('📊 AST 데이터 추출 (따옴표 제거 후):', visualizationData);
 
             // 매칭되는 JSON 파일명 생성
