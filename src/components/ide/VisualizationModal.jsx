@@ -240,7 +240,7 @@ const LoadingAnimation = ({ message = "시각화 데이터 로딩 중...", code,
             animation: 'spin 1s linear infinite'
         }} />
         <h3 style={{ margin: 0, color: '#1e293b', fontSize: '18px', fontWeight: '600' }}>{message}</h3>
-        <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>API 연동 및 데이터 처리 중입니다</p>
+        <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>데이터 처리 중입니다</p>
         <div style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>
             <span style={{
                 fontSize: '12px',
@@ -346,6 +346,7 @@ const AnimationDisplay = ({ data, currentStep, totalSteps, animationType, isPlay
             'json': { color: '#f59e0b', text: '🗂️ JSON', bg: 'rgba(245, 158, 11, 0.1)' },
             'api+json': { color: '#8b5cf6', text: '🔗 하이브리드', bg: 'rgba(139, 92, 246, 0.1)' },
             'api-only': { color: '#06b6d4', text: '🌐 API만', bg: 'rgba(6, 182, 212, 0.1)' },
+            'preloaded-json': { color: '#10b981', text: '🗂️ 예제', bg: 'rgba(16, 185, 129, 0.1)' },
             'unknown': { color: '#6b7280', text: '❓ 미확인', bg: 'rgba(107, 114, 128, 0.1)' }
         };
 
@@ -734,8 +735,9 @@ const InfoPanel = ({ data, currentStep, totalSteps, animationType }) => {
     );
 };
 
-// 메인 모달 컴포넌트
-const VisualizationModal = ({ isOpen, onClose, code, language, input }) => {
+// 🆕 메인 모달 컴포넌트 - preloadedJsonData 추가
+// 메인 모달 컴포넌트 선언 부분
+const VisualizationModal = ({ isOpen, onClose, code, language, input, preloadedJsonData = null, isJsonFile = false }) => {
     const [data, setData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -745,18 +747,108 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input }) => {
     const [apiMode, setApiMode] = useState(true); // API 모드 토글
     const animationControls = useAnimationControls(totalSteps);
 
-    // 시각화 데이터 가져오기 함수
+    // 🆕 시각화 데이터 가져오기 함수 - JSON 직접 지원
+    // 🆕 시각화 데이터 가져오기 함수 - JSON 직접 지원
     const fetchVisualizationData = async () => {
         if (!code?.trim()) {
             setError('코드가 비어있습니다.');
             return;
         }
 
+        // 🗂️ JSON 데이터가 미리 로드된 경우 (예제 파일) - API 호출 없이 즉시 처리
+        if (preloadedJsonData) {
+            console.log('🗂️ 미리 로드된 JSON 데이터 사용 (API 호출 안함):', preloadedJsonData);
+
+            setIsLoading(true);
+            setError(null);
+
+            try {
+                // 약간의 딜레이로 로딩 효과만 제공 (API 호출은 하지 않음)
+                await new Promise(resolve => setTimeout(resolve, 200));
+
+                // JSON 데이터에 _dataSource 표시 추가
+                const jsonDataWithSource = {
+                    ...preloadedJsonData,
+                    _dataSource: 'preloaded-json'
+                };
+
+                setData(jsonDataWithSource);
+                const steps = preloadedJsonData.steps?.length || 0;
+                setTotalSteps(steps);
+                animationControls.reset();
+
+                // 애니메이션 타입 설정
+                const detectedType = preloadedJsonData.algorithm || 'variables';
+                setAnimationType(detectedType);
+
+                console.log('✅ JSON 직접 로드 완료 (API 미사용):', {
+                    algorithm: detectedType,
+                    steps,
+                    variables: preloadedJsonData.variables?.length || 0,
+                    dataSource: 'preloaded-json'
+                });
+
+            } catch (err) {
+                console.error('❌ JSON 데이터 처리 실패:', err);
+                setError(err.message || 'JSON 데이터를 처리할 수 없습니다.');
+            } finally {
+                setIsLoading(false);
+            }
+            return;
+        }
+
+        // 📄 JSON 파일인 경우 에디터에서 JSON 파싱해서 사용
+        if (isJsonFile && !preloadedJsonData) {
+            console.log('📄 JSON 파일 - 에디터 내용 파싱 시작');
+
+            setIsLoading(true);
+            setError(null);
+
+            try {
+                // 약간의 딜레이로 로딩 효과 제공
+                await new Promise(resolve => setTimeout(resolve, 200));
+
+                // 에디터의 JSON 텍스트 파싱
+                const parsedJson = JSON.parse(code);
+
+                // JSON 데이터에 _dataSource 표시 추가
+                const jsonDataWithSource = {
+                    ...parsedJson,
+                    _dataSource: 'editor-json'
+                };
+
+                setData(jsonDataWithSource);
+                const steps = parsedJson.steps?.length || 0;
+                setTotalSteps(steps);
+                animationControls.reset();
+
+                // 애니메이션 타입 설정
+                const detectedType = parsedJson.algorithm || 'variables';
+                setAnimationType(detectedType);
+
+                console.log('✅ 에디터 JSON 파싱 완료:', {
+                    algorithm: detectedType,
+                    steps,
+                    variables: parsedJson.variables?.length || 0,
+                    dataSource: 'editor-json'
+                });
+
+            } catch (err) {
+                console.error('❌ JSON 파싱 실패:', err);
+                setError(`JSON 파싱 오류: ${err.message}`);
+            } finally {
+                setIsLoading(false);
+            }
+            return;
+        }
+
+        // 🌐 일반 코드인 경우만 API 호출
+        console.log('🌐 일반 코드 - API 호출 시작');
         setIsLoading(true);
         setError(null);
 
         try {
-            console.log('🚀 하이브리드 시각화 데이터 요청 시작');
+            console.log('🚀 API를 통한 시각화 데이터 요청 시작');
 
             // API 서비스 사용 (하이브리드 모드)
             const visualizationData = await ApiService.requestVisualization(code, language, input);
@@ -770,15 +862,15 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input }) => {
             const detectedType = visualizationData.algorithm || ApiService.detectAlgorithmType(code);
             setAnimationType(detectedType);
 
-            console.log('✅ 하이브리드 시각화 데이터 로드 완료:', {
+            console.log('✅ API 시각화 데이터 로드 완료:', {
                 algorithm: detectedType,
                 steps,
                 variables: visualizationData.variables?.length || 0,
-                dataSource: visualizationData._dataSource || 'unknown'
+                dataSource: visualizationData._dataSource || 'api'
             });
 
         } catch (err) {
-            console.error('❌ 하이브리드 시각화 데이터 로드 실패:', err);
+            console.error('❌ API 시각화 데이터 로드 실패:', err);
             setError(err.message || '시각화 데이터를 생성할 수 없습니다.');
         } finally {
             setIsLoading(false);
@@ -786,6 +878,12 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input }) => {
     };
 
     const toggleApiMode = () => {
+        // JSON 데이터가 미리 로드된 경우 API 모드 변경 불가
+        if (preloadedJsonData) {
+            alert('예제 파일은 JSON 데이터를 직접 사용하므로 API 모드를 변경할 수 없습니다.');
+            return;
+        }
+
         const newMode = !apiMode;
         setApiMode(newMode);
 
@@ -824,7 +922,7 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input }) => {
         if (isOpen && !data && !isLoading) {
             fetchVisualizationData();
         }
-    }, [isOpen]);
+    }, [isOpen, preloadedJsonData]); // preloadedJsonData 의존성 추가
 
     // 모달이 닫힐 때 상태 초기화
     useEffect(() => {
@@ -847,6 +945,32 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input }) => {
 
     // 모달이 열려있지 않으면 렌더링하지 않음
     if (!isOpen) return null;
+
+    // 🎨 데이터 소스에 따른 UI 표시
+    const getDataSourceInfo = () => {
+        if (preloadedJsonData) {
+            return {
+                icon: '🗂️',
+                text: 'JSON 직접',
+                color: '#10b981',
+                bg: 'rgba(16, 185, 129, 0.1)',
+                description: '미리 준비된 예제 데이터'
+            };
+        }
+
+        const dataSource = data?._dataSource || 'unknown';
+        const sourceMap = {
+            'api': { icon: '🌐', text: 'API', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)', description: '실시간 API 응답' },
+            'json': { icon: '🗂️', text: 'JSON Mock', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)', description: 'Mock 데이터' },
+            'api+json': { icon: '🔗', text: '하이브리드', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)', description: 'API + JSON 병합' },
+            'api-only': { icon: '🌐', text: 'API만', color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.1)', description: 'API 응답만' },
+            'unknown': { icon: '❓', text: '미확인', color: '#6b7280', bg: 'rgba(107, 114, 128, 0.1)', description: '알 수 없음' }
+        };
+
+        return sourceMap[dataSource] || sourceMap['unknown'];
+    };
+
+    const dataSourceInfo = getDataSourceInfo();
 
     // CSS 스타일을 위한 스타일 엘리먼트 생성
     const styles = `
@@ -927,8 +1051,10 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input }) => {
                             alignItems: 'center',
                             gap: '12px'
                         }}>
-                            <span style={{fontSize: '24px'}}>🌐</span>
-                            <h2 style={{margin: 0, fontSize: '20px', fontWeight: '600'}}>API 연동 코드 시각화</h2>
+                            <span style={{fontSize: '24px'}}>{dataSourceInfo.icon}</span>
+                            <h2 style={{margin: 0, fontSize: '20px', fontWeight: '600'}}>
+                                {preloadedJsonData ? 'JSON 예제 시각화' : 'API 연동 코드 시각화'}
+                            </h2>
                             <div style={{
                                 background: 'rgba(255, 255, 255, 0.2)',
                                 padding: '4px 12px',
@@ -941,18 +1067,15 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input }) => {
                             {/* 데이터 소스 상태 표시 */}
                             {data && (
                                 <div style={{
-                                    background: apiMode
-                                        ? 'rgba(16, 185, 129, 0.3)'
-                                        : 'rgba(245, 158, 11, 0.3)',
+                                    background: dataSourceInfo.bg,
+                                    color: dataSourceInfo.color,
                                     padding: '4px 12px',
                                     borderRadius: '12px',
                                     fontSize: '12px',
                                     fontWeight: '500',
-                                    border: apiMode
-                                        ? '1px solid rgba(16, 185, 129, 0.5)'
-                                        : '1px solid rgba(245, 158, 11, 0.5)'
-                                }}>
-                                    {apiMode ? '🌐 API+JSON' : '🗂️ JSON'}
+                                    border: `1px solid ${dataSourceInfo.color}30`
+                                }} title={dataSourceInfo.description}>
+                                    {dataSourceInfo.text}
                                 </div>
                             )}
                         </div>
@@ -965,28 +1088,32 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input }) => {
                             {/* 애니메이션 컨트롤 버튼들 */}
                             {data && !isLoading && (
                                 <>
-                                    <button
-                                        onClick={toggleApiMode}
-                                        style={{
-                                            background: apiMode
-                                                ? 'linear-gradient(135deg, #10b981, #059669)'
-                                                : 'linear-gradient(135deg, #f59e0b, #d97706)',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '8px',
-                                            padding: '8px 12px',
-                                            fontSize: '12px',
-                                            fontWeight: '500',
-                                            cursor: 'pointer',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '6px',
-                                            transition: 'all 0.2s'
-                                        }}
-                                        title={apiMode ? 'API + JSON 하이브리드 모드' : 'JSON Mock 전용 모드'}
-                                    >
-                                        {apiMode ? '🌐' : '🗂️'} {apiMode ? 'API' : 'JSON'}
-                                    </button>
+                                    {/* API 모드 토글 (예제가 아닌 경우에만 표시) */}
+                                    {!preloadedJsonData && (
+                                        <button
+                                            onClick={toggleApiMode}
+                                            style={{
+                                                background: apiMode
+                                                    ? 'linear-gradient(135deg, #10b981, #059669)'
+                                                    : 'linear-gradient(135deg, #f59e0b, #d97706)',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '8px',
+                                                padding: '8px 12px',
+                                                fontSize: '12px',
+                                                fontWeight: '500',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '6px',
+                                                transition: 'all 0.2s'
+                                            }}
+                                            title={apiMode ? 'API + JSON 하이브리드 모드' : 'JSON Mock 전용 모드'}
+                                        >
+                                            {apiMode ? '🌐' : '🗂️'} {apiMode ? 'API' : 'JSON'}
+                                        </button>
+                                    )}
+
                                     <VisualizationControls
                                         isPlaying={animationControls.isPlaying}
                                         currentStep={animationControls.currentStep}
@@ -1001,27 +1128,30 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input }) => {
                                         onStepChange={animationControls.goToStep}
                                     />
 
-                                    <button
-                                        onClick={fetchVisualizationData}
-                                        disabled={isLoading}
-                                        style={{
-                                            background: 'rgba(255, 255, 255, 0.2)',
-                                            border: 'none',
-                                            borderRadius: '8px',
-                                            width: '36px',
-                                            height: '36px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            cursor: 'pointer',
-                                            color: 'white',
-                                            fontSize: '16px',
-                                            opacity: isLoading ? 0.5 : 1
-                                        }}
-                                        title="데이터 새로고침"
-                                    >
-                                        🔄
-                                    </button>
+                                    {/* 새로고침 버튼 (예제가 아닌 경우에만 표시) */}
+                                    {!preloadedJsonData && (
+                                        <button
+                                            onClick={fetchVisualizationData}
+                                            disabled={isLoading}
+                                            style={{
+                                                background: 'rgba(255, 255, 255, 0.2)',
+                                                border: 'none',
+                                                borderRadius: '8px',
+                                                width: '36px',
+                                                height: '36px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                cursor: 'pointer',
+                                                color: 'white',
+                                                fontSize: '16px',
+                                                opacity: isLoading ? 0.5 : 1
+                                            }}
+                                            title="데이터 새로고침"
+                                        >
+                                            🔄
+                                        </button>
+                                    )}
                                 </>
                             )}
 
@@ -1085,8 +1215,10 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input }) => {
                                     color: '#64748b'
                                 }}>
                                     <div>
-                                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>🗂️</div>
-                                        <p>데이터 로딩 중...</p>
+                                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>
+                                            {preloadedJsonData ? '🗂️' : '🌐'}
+                                        </div>
+                                        <p>{preloadedJsonData ? 'JSON 데이터 로딩 중...' : 'API 데이터 로딩 중...'}</p>
                                     </div>
                                 </div>
                             )}
@@ -1103,7 +1235,11 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input }) => {
                             flexDirection: 'column'
                         }}>
                             {isLoading ? (
-                                <LoadingAnimation message="시각화 데이터 로딩 중..." code={code} language={language} />
+                                <LoadingAnimation
+                                    message={preloadedJsonData ? "JSON 예제 데이터 로딩 중..." : "API 시각화 데이터 로딩 중..."}
+                                    code={code}
+                                    language={language}
+                                />
                             ) : error ? (
                                 <ErrorDisplay error={error} onRetry={fetchVisualizationData} />
                             ) : data ? (
@@ -1125,9 +1261,13 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input }) => {
                                     gap: '20px',
                                     minHeight: '400px'
                                 }}>
-                                    <div style={{ fontSize: '64px' }}>🌐</div>
-                                    <h3 style={{ margin: 0, color: '#1e293b' }}>하이브리드 시각화 준비 중...</h3>
-                                    <p style={{ margin: 0, color: '#64748b' }}>API 연동 및 데이터 처리 중</p>
+                                    <div style={{ fontSize: '64px' }}>{dataSourceInfo.icon}</div>
+                                    <h3 style={{ margin: 0, color: '#1e293b' }}>
+                                        {preloadedJsonData ? 'JSON 예제 시각화 준비 중...' : '하이브리드 시각화 준비 중...'}
+                                    </h3>
+                                    <p style={{ margin: 0, color: '#64748b' }}>
+                                        {preloadedJsonData ? 'JSON 데이터 처리 중' : 'API 연동 및 데이터 처리 중'}
+                                    </p>
                                 </div>
                             )}
                         </div>
