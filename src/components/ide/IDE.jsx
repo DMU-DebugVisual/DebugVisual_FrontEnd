@@ -519,7 +519,224 @@ const IDE = () => {
                 ]
             }, null, 2),
             type: "json"
+        },
+        {
+            name: "graph.json",
+            code: JSON.stringify({
+  "algorithm": "graph",
+  "lang": "c",
+  "input": "",
+  "variables": [
+    { "name": "g", "type": "graph", "initialValue": "empty", "currentValue": "adjacency matrix filled" }
+  ],
+  "functions": [
+    { "name": "init", "params": ["g"], "called": 1 },
+    { "name": "insert_vertex", "params": ["g", "v"], "called": 4 },
+    { "name": "insert_edge", "params": ["g", "start", "end"], "called": 5 },
+    { "name": "print_adj_mat", "params": ["g"], "called": 1 }
+  ],
+  "steps": [
+    {
+      "line": 41,
+      "description": "그래프 생성 및 초기화",
+      "changes": [
+        { "variable": "g", "before": "empty", "after": "n=0, adj_mat 초기화됨" }
+      ],
+      "dataStructure": {
+        "type": "graph",
+        "nodes": []
+      }
+    },
+    {
+      "line": 43,
+      "description": "정점 0 삽입 (n=1)",
+      "changes": [
+        { "variable": "g", "before": "n=0", "after": "n=1" }
+      ],
+      "dataStructure": {
+        "type": "graph",
+        "nodes": ["0"]
+      }
+    },
+    {
+      "line": 43,
+      "description": "정점 1 삽입 (n=2)",
+      "changes": [
+        { "variable": "g", "before": "n=1", "after": "n=2" }
+      ],
+      "dataStructure": {
+        "type": "graph",
+        "nodes": ["0", "1"]
+      }
+    },
+    {
+      "line": 43,
+      "description": "정점 2 삽입 (n=3)",
+      "changes": [
+        { "variable": "g", "before": "n=2", "after": "n=3" }
+      ],
+      "dataStructure": {
+        "type": "graph",
+        "nodes": ["0", "1", "2"]
+      }
+    },
+    {
+      "line": 43,
+      "description": "정점 3 삽입 (n=4)",
+      "changes": [
+        { "variable": "g", "before": "n=3", "after": "n=4" }
+      ],
+      "dataStructure": {
+        "type": "graph",
+        "nodes": ["0", "1", "2", "3"]
+      }
+    },
+    {
+      "line": 44,
+      "description": "간선 (0,1) 추가",
+      "changes": [],
+      "dataStructure": {
+        "type": "graph",
+        "nodes": ["0", "1", "2", "3"],
+        "edges": [["0", "1"]]
+      }
+    },
+    {
+      "line": 45,
+      "description": "간선 (0,2) 추가",
+      "changes": [],
+      "dataStructure": {
+        "type": "graph",
+        "nodes": ["0", "1", "2", "3"],
+        "edges": [["0", "1"], ["0", "2"]]
+      }
+    },
+    {
+      "line": 46,
+      "description": "간선 (0,3) 추가",
+      "changes": [],
+      "dataStructure": {
+        "type": "graph",
+        "nodes": ["0", "1", "2", "3"],
+        "edges": [["0", "1"], ["0", "2"], ["0", "3"]]
+      }
+    },
+    {
+      "line": 47,
+      "description": "간선 (1,2) 추가",
+      "changes": [],
+      "dataStructure": {
+        "type": "graph",
+        "nodes": ["0", "1", "2", "3"],
+        "edges": [["0", "1"], ["0", "2"], ["0", "3"], ["1", "2"]]
+      }
+    },
+    {
+      "line": 48,
+      "description": "간선 (2,3) 추가",
+      "changes": [],
+      "dataStructure": {
+        "type": "graph",
+        "nodes": ["0", "1", "2", "3"],
+        "edges": [["0", "1"], ["0", "2"], ["0", "3"], ["1", "2"], ["2", "3"]]
+      }
+    },
+    {
+      "line": 49,
+      "description": "인접 행렬 출력",
+      "changes": [],
+      "dataStructure": {
+        "type": "graph",
+        "nodes": ["0", "1", "2", "3"],
+        "adjacencyMatrix": [
+          [0, 1, 1, 1],
+          [1, 0, 1, 0],
+          [1, 1, 0, 1],
+          [1, 0, 1, 0]
+        ]
+      }
+    }
+  ]
+}, null, 2),
+            type: "json"
+        },
+        {
+            name: "binaryTree.json",
+            code: JSON.stringify({
+  "algorithm": "binary-tree",
+  "lang": "c",
+  "input": "",
+  "variables": [
+    { "name": "root", "type": "Node*", "initialValue": "NULL", "currentValue": "0x01" },
+    { "name": "newNode", "type": "Node*", "initialValue": null, "currentValue": "0x05" }
+  ],
+  "functions": [
+    { "name": "createNode", "params": ["data"] },
+    { "name": "insert", "params": ["root", "data"] },
+    { "name": "inorder", "params": ["root"] }
+  ],
+  "steps": [
+    { "line": 29, "description": "main 시작, root 초기화", "changes": [{ "variable": "root", "before": "NULL", "after": "NULL" }] },
+    { "line": 30, "description": "insert(root, 50) 호출", "stack": [{ "function": "insert", "params": ["NULL", 50] }] },
+    { "line": 17, "description": "root == NULL, createNode(50) 호출", "stack": [{ "function": "createNode", "params": [50] }] },
+    { "line": 11, "description": "newNode 생성 및 초기화", "changes": [{ "variable": "newNode", "before": null, "after": "0x01" }], "dataStructure": { "type": "bst", "nodes": [{ "id": "0x01", "value": 50, "links": [] }] } },
+    { "line": 13, "description": "createNode 반환", "stack": [{ "function": "insert", "params": ["NULL", 50] }] },
+    { "line": 18, "description": "insert 반환, root=0x01", "changes": [{ "variable": "root", "before": "NULL", "after": "0x01" }] },
+    { "line": 31, "description": "insert(root, 30) 호출", "stack": [{ "function": "insert", "params": ["0x01", 30] }] },
+    { "line": 19, "description": "30 < 50, insert(root->left, 30) 재귀호출", "stack": [{ "function": "insert", "params": ["NULL", 30] }] },
+    { "line": 17, "description": "root==NULL, createNode(30) 호출", "stack": [{ "function": "createNode", "params": [30] }] },
+    { "line": 11, "description": "newNode 생성 및 초기화", "changes": [{ "variable": "newNode", "before": "0x01", "after": "0x02" }], "dataStructure": { "type": "bst", "nodes": [{ "id": "0x01", "value": 50, "links": ["0x02"] }, { "id": "0x02", "value": 30, "links": [] }] } },
+    { "line": 13, "description": "createNode 반환", "stack": [{ "function": "insert", "params": ["NULL", 30] }] },
+    { "line": 18, "description": "재귀 insert 반환, root->left=0x02", "stack": [{ "function": "insert", "params": ["0x01", 30] }] },
+    { "line": 22, "description": "insert 반환" },
+    { "line": 32, "description": "insert(root, 70) 호출", "stack": [{ "function": "insert", "params": ["0x01", 70] }] },
+    { "line": 20, "description": "70 > 50, insert(root->right, 70) 재귀호출", "stack": [{ "function": "insert", "params": ["NULL", 70] }] },
+    { "line": 17, "description": "root==NULL, createNode(70) 호출", "stack": [{ "function": "createNode", "params": [70] }] },
+    { "line": 11, "description": "newNode 생성 및 초기화", "changes": [{ "variable": "newNode", "before": "0x02", "after": "0x03" }], "dataStructure": { "type": "bst", "nodes": [{ "id": "0x01", "value": 50, "links": ["0x02", "0x03"] }, { "id": "0x02", "value": 30, "links": [] }, { "id": "0x03", "value": 70, "links": [] }] } },
+    { "line": 13, "description": "createNode 반환", "stack": [{ "function": "insert", "params": ["NULL", 70] }] },
+    { "line": 18, "description": "재귀 insert 반환, root->right=0x03", "stack": [{ "function": "insert", "params": ["0x01", 70] }] },
+    { "line": 22, "description": "insert 반환" },
+    { "line": 33, "description": "insert(root, 20) 호출", "stack": [{ "function": "insert", "params": ["0x01", 20] }] },
+    { "line": 19, "description": "20 < 50, insert(root->left, 20) 재귀호출", "stack": [{ "function": "insert", "params": ["0x02", 20] }] },
+    { "line": 19, "description": "20 < 30, insert(root->left, 20) 재귀호출", "stack": [{ "function": "insert", "params": ["NULL", 20] }] },
+    { "line": 17, "description": "root==NULL, createNode(20) 호출", "stack": [{ "function": "createNode", "params": [20] }] },
+    { "line": 11, "description": "newNode 생성 및 초기화", "changes": [{ "variable": "newNode", "before": "0x03", "after": "0x04" }], "dataStructure": { "type": "bst", "nodes": [{ "id": "0x01", "value": 50, "links": ["0x02", "0x03"] }, { "id": "0x02", "value": 30, "links": ["0x04"] }, { "id": "0x03", "value": 70, "links": [] }, { "id": "0x04", "value": 20, "links": [] }] } },
+    { "line": 13, "description": "createNode 반환" },
+    { "line": 18, "description": "재귀 insert 반환, root->left=0x04" },
+    { "line": 18, "description": "재귀 insert 반환, root->left=0x02" },
+    { "line": 22, "description": "insert 반환" },
+    { "line": 34, "description": "insert(root, 40) 호출", "stack": [{ "function": "insert", "params": ["0x01", 40] }] },
+    { "line": 19, "description": "40 < 50, insert(root->left, 40) 재귀호출", "stack": [{ "function": "insert", "params": ["0x02", 40] }] },
+    { "line": 20, "description": "40 > 30, insert(root->right, 40) 재귀호출", "stack": [{ "function": "insert", "params": ["NULL", 40] }] },
+    { "line": 17, "description": "root==NULL, createNode(40) 호출", "stack": [{ "function": "createNode", "params": [40] }] },
+    { "line": 11, "description": "newNode 생성 및 초기화", "changes": [{ "variable": "newNode", "before": "0x04", "after": "0x05" }], "dataStructure": { "type": "bst", "nodes": [{ "id": "0x01", "value": 50, "links": ["0x02", "0x03"] }, { "id": "0x02", "value": 30, "links": ["0x04", "0x05"] }, { "id": "0x03", "value": 70, "links": [] }, { "id": "0x04", "value": 20, "links": [] }, { "id": "0x05", "value": 40, "links": [] }] } },
+    { "line": 13, "description": "createNode 반환" },
+    { "line": 18, "description": "재귀 insert 반환, root->right=0x05" },
+    { "line": 18, "description": "재귀 insert 반환, root->left=0x02" },
+    { "line": 22, "description": "insert 반환" },
+    { "line": 36, "description": "printf(\"Inorder Traversal\")" },
+    { "line": 37, "description": "inorder(root) 호출", "stack": [{ "function": "inorder", "params": ["0x01"] }] },
+    { "line": 25, "description": "inorder(root->left) 호출", "stack": [{ "function": "inorder", "params": ["0x02"] }] },
+    { "line": 25, "description": "inorder(root->left) 호출", "stack": [{ "function": "inorder", "params": ["0x04"] }] },
+    { "line": 25, "description": "inorder(root->left=NULL), 반환" },
+    { "line": 27, "description": "출력: 20" },
+    { "line": 28, "description": "inorder(root->right=NULL), 반환" },
+    { "line": 27, "description": "출력: 30" },
+    { "line": 28, "description": "inorder(root->right) 호출", "stack": [{ "function": "inorder", "params": ["0x05"] }] },
+    { "line": 25, "description": "inorder(root->left=NULL), 반환" },
+    { "line": 27, "description": "출력: 40" },
+    { "line": 28, "description": "inorder(root->right=NULL), 반환" },
+    { "line": 27, "description": "출력: 50" },
+    { "line": 28, "description": "inorder(root->right) 호출", "stack": [{ "function": "inorder", "params": ["0x03"] }] },
+    { "line": 25, "description": "inorder(root->left=NULL), 반환" },
+    { "line": 27, "description": "출력: 70" },
+    { "line": 28, "description": "inorder(root->right=NULL), 반환" },
+    { "line": 39, "description": "main 종료" }
+  ]
+}, null, 2),
+            type: "json"
         }
+
     ]);
 
     // 🆕 파일 타입 감지 함수
