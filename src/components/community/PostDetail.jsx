@@ -48,9 +48,13 @@ export default function PostDetail() {
                     <button className="link-btn">🔗</button>
                 </div>
                 <div className="section-divider" />
-                <div className="answer-form">
-                    <input type="text" placeholder="답변을 작성해보세요." />
+                <div className="answer-section">
+                    <h3 className="answer-title">답변</h3>
+                    <div className="answer-form">
+                        <input type="text" placeholder="답변을 작성해보세요." />
+                    </div>
                 </div>
+
 
                 <div className="empty-comment">
                     <img src="/empty-comment.png" alt="답변 없음" />

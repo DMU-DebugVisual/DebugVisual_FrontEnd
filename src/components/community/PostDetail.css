@@ -92,7 +92,7 @@
 
 /* 답변 영역 */
 .answer-form {
-    margin-top: 40px;
+    margin-top: 15px;
 }
 
 .answer-form input {
@@ -101,6 +101,12 @@
     border: 1px solid #ccc;
     border-radius: 8px;
     font-size: 14px;
+}
+
+.answer-title {
+    font-size: 16px;        /* ⬅️ 좀 더 작게 */
+    font-weight: 600;
+    color: #333;
 }
 
 .empty-comment {
