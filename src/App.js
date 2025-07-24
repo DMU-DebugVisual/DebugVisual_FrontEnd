@@ -18,6 +18,7 @@ import MyProject from "./components/mypage/MyProject";
 import MyCommunity from "./components/mypage/MyCommunity";
 import ScrollToTop from "./components/common/ScrollToTop";
 import CommunityWrite from "./components/community/CommunityWrite";
+import PostDetail from "./components/community/PostDetail"; // ✅ 게시글 상세 컴포넌트 추가
 
 function AppContent() {
     const location = useLocation();
@@ -72,6 +73,7 @@ function AppContent() {
                 <Route path="/ide/:language/:filename" element={<IDE />} />
                 <Route path="/community" element={<Community />} />
                 <Route path="/community/write" element={<CommunityWrite />} />
+                <Route path="/community/post/:id" element={<PostDetail />} /> {/* ✅ 상세 페이지 라우팅 추가 */}
                 <Route path="/broadcast" element={<Codecast />} />
                 <Route path="/startbroadcast" element={<StartCodecast />} />
                 <Route path="/mypage" element={<MyPageLayout nickname={nickname} />}>

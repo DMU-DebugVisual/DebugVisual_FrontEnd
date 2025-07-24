@@ -1,0 +1,393 @@
+/* 전체 레이아웃 */
+.post-detail-container {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    max-width: 1080px;
+    margin: 60px auto;
+    font-family: "Noto Sans KR", sans-serif;
+    min-height: calc(100vh - 160px); /* 👈 추가! */
+}
+
+.post-top-divider {
+    width: 100%;
+    height: 1px;
+    background-color: #ddd;
+    margin-bottom: 20px;
+}
+
+.section-divider {
+    width: 100%;
+    height: 1px;
+    background-color: #ddd;
+    margin: 30px 0 20px;
+}
+
+/* 왼쪽 질문 본문 */
+.post-detail-left {
+    flex: 1;
+    max-width: 650px;
+    padding-top: 70px; /* ← 위 여백 */
+}
+
+.post-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.post-subinfo {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 12px;
+}
+
+.post-content {
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.post-actions button {
+    background: none;
+    border: none;
+    color: #555;
+    font-size: 14px;
+    margin-right: 12px;
+    cursor: pointer;
+}
+
+.post-tags {
+    margin-top: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.post-tags .tag {
+    font-size: 12px;
+    background-color: #f2f3f5;
+    padding: 4px 10px;
+    border-radius: 12px;
+    color: #444;
+}
+
+.post-util-buttons {
+    margin-top: 16px;
+    display: flex;
+    gap: 8px;
+}
+
+.post-util-buttons button {
+    font-size: 14px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+
+/* 답변 영역 */
+.answer-form {
+    margin-top: 40px;
+}
+
+.answer-form input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.empty-comment {
+    text-align: center;
+    margin-top: 40px;
+    color: #888;
+}
+
+.empty-comment img {
+    width: 120px;
+    margin-bottom: 12px;
+}
+
+.comment-title {
+    font-weight: bold;
+    font-size: 15px;
+}
+
+.comment-sub {
+    font-size: 13px;
+}
+
+/* 오른쪽 사이드 */
+.post-detail-right {
+    width: 330px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-top: 50px; /* ← 위 여백 */
+}
+
+.author-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: #fcfcfc;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 24px 20px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    min-height: auto;
+}
+
+.profile-image {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background-color: #ddd;
+    flex-shrink: 0;
+}
+
+.author-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.author-name {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 4px;
+    color: #222;
+}
+
+.author-activity {
+    font-size: 13px;
+    color: #666;
+}
+
+.related-qna {
+    background-color: #fcfcfc;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.related-qna-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.related-qna-header h4 {
+    font-size: 14px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.view-all-btn {
+    font-size: 13px;
+    background: none;
+    border: none;
+    color: #6a1b9a;
+    cursor: pointer;
+    padding: 4px 6px;
+}
+.related-qna li {
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+/* 마지막 항목은 선 제거 */
+.related-qna li:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+
+.related-qna ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.related-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.related-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: #222;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.related-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #888;
+}
+
+.related-meta .reactions {
+    display: flex;
+    gap: 10px;
+}
+
+.related-meta .date {
+    flex-shrink: 0;
+}
+
+.related-pagination {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.page-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+    color: #333;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.page-btn:hover {
+    background-color: #f0f0f0;
+}
+
+.page-btn.active {
+    background-color: #6a1b9a;
+    color: white;
+    border-color: #6a1b9a;
+}
+
+.page-btn.nav-btn {
+    font-weight: bold;
+    background: none;
+    border: none;
+    color: #6a1b9a;
+    font-size: 16px;
+}
+
+
+
+.ask-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+    color: white;
+    background-color: #6a1b9a;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* 전체 배경 + 텍스트 */
+.dark-mode .post-detail-container {
+    background-color: #1e1e1e;
+    color: #f0f0f0;
+}
+
+/* 박스형 컴포넌트 (작성자, 관련 QnA) */
+.dark-mode .author-box,
+.dark-mode .related-qna {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+}
+
+/* 텍스트 컬러 */
+.dark-mode .post-title,
+.dark-mode .post-subinfo span,
+.dark-mode .post-content,
+.dark-mode .related-title,
+.dark-mode .related-meta,
+.dark-mode .author-name,
+.dark-mode .author-activity {
+    color: #ccc;
+}
+
+/* 태그 및 버튼 */
+.dark-mode .post-tags .tag {
+    background-color: #444;
+    color: #f0f0f0;
+}
+
+.dark-mode .post-util-buttons button {
+    background-color: #2a2a2a;
+    color: #f0f0f0;
+    border: 1px solid #555;
+}
+
+.dark-mode .answer-form input {
+    background-color: #2a2a2a;
+    color: #f0f0f0;
+    border: 1px solid #444;
+}
+
+/* Q&A 내부 hover 효과 */
+.dark-mode .related-qna li:hover {
+    background-color: #333;
+}
+
+/* 전체 보기 버튼 */
+.dark-mode .view-all-btn {
+    color: #b88eff;
+}
+
+/* 페이지네이션 버튼 */
+.dark-mode .page-btn {
+    background-color: #2a2a2a;
+    border-color: #444;
+    color: #ccc;
+}
+
+.dark-mode .page-btn:hover {
+    background-color: #333;
+}
+
+.dark-mode .page-btn.active {
+    background-color: #b88eff;
+    color: #1e1e1e;
+    border-color: #b88eff;
+}
+
+.dark-mode .page-btn.nav-btn {
+    color: #b88eff;
+    background: none;
+    border: none;
+}
+
+/* 질문하기 버튼 */
+.dark-mode .ask-btn {
+    background-color: #6a1b9a;
+    color: #fff;
+}
+
+/* 구분선 */
+.dark-mode .post-top-divider,
+.dark-mode .section-divider {
+    background-color: #444;
+}
