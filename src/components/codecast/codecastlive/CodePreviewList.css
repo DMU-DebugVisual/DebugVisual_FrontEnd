@@ -1,0 +1,55 @@
+.code-preview-list {
+    background-color: #191919;
+    padding: 12px 16px;
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    border-top: 1px solid #333;
+}
+
+.code-preview-card {
+    background-color: #1f1f2e;
+    border-radius: 10px;
+    min-width: 240px;
+    max-width: 240px;
+    flex-shrink: 0;
+    color: white;
+    font-size: 13px;
+    font-family: 'Courier New', monospace;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #333;
+    overflow: hidden;
+}
+
+.card-header {
+    background-color: #2c2c2c;
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    font-size: 14px;
+    border-bottom: 1px solid #444;
+    height: 30px;
+}
+
+.card-name {
+    color: #fff;
+}
+
+.card-role {
+    font-size: 16px;
+}
+
+.preview-language {
+    font-size: 12px;
+    color: #aaa;
+    margin-bottom: 8px;
+}
+
+.preview-code {
+    padding: 12px;
+    white-space: pre-wrap;
+    line-height: 1.5;
+}
