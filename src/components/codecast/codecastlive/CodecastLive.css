@@ -1,0 +1,13 @@
+.broadcast-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: #111;
+    color: white;
+}
+
+.main-section {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
