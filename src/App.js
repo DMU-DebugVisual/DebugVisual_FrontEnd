@@ -18,6 +18,7 @@ import MyProject from "./components/mypage/MyProject";
 import MyCommunity from "./components/mypage/MyCommunity";
 import ScrollToTop from "./components/common/ScrollToTop";
 import CommunityWrite from "./components/community/CommunityWrite";
+import VisualizationModal from "./components/ide/VisualizationModal";
 import PostDetail from "./components/community/PostDetail"; // ✅ 게시글 상세 컴포넌트 추가
 
 function AppContent() {

@@ -62,8 +62,43 @@ const useAnimationControls = (totalSteps) => {
     };
 };
 
+// 🎨 다크모드/라이트모드 테마 객체
+const getTheme = (isDark) => ({
+    colors: {
+        primary: isDark ? '#a78bfa' : '#8b5cf6',
+        primaryHover: isDark ? '#8b5cf6' : '#7c3aed',
+        bg: isDark ? '#0f172a' : '#f1f5f9',
+        card: isDark ? '#1e293b' : '#ffffff',
+        cardSecondary: isDark ? '#334155' : '#f8fafc',
+        border: isDark ? '#475569' : '#e2e8f0',
+        text: isDark ? '#f1f5f9' : '#1e293b',
+        textLight: isDark ? '#94a3b8' : '#64748b',
+        success: isDark ? '#22c55e' : '#10b981',
+        warning: isDark ? '#fbbf24' : '#f59e0b',
+        danger: isDark ? '#f87171' : '#ef4444',
+        info: isDark ? '#60a5fa' : '#3b82f6'
+    },
+    gradients: {
+        primary: isDark
+            ? 'linear-gradient(135deg, #6366f1, #8b5cf6)'
+            : 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+        header: isDark
+            ? 'linear-gradient(135deg, #1e293b 0%, #334155 100%)'
+            : 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+        success: isDark
+            ? 'linear-gradient(135deg, #065f46 0%, #047857 100%)'
+            : 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
+        warning: isDark
+            ? 'linear-gradient(135deg, #92400e 0%, #b45309 100%)'
+            : 'linear-gradient(135deg, #fefce8 0%, #fef3c7 100%)',
+        info: isDark
+            ? 'linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%)'
+            : 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)'
+    }
+});
+
 // 컨트롤 버튼 컴포넌트
-const ControlButton = ({ onClick, disabled, variant = 'default', children, title }) => {
+const ControlButton = ({ onClick, disabled, variant = 'default', children, title, theme }) => {
     const getButtonStyle = () => {
         const baseStyle = {
             display: 'flex',
@@ -84,11 +119,17 @@ const ControlButton = ({ onClick, disabled, variant = 'default', children, title
 
         switch (variant) {
             case 'play':
-                return { ...baseStyle, background: '#10b981', color: 'white' };
+                return { ...baseStyle, background: theme.colors.success, color: 'white' };
             case 'playing':
-                return { ...baseStyle, background: '#f59e0b', color: 'white' };
+                return { ...baseStyle, background: theme.colors.warning, color: 'white' };
             default:
-                return { ...baseStyle, background: 'rgba(255, 255, 255, 0.9)', color: '#374151' };
+                return {
+                    ...baseStyle,
+                    background: theme.colors.card,
+                    color: theme.colors.text,
+                    border: `1px solid ${theme.colors.border}`,
+                    boxShadow: `0 2px 4px ${theme.colors.border}40`
+                };
         }
     };
 
@@ -107,7 +148,8 @@ const ControlButton = ({ onClick, disabled, variant = 'default', children, title
 // 시각화 컨트롤 컴포넌트
 const VisualizationControls = ({
                                    isPlaying, currentStep, totalSteps, speed,
-                                   onPlay, onPause, onStepBack, onStepForward, onReset, onSpeedChange, onStepChange
+                                   onPlay, onPause, onStepBack, onStepForward, onReset, onSpeedChange, onStepChange,
+                                   theme
                                }) => {
     return (
         <div style={{
@@ -121,6 +163,7 @@ const VisualizationControls = ({
                 disabled={totalSteps === 0}
                 variant={isPlaying ? 'playing' : 'play'}
                 title={isPlaying ? '일시정지' : '재생'}
+                theme={theme}
             >
                 {isPlaying ? '⏸' : '▶'} {isPlaying ? '일시' : '시작'}
             </ControlButton>
@@ -129,6 +172,7 @@ const VisualizationControls = ({
                 onClick={onStepBack}
                 disabled={currentStep === 0 || totalSteps === 0}
                 title="이전 단계"
+                theme={theme}
             >
                 ⏪ 이전
             </ControlButton>
@@ -137,6 +181,7 @@ const VisualizationControls = ({
                 onClick={onStepForward}
                 disabled={currentStep >= totalSteps - 1 || totalSteps === 0}
                 title="다음 단계"
+                theme={theme}
             >
                 ⏩ 다음
             </ControlButton>
@@ -145,6 +190,7 @@ const VisualizationControls = ({
                 onClick={onReset}
                 disabled={totalSteps === 0}
                 title="처음으로"
+                theme={theme}
             >
                 ⏮ 처음
             </ControlButton>
@@ -153,10 +199,12 @@ const VisualizationControls = ({
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                background: 'rgba(255, 255, 255, 0.9)',
+                background: theme.colors.card,
+                border: `1px solid ${theme.colors.border}`,
                 padding: '8px 12px',
                 borderRadius: '8px',
-                height: '36px'
+                height: '36px',
+                boxShadow: `0 2px 4px ${theme.colors.border}40`
             }}>
                 <input
                     type="number"
@@ -177,22 +225,25 @@ const VisualizationControls = ({
                         textAlign: 'center',
                         fontSize: '12px',
                         fontWeight: '600',
-                        outline: 'none'
+                        outline: 'none',
+                        color: theme.colors.primary
                     }}
                 />
-                <span style={{ fontSize: '12px', color: '#6b7280' }}>/ {totalSteps}</span>
+                <span style={{ fontSize: '12px', color: theme.colors.textLight }}>/ {totalSteps}</span>
             </div>
 
             <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                background: 'rgba(255, 255, 255, 0.9)',
+                background: theme.colors.card,
+                border: `1px solid ${theme.colors.border}`,
                 padding: '6px 10px',
                 borderRadius: '8px',
-                height: '36px'
+                height: '36px',
+                boxShadow: `0 2px 4px ${theme.colors.border}40`
             }}>
-                <span style={{ fontSize: '11px', color: '#6b7280', marginRight: '4px' }}>속도:</span>
+                <span style={{ fontSize: '11px', color: theme.colors.textLight, marginRight: '4px' }}>속도:</span>
                 {[0.5, 1, 1.5, 2].map(speedValue => (
                     <button
                         key={speedValue}
@@ -203,8 +254,8 @@ const VisualizationControls = ({
                             borderRadius: '6px',
                             fontSize: '10px',
                             cursor: 'pointer',
-                            background: speed === speedValue ? '#8b5cf6' : 'transparent',
-                            color: speed === speedValue ? 'white' : '#6b7280',
+                            background: speed === speedValue ? theme.colors.primary : 'transparent',
+                            color: speed === speedValue ? 'white' : theme.colors.textLight,
                             minWidth: '32px',
                             height: '24px',
                             transition: 'all 0.2s'
@@ -219,7 +270,7 @@ const VisualizationControls = ({
 };
 
 // 로딩 컴포넌트
-const LoadingAnimation = ({ message = "시각화 데이터 로딩 중...", code, language }) => (
+const LoadingAnimation = ({ message = "시각화 데이터 로딩 중...", code, language, theme }) => (
     <div style={{
         width: '100%',
         height: '100%',
@@ -234,31 +285,31 @@ const LoadingAnimation = ({ message = "시각화 데이터 로딩 중...", code,
         <div style={{
             width: '40px',
             height: '40px',
-            border: '3px solid #e2e8f0',
-            borderTop: '3px solid #8b5cf6',
+            border: `3px solid ${theme.colors.border}`,
+            borderTop: `3px solid ${theme.colors.primary}`,
             borderRadius: '50%',
             animation: 'spin 1s linear infinite'
         }} />
-        <h3 style={{ margin: 0, color: '#1e293b', fontSize: '18px', fontWeight: '600' }}>{message}</h3>
-        <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>데이터 처리 중입니다</p>
+        <h3 style={{ margin: 0, color: theme.colors.text, fontSize: '18px', fontWeight: '600' }}>{message}</h3>
+        <p style={{ margin: 0, color: theme.colors.textLight, fontSize: '14px' }}>데이터 처리 중입니다</p>
         <div style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>
             <span style={{
                 fontSize: '12px',
                 padding: '4px 8px',
-                background: '#f1f5f9',
+                background: theme.colors.cardSecondary,
                 borderRadius: '6px',
-                color: '#64748b',
-                border: '1px solid #e2e8f0'
+                color: theme.colors.textLight,
+                border: `1px solid ${theme.colors.border}`
             }}>
                 언어: {language}
             </span>
             <span style={{
                 fontSize: '12px',
                 padding: '4px 8px',
-                background: '#f1f5f9',
+                background: theme.colors.cardSecondary,
                 borderRadius: '6px',
-                color: '#64748b',
-                border: '1px solid #e2e8f0'
+                color: theme.colors.textLight,
+                border: `1px solid ${theme.colors.border}`
             }}>
                 코드 길이: {code?.length || 0}자
             </span>
@@ -267,7 +318,7 @@ const LoadingAnimation = ({ message = "시각화 데이터 로딩 중...", code,
 );
 
 // 에러 컴포넌트
-const ErrorDisplay = ({ error, onRetry }) => (
+const ErrorDisplay = ({ error, onRetry, theme }) => (
     <div style={{
         width: '100%',
         height: '100%',
@@ -280,10 +331,10 @@ const ErrorDisplay = ({ error, onRetry }) => (
         padding: '40px'
     }}>
         <div style={{ fontSize: '64px' }}>❌</div>
-        <h3 style={{ margin: 0, color: '#1e293b', fontSize: '18px', fontWeight: '600' }}>시각화 데이터 로드 실패</h3>
+        <h3 style={{ margin: 0, color: theme.colors.text, fontSize: '18px', fontWeight: '600' }}>시각화 데이터 로드 실패</h3>
         <p style={{
             margin: 0,
-            color: '#64748b',
+            color: theme.colors.textLight,
             textAlign: 'center',
             maxWidth: '500px',
             fontSize: '14px',
@@ -294,7 +345,7 @@ const ErrorDisplay = ({ error, onRetry }) => (
         <button
             onClick={onRetry}
             style={{
-                backgroundColor: '#ef4444',
+                backgroundColor: theme.colors.danger,
                 color: 'white',
                 border: 'none',
                 borderRadius: '12px',
@@ -304,8 +355,8 @@ const ErrorDisplay = ({ error, onRetry }) => (
                 fontSize: '14px',
                 transition: 'all 0.2s ease'
             }}
-            onMouseOver={(e) => e.target.style.backgroundColor = '#dc2626'}
-            onMouseOut={(e) => e.target.style.backgroundColor = '#ef4444'}
+            onMouseOver={(e) => e.target.style.backgroundColor = theme.colors.danger + '88'}
+            onMouseOut={(e) => e.target.style.backgroundColor = theme.colors.danger}
         >
             🔄 다시 시도
         </button>
@@ -313,7 +364,7 @@ const ErrorDisplay = ({ error, onRetry }) => (
 );
 
 // 애니메이션 디스플레이 컴포넌트
-const AnimationDisplay = ({ data, currentStep, totalSteps, animationType, isPlaying }) => {
+const AnimationDisplay = ({ data, currentStep, totalSteps, animationType, isPlaying, theme }) => {
     console.log('🎬 AnimationDisplay 렌더링:', {
         animationType,
         currentStep,
@@ -342,12 +393,12 @@ const AnimationDisplay = ({ data, currentStep, totalSteps, animationType, isPlay
     const getDataSourceBadge = () => {
         const dataSource = data?._dataSource || 'unknown';
         const badges = {
-            'api': { color: '#10b981', text: '🌐 API', bg: 'rgba(16, 185, 129, 0.1)' },
-            'json': { color: '#f59e0b', text: '🗂️ JSON', bg: 'rgba(245, 158, 11, 0.1)' },
-            'api+json': { color: '#8b5cf6', text: '🔗 하이브리드', bg: 'rgba(139, 92, 246, 0.1)' },
-            'api-only': { color: '#06b6d4', text: '🌐 API만', bg: 'rgba(6, 182, 212, 0.1)' },
-            'preloaded-json': { color: '#10b981', text: '🗂️ 예제', bg: 'rgba(16, 185, 129, 0.1)' },
-            'unknown': { color: '#6b7280', text: '❓ 미확인', bg: 'rgba(107, 114, 128, 0.1)' }
+            'api': { color: theme.colors.success, text: '🌐 API', bg: `${theme.colors.success}20` },
+            'json': { color: theme.colors.warning, text: '🗂️ JSON', bg: `${theme.colors.warning}20` },
+            'api+json': { color: theme.colors.primary, text: '🔗 하이브리드', bg: `${theme.colors.primary}20` },
+            'api-only': { color: theme.colors.info, text: '🌐 API만', bg: `${theme.colors.info}20` },
+            'preloaded-json': { color: theme.colors.success, text: '🗂️ 예제', bg: `${theme.colors.success}20` },
+            'unknown': { color: theme.colors.textLight, text: '❓ 미확인', bg: `${theme.colors.textLight}20` }
         };
 
         const badge = badges[dataSource] || badges['unknown'];
@@ -377,7 +428,8 @@ const AnimationDisplay = ({ data, currentStep, totalSteps, animationType, isPlay
                 currentStep,
                 totalSteps,
                 isPlaying,
-                zoomLevel: 1
+                zoomLevel: 1,
+                theme // 테마 전달
             });
             console.log('✅ 애니메이션 컴포넌트 생성됨:', animationComponent);
         } else {
@@ -392,9 +444,11 @@ const AnimationDisplay = ({ data, currentStep, totalSteps, animationType, isPlay
             width: '100%',
             height: '100%',
             minHeight: '500px',
-            background: '#ffffff',
+            background: theme.colors.card,
             borderRadius: '12px',
-            border: isImplemented ? '2px solid #10b981' : '2px solid #f59e0b',
+            border: isImplemented
+                ? `2px solid ${theme.colors.success}`
+                : `2px solid ${theme.colors.warning}`,
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden'
@@ -402,15 +456,13 @@ const AnimationDisplay = ({ data, currentStep, totalSteps, animationType, isPlay
             {/* 애니메이션 헤더 */}
             <div style={{
                 padding: '20px 24px',
-                background: isImplemented
-                    ? 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)'
-                    : 'linear-gradient(135deg, #fefce8 0%, #fef3c7 100%)',
-                borderBottom: '1px solid #e2e8f0',
+                background: isImplemented ? theme.gradients.success : theme.gradients.warning,
+                borderBottom: `1px solid ${theme.colors.border}`,
                 flexShrink: 0
             }}>
                 <h3 style={{
                     margin: '0 0 8px 0',
-                    color: '#1e293b',
+                    color: theme.colors.text,
                     fontSize: '18px',
                     fontWeight: '600',
                     display: 'flex',
@@ -420,14 +472,14 @@ const AnimationDisplay = ({ data, currentStep, totalSteps, animationType, isPlay
                     {icon} {name} 시각화
                     {getDataSourceBadge()}
                     {isImplemented && <span style={{
-                        background: '#10b981',
+                        background: theme.colors.success,
                         color: 'white',
                         fontSize: '12px',
                         padding: '2px 8px',
                         borderRadius: '12px'
                     }}>✅ 활성화</span>}
                     {!isImplemented && <span style={{
-                        background: '#f59e0b',
+                        background: theme.colors.warning,
                         color: 'white',
                         fontSize: '12px',
                         padding: '2px 8px',
@@ -436,7 +488,7 @@ const AnimationDisplay = ({ data, currentStep, totalSteps, animationType, isPlay
                 </h3>
                 <p style={{
                     margin: 0,
-                    color: '#64748b',
+                    color: theme.colors.textLight,
                     fontSize: '14px'
                 }}>
                     현재 {currentStep + 1}단계 / 총 {totalSteps}단계
@@ -447,7 +499,7 @@ const AnimationDisplay = ({ data, currentStep, totalSteps, animationType, isPlay
             <div style={{
                 flex: 1,
                 padding: '24px',
-                background: '#fafbfc',
+                background: theme.colors.bg,
                 minHeight: '400px',
                 overflowY: 'auto',
                 overflowX: 'hidden',
@@ -469,10 +521,11 @@ const AnimationDisplay = ({ data, currentStep, totalSteps, animationType, isPlay
                 ) : (
                     <div style={{
                         textAlign: 'center',
-                        color: '#ef4444',
+                        color: theme.colors.danger,
                         padding: '40px',
                         borderRadius: '8px',
-                        background: '#fef2f2',
+                        background: `${theme.colors.danger}10`,
+                        border: `1px solid ${theme.colors.danger}30`,
                         minHeight: '300px',
                         display: 'flex',
                         flexDirection: 'column',
@@ -482,8 +535,8 @@ const AnimationDisplay = ({ data, currentStep, totalSteps, animationType, isPlay
                         maxWidth: '500px'
                     }}>
                         <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚙️</div>
-                        <h3 style={{ margin: '0 0 12px 0', fontSize: '18px' }}>애니메이션 준비 중</h3>
-                        <p style={{ margin: '0 0 16px 0', fontSize: '14px' }}>
+                        <h3 style={{ margin: '0 0 12px 0', fontSize: '18px', color: theme.colors.text }}>애니메이션 준비 중</h3>
+                        <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: theme.colors.textLight }}>
                             {isImplemented ?
                                 'AnimationFactory에서 컴포넌트를 로딩 중입니다.' :
                                 '이 알고리즘 타입은 아직 개발 중입니다.'
@@ -491,7 +544,7 @@ const AnimationDisplay = ({ data, currentStep, totalSteps, animationType, isPlay
                         </p>
                         {data?._dataSource && (
                             <div style={{ marginTop: '12px' }}>
-                                <span style={{ fontSize: '12px', color: '#64748b' }}>데이터 소스: </span>
+                                <span style={{ fontSize: '12px', color: theme.colors.textLight }}>데이터 소스: </span>
                                 {getDataSourceBadge()}
                             </div>
                         )}
@@ -503,19 +556,19 @@ const AnimationDisplay = ({ data, currentStep, totalSteps, animationType, isPlay
 };
 
 // 정보 패널 컴포넌트
-const InfoPanel = ({ data, currentStep, totalSteps, animationType }) => {
+const InfoPanel = ({ data, currentStep, totalSteps, animationType, theme }) => {
     const InfoCard = ({ title, icon, children }) => (
         <div style={{
-            background: '#ffffff',
+            background: theme.colors.card,
             borderRadius: '12px',
-            border: '1px solid #e2e8f0',
+            border: `1px solid ${theme.colors.border}`,
             padding: '16px',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
+            boxShadow: `0 2px 8px ${theme.colors.border}40`
         }}>
             <h4 style={{
                 fontSize: '15px',
                 margin: '0 0 12px 0',
-                color: '#1e293b',
+                color: theme.colors.text,
                 fontWeight: '600',
                 display: 'flex',
                 alignItems: 'center',
@@ -551,21 +604,21 @@ const InfoPanel = ({ data, currentStep, totalSteps, animationType }) => {
                     <span style={{
                         fontSize: '20px',
                         fontWeight: '700',
-                        color: '#8b5cf6'
+                        color: theme.colors.primary
                     }}>
                         {currentStep + 1}
                     </span>
-                    <span style={{ color: '#64748b' }}>/ {totalSteps}</span>
+                    <span style={{ color: theme.colors.textLight }}>/ {totalSteps}</span>
                 </div>
 
                 {currentStepData?.description && (
                     <div style={{
                         padding: '12px',
-                        background: '#f1f5f9',
+                        background: theme.colors.cardSecondary,
                         borderRadius: '8px',
-                        borderLeft: '4px solid #8b5cf6',
+                        borderLeft: `4px solid ${theme.colors.primary}`,
                         fontSize: '13px',
-                        color: '#64748b',
+                        color: theme.colors.textLight,
                         marginBottom: '8px',
                         lineHeight: '1.4'
                     }}>
@@ -576,8 +629,8 @@ const InfoPanel = ({ data, currentStep, totalSteps, animationType }) => {
                 {currentStepData?.line && (
                     <div style={{
                         fontSize: '12px',
-                        color: '#8b5cf6',
-                        background: 'rgba(139, 92, 246, 0.1)',
+                        color: theme.colors.primary,
+                        background: `${theme.colors.primary}20`,
                         padding: '6px 10px',
                         borderRadius: '6px',
                         fontWeight: '500'
@@ -605,30 +658,32 @@ const InfoPanel = ({ data, currentStep, totalSteps, animationType }) => {
                             display: 'flex',
                             justifyContent: 'space-between',
                             padding: '6px 8px',
-                            background: item.isComplexity 
-                                ? (item.complexityType === 'time' 
-                                    ? 'linear-gradient(135deg, #fef3c7, #fde68a)' 
-                                    : 'linear-gradient(135deg, #dbeafe, #bfdbfe)')
-                                : '#f8fafc',
+                            background: item.isComplexity
+                                ? (item.complexityType === 'time'
+                                    ? `${theme.colors.warning}20`
+                                    : `${theme.colors.info}20`)
+                                : theme.colors.cardSecondary,
                             borderRadius: '6px',
                             fontSize: '12px',
-                            border: item.isComplexity 
-                                ? (item.complexityType === 'time' ? '1px solid #f59e0b' : '1px solid #3b82f6')
+                            border: item.isComplexity
+                                ? (item.complexityType === 'time'
+                                    ? `1px solid ${theme.colors.warning}`
+                                    : `1px solid ${theme.colors.info}`)
                                 : 'none'
                         }}>
-                            <span style={{ 
-                                color: item.isComplexity 
-                                    ? (item.complexityType === 'time' ? '#92400e' : '#1e40af')
-                                    : '#64748b',
+                            <span style={{
+                                color: item.isComplexity
+                                    ? (item.complexityType === 'time' ? theme.colors.warning : theme.colors.info)
+                                    : theme.colors.textLight,
                                 fontWeight: item.isComplexity ? '600' : 'normal'
                             }}>
                                 {item.label}:
                             </span>
-                            <span style={{ 
-                                fontWeight: '600', 
-                                color: item.isComplexity 
-                                    ? (item.complexityType === 'time' ? '#92400e' : '#1e40af')
-                                    : '#1e293b',
+                            <span style={{
+                                fontWeight: '600',
+                                color: item.isComplexity
+                                    ? (item.complexityType === 'time' ? theme.colors.warning : theme.colors.info)
+                                    : theme.colors.text,
                                 fontFamily: item.isComplexity ? 'monospace' : 'inherit'
                             }}>
                                 {item.value}
@@ -637,22 +692,23 @@ const InfoPanel = ({ data, currentStep, totalSteps, animationType }) => {
                     ))}
                 </div>
             </InfoCard>
+
             {/* API 출력 결과 */}
             {(data?.stdout || data?.stderr) && (
                 <InfoCard title="실행 결과" icon="💻">
                     {data.stdout && (
                         <div style={{
-                            background: '#f0f9ff',
-                            border: '1px solid #e0f2fe',
+                            background: `${theme.colors.info}15`,
+                            border: `1px solid ${theme.colors.info}30`,
                             borderRadius: '6px',
                             padding: '8px',
                             marginBottom: '8px'
                         }}>
-                            <div style={{ fontSize: '11px', color: '#0369a1', marginBottom: '4px' }}>STDOUT:</div>
+                            <div style={{ fontSize: '11px', color: theme.colors.info, marginBottom: '4px' }}>STDOUT:</div>
                             <pre style={{
                                 margin: 0,
                                 fontSize: '12px',
-                                color: '#1e293b',
+                                color: theme.colors.text,
                                 whiteSpace: 'pre-wrap',
                                 wordBreak: 'break-all'
                             }}>
@@ -662,16 +718,16 @@ const InfoPanel = ({ data, currentStep, totalSteps, animationType }) => {
                     )}
                     {data.stderr && (
                         <div style={{
-                            background: '#fef2f2',
-                            border: '1px solid #fecaca',
+                            background: `${theme.colors.danger}15`,
+                            border: `1px solid ${theme.colors.danger}30`,
                             borderRadius: '6px',
                             padding: '8px'
                         }}>
-                            <div style={{ fontSize: '11px', color: '#dc2626', marginBottom: '4px' }}>STDERR:</div>
+                            <div style={{ fontSize: '11px', color: theme.colors.danger, marginBottom: '4px' }}>STDERR:</div>
                             <pre style={{
                                 margin: 0,
                                 fontSize: '12px',
-                                color: '#dc2626',
+                                color: theme.colors.danger,
                                 whiteSpace: 'pre-wrap',
                                 wordBreak: 'break-all'
                             }}>
@@ -692,21 +748,21 @@ const InfoPanel = ({ data, currentStep, totalSteps, animationType }) => {
                                 justifyContent: 'space-between',
                                 alignItems: 'center',
                                 padding: '8px 10px',
-                                background: '#f8fafc',
+                                background: theme.colors.cardSecondary,
                                 borderRadius: '6px',
-                                border: '1px solid #e2e8f0'
+                                border: `1px solid ${theme.colors.border}`
                             }}>
                                 <div>
                                     <span style={{
                                         fontWeight: '600',
-                                        color: '#8b5cf6',
+                                        color: theme.colors.primary,
                                         fontSize: '13px'
                                     }}>
                                         {variable.name}
                                     </span>
                                     <span style={{
                                         fontSize: '11px',
-                                        color: '#64748b',
+                                        color: theme.colors.textLight,
                                         marginLeft: '6px'
                                     }}>
                                         ({variable.type})
@@ -715,10 +771,10 @@ const InfoPanel = ({ data, currentStep, totalSteps, animationType }) => {
                                 <span style={{
                                     fontWeight: '600',
                                     padding: '2px 6px',
-                                    background: 'rgba(139, 92, 246, 0.1)',
+                                    background: `${theme.colors.primary}20`,
                                     borderRadius: '4px',
                                     fontSize: '11px',
-                                    color: '#8b5cf6'
+                                    color: theme.colors.primary
                                 }}>
                                     {Array.isArray(variable.currentValue)
                                         ? `[${variable.currentValue.join(', ')}]`
@@ -738,15 +794,15 @@ const InfoPanel = ({ data, currentStep, totalSteps, animationType }) => {
                         {currentStepData.changes.map((change, index) => (
                             <div key={index} style={{
                                 padding: '8px 10px',
-                                background: '#fef3c7',
+                                background: `${theme.colors.warning}20`,
                                 borderRadius: '6px',
-                                borderLeft: '3px solid #f59e0b',
+                                borderLeft: `3px solid ${theme.colors.warning}`,
                                 fontSize: '12px'
                             }}>
-                                <span style={{ fontWeight: '600', color: '#92400e' }}>
+                                <span style={{ fontWeight: '600', color: theme.colors.warning }}>
                                     {change.variable}
                                 </span>
-                                <span style={{ color: '#78716c', marginLeft: '6px' }}>
+                                <span style={{ color: theme.colors.textLight, marginLeft: '6px' }}>
                                     : {JSON.stringify(change.before)} → {JSON.stringify(change.after)}
                                 </span>
                             </div>
@@ -758,9 +814,17 @@ const InfoPanel = ({ data, currentStep, totalSteps, animationType }) => {
     );
 };
 
-// 🆕 메인 모달 컴포넌트 - preloadedJsonData 추가
-// 메인 모달 컴포넌트 선언 부분
-const VisualizationModal = ({ isOpen, onClose, code, language, input, preloadedJsonData = null, isJsonFile = false }) => {
+// 🆕 메인 모달 컴포넌트 - isDark prop 추가
+const VisualizationModal = ({
+                                isOpen,
+                                onClose,
+                                code,
+                                language,
+                                input,
+                                preloadedJsonData = null,
+                                isJsonFile = false,
+                                isDark = false // 🎨 다크모드 상태 받기
+                            }) => {
     const [data, setData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -770,7 +834,9 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input, preloadedJ
     const [apiMode, setApiMode] = useState(true); // API 모드 토글
     const animationControls = useAnimationControls(totalSteps);
 
-    // 🆕 시각화 데이터 가져오기 함수 - JSON 직접 지원
+    // 🎨 테마 가져오기
+    const theme = getTheme(isDark);
+
     // 🆕 시각화 데이터 가져오기 함수 - JSON 직접 지원
     const fetchVisualizationData = async () => {
         if (!code?.trim()) {
@@ -975,19 +1041,19 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input, preloadedJ
             return {
                 icon: '🗂️',
                 text: 'JSON 직접',
-                color: '#10b981',
-                bg: 'rgba(16, 185, 129, 0.1)',
+                color: theme.colors.success,
+                bg: `${theme.colors.success}20`,
                 description: '미리 준비된 예제 데이터'
             };
         }
 
         const dataSource = data?._dataSource || 'unknown';
         const sourceMap = {
-            'api': { icon: '🌐', text: 'API', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)', description: '실시간 API 응답' },
-            'json': { icon: '🗂️', text: 'JSON Mock', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)', description: 'Mock 데이터' },
-            'api+json': { icon: '🔗', text: '하이브리드', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)', description: 'API + JSON 병합' },
-            'api-only': { icon: '🌐', text: 'API만', color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.1)', description: 'API 응답만' },
-            'unknown': { icon: '❓', text: '미확인', color: '#6b7280', bg: 'rgba(107, 114, 128, 0.1)', description: '알 수 없음' }
+            'api': { icon: '🌐', text: 'API', color: theme.colors.success, bg: `${theme.colors.success}20`, description: '실시간 API 응답' },
+            'json': { icon: '🗂️', text: 'JSON Mock', color: theme.colors.warning, bg: `${theme.colors.warning}20`, description: 'Mock 데이터' },
+            'api+json': { icon: '🔗', text: '하이브리드', color: theme.colors.primary, bg: `${theme.colors.primary}20`, description: 'API + JSON 병합' },
+            'api-only': { icon: '🌐', text: 'API만', color: theme.colors.info, bg: `${theme.colors.info}20`, description: 'API 응답만' },
+            'unknown': { icon: '❓', text: '미확인', color: theme.colors.textLight, bg: `${theme.colors.textLight}20`, description: '알 수 없음' }
         };
 
         return sourceMap[dataSource] || sourceMap['unknown'];
@@ -1010,16 +1076,16 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input, preloadedJ
             width: 8px;
         }
         .visualization-modal-scrollbar::-webkit-scrollbar-track {
-            background: #f1f5f9;
+            background: ${theme.colors.cardSecondary};
             border-radius: 4px;
         }
         .visualization-modal-scrollbar::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
+            background: ${theme.colors.border};
             border-radius: 4px;
             transition: background 0.2s;
         }
         .visualization-modal-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
+            background: ${theme.colors.textLight};
         }
     `;
 
@@ -1043,7 +1109,7 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input, preloadedJ
             >
                 <div
                     style={{
-                        background: '#ffffff',
+                        background: theme.colors.card,
                         borderRadius: '16px',
                         boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)',
                         width: '95vw',
@@ -1054,7 +1120,7 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input, preloadedJ
                         display: 'flex',
                         flexDirection: 'column',
                         overflow: 'hidden',
-                        border: '1px solid #e2e8f0'
+                        border: `1px solid ${theme.colors.border}`
                     }}
                     onClick={(e) => e.stopPropagation()}
                 >
@@ -1064,7 +1130,7 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input, preloadedJ
                         justifyContent: 'space-between',
                         alignItems: 'center',
                         padding: '20px 24px',
-                        background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                        background: theme.gradients.primary,
                         color: 'white',
                         borderRadius: '16px 16px 0 0',
                         flexShrink: 0
@@ -1117,8 +1183,8 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input, preloadedJ
                                             onClick={toggleApiMode}
                                             style={{
                                                 background: apiMode
-                                                    ? 'linear-gradient(135deg, #10b981, #059669)'
-                                                    : 'linear-gradient(135deg, #f59e0b, #d97706)',
+                                                    ? `linear-gradient(135deg, ${theme.colors.success}, ${theme.colors.success}88)`
+                                                    : `linear-gradient(135deg, ${theme.colors.warning}, ${theme.colors.warning}88)`,
                                                 color: 'white',
                                                 border: 'none',
                                                 borderRadius: '8px',
@@ -1149,6 +1215,7 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input, preloadedJ
                                         onReset={animationControls.reset}
                                         onSpeedChange={animationControls.setSpeed}
                                         onStepChange={animationControls.goToStep}
+                                        theme={theme}
                                     />
 
                                     {/* 새로고침 버튼 (예제가 아닌 경우에만 표시) */}
@@ -1168,7 +1235,8 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input, preloadedJ
                                                 cursor: 'pointer',
                                                 color: 'white',
                                                 fontSize: '16px',
-                                                opacity: isLoading ? 0.5 : 1
+                                                opacity: isLoading ? 0.5 : 1,
+                                                transition: 'all 0.2s'
                                             }}
                                             title="데이터 새로고침"
                                         >
@@ -1191,9 +1259,12 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input, preloadedJ
                                     justifyContent: 'center',
                                     cursor: 'pointer',
                                     color: 'white',
-                                    fontSize: '16px'
+                                    fontSize: '16px',
+                                    transition: 'all 0.2s'
                                 }}
                                 title="모달 닫기"
+                                onMouseOver={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.3)'}
+                                onMouseOut={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.2)'}
                             >
                                 ✕
                             </button>
@@ -1203,7 +1274,7 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input, preloadedJ
                     {/* 2열 레이아웃 - 왼쪽 정보패널 + 오른쪽 애니메이션 */}
                     <div style={{
                         flex: 1,
-                        background: '#f1f5f9',
+                        background: theme.colors.bg,
                         display: 'grid',
                         gridTemplateColumns: '280px 1fr',
                         gap: '0',
@@ -1212,8 +1283,8 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input, preloadedJ
                     }}>
                         {/* 왼쪽: 정보 패널 */}
                         <div className="visualization-modal-scrollbar" style={{
-                            background: '#ffffff',
-                            borderRight: '1px solid #e2e8f0',
+                            background: theme.colors.card,
+                            borderRight: `1px solid ${theme.colors.border}`,
                             padding: '20px',
                             overflowY: 'auto',
                             overflowX: 'hidden',
@@ -1227,6 +1298,7 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input, preloadedJ
                                     currentStep={animationControls.currentStep}
                                     totalSteps={totalSteps}
                                     animationType={animationType}
+                                    theme={theme}
                                 />
                             ) : (
                                 <div style={{
@@ -1235,7 +1307,7 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input, preloadedJ
                                     justifyContent: 'center',
                                     height: '100%',
                                     textAlign: 'center',
-                                    color: '#64748b'
+                                    color: theme.colors.textLight
                                 }}>
                                     <div>
                                         <div style={{ fontSize: '48px', marginBottom: '16px' }}>
@@ -1249,7 +1321,7 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input, preloadedJ
 
                         {/* 오른쪽: 메인 애니메이션 영역 */}
                         <div className="visualization-modal-scrollbar" style={{
-                            background: '#ffffff',
+                            background: theme.colors.card,
                             padding: '20px',
                             overflowY: 'auto',
                             overflowX: 'hidden',
@@ -1262,9 +1334,10 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input, preloadedJ
                                     message={preloadedJsonData ? "JSON 예제 데이터 로딩 중..." : "API 시각화 데이터 로딩 중..."}
                                     code={code}
                                     language={language}
+                                    theme={theme}
                                 />
                             ) : error ? (
-                                <ErrorDisplay error={error} onRetry={fetchVisualizationData} />
+                                <ErrorDisplay error={error} onRetry={fetchVisualizationData} theme={theme} />
                             ) : data ? (
                                 <AnimationDisplay
                                     data={data}
@@ -1272,6 +1345,7 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input, preloadedJ
                                     totalSteps={totalSteps}
                                     animationType={animationType}
                                     isPlaying={animationControls.isPlaying}
+                                    theme={theme}
                                 />
                             ) : (
                                 <div style={{
@@ -1285,10 +1359,10 @@ const VisualizationModal = ({ isOpen, onClose, code, language, input, preloadedJ
                                     minHeight: '400px'
                                 }}>
                                     <div style={{ fontSize: '64px' }}>{dataSourceInfo.icon}</div>
-                                    <h3 style={{ margin: 0, color: '#1e293b' }}>
+                                    <h3 style={{ margin: 0, color: theme.colors.text }}>
                                         {preloadedJsonData ? 'JSON 예제 시각화 준비 중...' : '하이브리드 시각화 준비 중...'}
                                     </h3>
-                                    <p style={{ margin: 0, color: '#64748b' }}>
+                                    <p style={{ margin: 0, color: theme.colors.textLight }}>
                                         {preloadedJsonData ? 'JSON 데이터 처리 중' : 'API 연동 및 데이터 처리 중'}
                                     </p>
                                 </div>
