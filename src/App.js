@@ -18,6 +18,7 @@ import MyProject from "./components/mypage/MyProject";
 import MyCommunity from "./components/mypage/MyCommunity";
 import ScrollToTop from "./components/common/ScrollToTop";
 import CommunityWrite from "./components/community/CommunityWrite";
+import VisualizationModal from "./components/ide/VisualizationModal";
 
 function AppContent() {
     const location = useLocation();

@@ -1,24 +1,61 @@
-/* VisualizationModal.css - 완전한 2열 레이아웃 버전 */
+/* VisualizationModal.css - 다크모드/라이트모드 완전 지원 버전 */
 
+/* 🌟 CSS 변수 정의 - 라이트모드 기본값 */
 :root {
-    --primary: #8b5cf6;
-    --bg: #f1f5f9;
-    --card: #ffffff;
-    --border: #e2e8f0;
-    --text: #1e293b;
-    --text-light: #64748b;
-    --success: #10b981;
-    --warning: #f59e0b;
-    --danger: #ef4444;
+    --modal-primary: #8b5cf6;
+    --modal-primary-hover: #7c3aed;
+    --modal-bg: #f1f5f9;
+    --modal-card: #ffffff;
+    --modal-card-secondary: #f8fafc;
+    --modal-border: #e2e8f0;
+    --modal-text: #1e293b;
+    --modal-text-light: #64748b;
+    --modal-success: #10b981;
+    --modal-warning: #f59e0b;
+    --modal-danger: #ef4444;
+    --modal-info: #3b82f6;
+
+    /* 그라데이션 */
+    --modal-gradient-primary: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    --modal-gradient-header: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    --modal-gradient-success: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    --modal-gradient-warning: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+    --modal-gradient-info: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+
+    /* 그림자 */
+    --modal-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --modal-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --modal-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --modal-shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 
+/* 🌙 다크모드 CSS 변수 */
 body.dark-mode {
-    --primary: #a78bfa;
-    --bg: #0f172a;
-    --card: #1e293b;
-    --border: #475569;
-    --text: #f1f5f9;
-    --text-light: #94a3b8;
+    --modal-primary: #a78bfa;
+    --modal-primary-hover: #8b5cf6;
+    --modal-bg: #0f172a;
+    --modal-card: #1e293b;
+    --modal-card-secondary: #334155;
+    --modal-border: #475569;
+    --modal-text: #f1f5f9;
+    --modal-text-light: #94a3b8;
+    --modal-success: #22c55e;
+    --modal-warning: #fbbf24;
+    --modal-danger: #f87171;
+    --modal-info: #60a5fa;
+
+    /* 다크모드 그라데이션 */
+    --modal-gradient-primary: linear-gradient(135deg, #6366f1, #8b5cf6);
+    --modal-gradient-header: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    --modal-gradient-success: linear-gradient(135deg, #065f46 0%, #047857 100%);
+    --modal-gradient-warning: linear-gradient(135deg, #92400e 0%, #b45309 100%);
+    --modal-gradient-info: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+
+    /* 다크모드 그림자 */
+    --modal-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --modal-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --modal-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --modal-shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.6);
 }
 
 /* 🌐 모달 오버레이 */
@@ -42,9 +79,9 @@ body.dark-mode {
 
 /* 📦 모달 컨테이너 */
 .visualization-modal-container {
-    background: var(--card);
+    background: var(--modal-card);
     border-radius: 16px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--modal-shadow-xl);
     width: 95vw;
     height: 92vh;
     max-width: 1600px;
@@ -53,8 +90,9 @@ body.dark-mode {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    border: 1px solid var(--border);
+    border: 1px solid var(--modal-border);
     animation: slideIn 0.4s ease;
+    transition: all 0.3s ease;
 }
 
 @keyframes slideIn {
@@ -68,7 +106,7 @@ body.dark-mode {
     justify-content: space-between;
     align-items: center;
     padding: 20px 24px;
-    background: linear-gradient(135deg, var(--primary), #7c3aed);
+    background: var(--modal-gradient-primary);
     color: white;
     border-radius: 16px 16px 0 0;
     flex-shrink: 0;
@@ -115,25 +153,26 @@ body.dark-mode {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 10px 16px;
+    padding: 8px 16px;
     border: none;
     border-radius: 8px;
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
-    background: rgba(255, 255, 255, 0.9);
-    color: #374151;
+    background: var(--modal-card);
+    color: var(--modal-text);
     min-width: 70px;
     height: 36px;
     justify-content: center;
     transition: all 0.2s;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--modal-shadow-sm);
+    border: 1px solid var(--modal-border);
 }
 
 .control-btn:hover:not(:disabled) {
-    background: white;
+    background: var(--modal-card-secondary);
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--modal-shadow-md);
 }
 
 .control-btn:disabled {
@@ -142,26 +181,28 @@ body.dark-mode {
 }
 
 .play-pause-btn {
-    background: var(--success);
+    background: var(--modal-success);
     color: white;
     min-width: 80px;
+    border: none;
 }
 
 .play-pause-btn.playing {
-    background: var(--warning);
+    background: var(--modal-warning);
 }
 
 .step-display {
     display: flex;
     align-items: center;
     gap: 6px;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--modal-card);
+    border: 1px solid var(--modal-border);
     padding: 8px 12px;
     border-radius: 8px;
     font-size: 12px;
     font-weight: 600;
-    color: #374151;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: var(--modal-text);
+    box-shadow: var(--modal-shadow-sm);
     min-width: 80px;
     height: 36px;
 }
@@ -173,30 +214,31 @@ body.dark-mode {
     text-align: center;
     font-size: 12px;
     font-weight: 600;
-    color: var(--primary);
+    color: var(--modal-primary);
     outline: none;
 }
 
 .step-total {
     font-size: 12px;
-    color: #6b7280;
+    color: var(--modal-text-light);
 }
 
 .speed-controls {
     display: flex;
     align-items: center;
     gap: 6px;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--modal-card);
+    border: 1px solid var(--modal-border);
     padding: 6px 10px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--modal-shadow-sm);
     height: 36px;
 }
 
 .speed-label {
     font-size: 11px;
     font-weight: 500;
-    color: #6b7280;
+    color: var(--modal-text-light);
     margin-right: 4px;
 }
 
@@ -207,7 +249,7 @@ body.dark-mode {
     font-size: 10px;
     cursor: pointer;
     background: transparent;
-    color: #6b7280;
+    color: var(--modal-text-light);
     min-width: 32px;
     height: 24px;
     transition: all 0.2s;
@@ -215,33 +257,15 @@ body.dark-mode {
 
 .speed-btn:hover {
     background: rgba(139, 92, 246, 0.1);
-    color: var(--primary);
+    color: var(--modal-primary);
 }
 
 .speed-btn.active {
-    background: var(--primary);
+    background: var(--modal-primary);
     color: white;
 }
 
-.close-modal-btn {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    border-radius: 8px;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: white;
-    transition: background 0.2s;
-    font-size: 16px;
-}
-
-.close-modal-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
-
+.close-modal-btn,
 .regenerate-btn-header {
     background: rgba(255, 255, 255, 0.2);
     border: none;
@@ -253,11 +277,11 @@ body.dark-mode {
     justify-content: center;
     cursor: pointer;
     color: white;
-    transition: background 0.2s;
+    transition: all 0.2s;
     font-size: 16px;
-    margin-left: 8px;
 }
 
+.close-modal-btn:hover,
 .regenerate-btn-header:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.3);
 }
@@ -270,58 +294,63 @@ body.dark-mode {
 /* 📋 2열 레이아웃: 왼쪽 정보패널 + 오른쪽 애니메이션 */
 .modal-content {
     flex: 1;
-    background: var(--bg);
+    background: var(--modal-bg);
     overflow: hidden;
     display: flex;
-    flex-direction: row; /* 명시적으로 가로 배치 */
+    flex-direction: row;
     width: 100%;
     height: 100%;
 }
 
-/* 📋 왼쪽: 정보 패널 (파란색 영역, 스크롤 가능) - 더 작게 */
+/* 📋 왼쪽: 정보 패널 */
 .info-panel-sidebar {
-    width: 250px; /* 350px → 250px로 축소 */
-    min-width: 200px; /* 300px → 200px로 축소 */
-    max-width: 280px; /* 400px → 280px로 축소 */
-    background: var(--card);
-    border-right: 1px solid var(--border);
+    width: 280px;
+    min-width: 200px;
+    max-width: 320px;
+    background: var(--modal-card);
+    border-right: 1px solid var(--modal-border);
     display: flex;
     flex-direction: column;
-    gap: 12px; /* 16px → 12px로 축소 */
-    padding: 16px; /* 20px → 16px로 축소 */
+    gap: 16px;
+    padding: 20px;
     overflow-y: auto;
     height: 100%;
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
-    flex-shrink: 0; /* 축소되지 않도록 고정 */
+    box-shadow: var(--modal-shadow-md);
+    flex-shrink: 0;
 }
 
-/* 🎬 오른쪽: 메인 애니메이션 영역 (빨간색 영역) */
+/* 🎬 오른쪽: 메인 애니메이션 영역 */
 .main-animation-area {
-    flex: 1; /* 남은 공간 모두 차지 */
-    min-width: 400px; /* 최소 너비 보장 */
-    background: var(--card);
+    flex: 1;
+    min-width: 400px;
+    background: var(--modal-card);
     padding: 20px;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
     min-height: 100%;
-    border: 2px solid #ef4444; /* 디버깅용 빨간 테두리 */
+    max-height: calc(100vh - 140px);
 }
 
-/* 애니메이션 래퍼 - 플레이스홀더가 전체 영역을 채우도록 */
+/* 애니메이션 래퍼 */
 .animation-wrapper {
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-height: 400px; /* 최소 높이 보장 */
+    min-height: 400px;
     width: 100%;
-    border: 2px solid #10b981; /* 디버깅용 초록 테두리 추가 */
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-radius: 12px;
+    border: 1px solid var(--modal-border);
+    box-shadow: var(--modal-shadow-md);
 }
 
-/* 로딩/에러 상태가 메인 영역에 표시되도록 조정 */
-.main-animation-area .loading-container,
-.main-animation-area .error-container,
-.main-animation-area .initial-container {
+/* 로딩/에러 상태 컨테이너 */
+.loading-container,
+.error-container,
+.initial-container {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -331,13 +360,15 @@ body.dark-mode {
     padding: 40px;
     text-align: center;
     min-height: 400px;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
 }
 
 .loading-spinner {
     width: 40px;
     height: 40px;
-    border: 3px solid var(--border);
-    border-top: 3px solid var(--primary);
+    border: 3px solid var(--modal-border);
+    border-top: 3px solid var(--modal-primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -352,7 +383,7 @@ body.dark-mode {
 .initial-container h3 {
     margin: 0;
     font-size: 18px;
-    color: var(--text);
+    color: var(--modal-text);
     font-weight: 600;
 }
 
@@ -361,7 +392,7 @@ body.dark-mode {
 .initial-container p {
     margin: 0;
     font-size: 14px;
-    color: var(--text-light);
+    color: var(--modal-text-light);
 }
 
 .loading-info {
@@ -373,10 +404,10 @@ body.dark-mode {
 .loading-info span {
     font-size: 12px;
     padding: 4px 8px;
-    background: var(--card);
+    background: var(--modal-card-secondary);
     border-radius: 6px;
-    color: var(--text-light);
-    border: 1px solid var(--border);
+    color: var(--modal-text-light);
+    border: 1px solid var(--modal-border);
 }
 
 .error-icon,
@@ -386,7 +417,7 @@ body.dark-mode {
 }
 
 .retry-btn {
-    background: var(--primary);
+    background: var(--modal-danger);
     color: white;
     border: none;
     border-radius: 8px;
@@ -398,35 +429,38 @@ body.dark-mode {
 }
 
 .retry-btn:hover {
-    background: #7c3aed;
+    background: var(--modal-danger);
+    opacity: 0.8;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    box-shadow: var(--modal-shadow-lg);
 }
 
-/* 플레이스홀더 애니메이션이 메인 영역 전체를 채우도록 */
+/* 플레이스홀더 애니메이션 */
 .placeholder-animation {
     width: 100%;
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-height: 400px; /* 최소 높이 보장 */
-    background: var(--card);
-    border-radius: 12px; /* 모서리 둥글기 복원 */
-    border: 1px solid var(--border); /* 테두리 복원 */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* 그림자 복원 */
+    min-height: 400px;
+    background: var(--modal-card);
+    border-radius: 12px;
+    border: 1px solid var(--modal-border);
+    box-shadow: var(--modal-shadow-md);
     overflow: hidden;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
 }
 
 .placeholder-header {
     padding: 20px 24px 16px 24px;
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    border-bottom: 1px solid var(--border);
+    background: var(--modal-gradient-header);
+    border-bottom: 1px solid var(--modal-border);
     flex-shrink: 0;
 }
 
 .placeholder-header h3 {
     margin: 0 0 8px 0;
-    color: var(--text);
+    color: var(--modal-text);
     font-size: 18px;
     font-weight: 600;
     display: flex;
@@ -436,7 +470,7 @@ body.dark-mode {
 
 .placeholder-header p {
     margin: 0;
-    color: var(--text-light);
+    color: var(--modal-text-light);
     font-size: 14px;
 }
 
@@ -454,9 +488,9 @@ body.dark-mode {
     max-width: 600px;
     width: 100%;
     padding: 32px;
-    border: 2px dashed var(--border);
+    border: 2px dashed var(--modal-border);
     border-radius: 16px;
-    background: linear-gradient(135deg, #fafbfc 0%, #f8fafc 100%);
+    background: var(--modal-card-secondary);
 }
 
 /* 🎨 메인 아이콘 */
@@ -478,7 +512,7 @@ body.dark-mode {
 
 .placeholder-box h4 {
     margin: 0 0 16px 0;
-    color: var(--text);
+    color: var(--modal-text);
     font-size: 24px;
     font-weight: 700;
     letter-spacing: -0.5px;
@@ -486,7 +520,7 @@ body.dark-mode {
 
 .placeholder-box > p {
     margin: 0 0 32px 0;
-    color: var(--text-light);
+    color: var(--modal-text-light);
     font-size: 16px;
     line-height: 1.6;
 }
@@ -501,24 +535,24 @@ body.dark-mode {
 }
 
 .stat-item {
-    background: var(--card);
+    background: var(--modal-card);
     padding: 16px;
     border-radius: 12px;
-    border: 1px solid var(--border);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--modal-border);
+    box-shadow: var(--modal-shadow-sm);
     transition: all 0.2s ease;
 }
 
 .stat-item:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border-color: var(--primary);
+    box-shadow: var(--modal-shadow-lg);
+    border-color: var(--modal-primary);
 }
 
 .stat-label {
     display: block;
     font-size: 12px;
-    color: var(--text-light);
+    color: var(--modal-text-light);
     margin-bottom: 8px;
     font-weight: 500;
     text-transform: uppercase;
@@ -528,7 +562,7 @@ body.dark-mode {
 .stat-value {
     display: block;
     font-size: 16px;
-    color: var(--primary);
+    color: var(--modal-primary);
     font-weight: 700;
     line-height: 1.2;
 }
@@ -537,18 +571,18 @@ body.dark-mode {
 .coming-soon {
     margin: 32px 0;
     padding: 24px;
-    background: linear-gradient(135deg, #fef7ff 0%, #faf5ff 100%);
+    background: var(--modal-gradient-info);
     border-radius: 12px;
-    border-left: 4px solid var(--primary);
+    border-left: 4px solid var(--modal-primary);
     text-align: left;
-    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.1);
+    box-shadow: var(--modal-shadow-md);
 }
 
 .coming-soon p {
     margin: 0 0 16px 0;
     font-size: 14px;
     font-weight: 600;
-    color: var(--text);
+    color: var(--modal-text);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -562,7 +596,7 @@ body.dark-mode {
 
 .coming-soon li {
     font-size: 13px;
-    color: var(--text-light);
+    color: var(--modal-text-light);
     margin-bottom: 8px;
     line-height: 1.5;
     position: relative;
@@ -581,9 +615,9 @@ body.dark-mode {
 .development-progress {
     margin: 32px 0;
     padding: 24px;
-    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    background: var(--modal-gradient-info);
     border-radius: 12px;
-    border-left: 4px solid #0ea5e9;
+    border-left: 4px solid var(--modal-info);
     text-align: left;
 }
 
@@ -591,7 +625,7 @@ body.dark-mode {
     margin: 0 0 16px 0;
     font-size: 14px;
     font-weight: 600;
-    color: var(--text);
+    color: var(--modal-text);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -600,7 +634,7 @@ body.dark-mode {
 .progress-bar {
     width: 100%;
     height: 8px;
-    background: #e2e8f0;
+    background: var(--modal-border);
     border-radius: 4px;
     overflow: hidden;
     margin-bottom: 8px;
@@ -608,7 +642,7 @@ body.dark-mode {
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #0ea5e9, #06b6d4);
+    background: linear-gradient(90deg, var(--modal-info), var(--modal-primary));
     border-radius: 4px;
     transition: width 0.5s ease;
     animation: progress-pulse 2s ease-in-out infinite;
@@ -624,7 +658,7 @@ body.dark-mode {
     justify-content: space-between;
     align-items: center;
     font-size: 12px;
-    color: var(--text-light);
+    color: var(--modal-text-light);
     margin-bottom: 16px;
 }
 
@@ -644,22 +678,22 @@ body.dark-mode {
 }
 
 .step.completed {
-    background: #dcfce7;
-    color: #166534;
-    border: 1px solid #bbf7d0;
+    background: rgba(34, 197, 94, 0.2);
+    color: var(--modal-success);
+    border: 1px solid var(--modal-success);
 }
 
 .step.current {
-    background: #fef3c7;
-    color: #92400e;
-    border: 1px solid #fde68a;
+    background: rgba(251, 191, 36, 0.2);
+    color: var(--modal-warning);
+    border: 1px solid var(--modal-warning);
     animation: pulse 2s ease-in-out infinite;
 }
 
 .step.pending {
-    background: #f1f5f9;
-    color: #64748b;
-    border: 1px solid #e2e8f0;
+    background: var(--modal-card-secondary);
+    color: var(--modal-text-light);
+    border: 1px solid var(--modal-border);
 }
 
 @keyframes pulse {
@@ -670,12 +704,12 @@ body.dark-mode {
 /* 📄 데이터 미리보기 */
 .data-preview {
     text-align: left;
-    background: var(--card);
-    border: 1px solid var(--border);
+    background: var(--modal-card);
+    border: 1px solid var(--modal-border);
     border-radius: 12px;
     margin: 32px 0;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--modal-shadow-md);
 }
 
 .data-preview details {
@@ -684,7 +718,7 @@ body.dark-mode {
 
 .data-preview summary {
     cursor: pointer;
-    color: var(--text);
+    color: var(--modal-text);
     font-size: 14px;
     font-weight: 600;
     margin-bottom: 12px;
@@ -697,7 +731,7 @@ body.dark-mode {
 }
 
 .data-preview summary:hover {
-    color: var(--primary);
+    color: var(--modal-primary);
 }
 
 .data-preview summary::marker {
@@ -718,65 +752,65 @@ body.dark-mode {
     margin: 12px 0 0 0;
     font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
     font-size: 12px;
-    color: var(--text-light);
+    color: var(--modal-text-light);
     white-space: pre-wrap;
     line-height: 1.5;
     max-height: 300px;
     overflow-y: auto;
-    background: #f8fafc;
+    background: var(--modal-card-secondary);
     padding: 16px;
     border-radius: 8px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--modal-border);
 }
 
 /* 💡 도움말 섹션 */
 .help-section {
     margin: 32px 0 0 0;
     padding: 20px;
-    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    background: var(--modal-gradient-warning);
     border-radius: 12px;
-    border-left: 4px solid #f59e0b;
+    border-left: 4px solid var(--modal-warning);
     text-align: left;
 }
 
 .help-section p {
     margin: 0 0 8px 0;
     font-size: 13px;
-    color: var(--text-light);
+    color: var(--modal-text-light);
     line-height: 1.5;
 }
 
 .help-section p:first-child {
     font-weight: 600;
-    color: var(--text);
+    color: var(--modal-text);
 }
 
-/* 📊 정보 패널 스타일 - 더 컴팩트하게 */
+/* 📊 정보 패널 스타일 */
 .step-info,
 .algorithm-info {
-    background: var(--card);
-    border-radius: 8px; /* 12px → 8px */
-    border: 1px solid var(--border);
-    padding: 12px; /* 20px → 12px */
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    background: var(--modal-card);
+    border-radius: 12px;
+    border: 1px solid var(--modal-border);
+    padding: 16px;
+    box-shadow: var(--modal-shadow-md);
     transition: transform 0.2s;
 }
 
 .step-info:hover,
 .algorithm-info:hover {
-    transform: translateY(-1px); /* -2px → -1px */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+    box-shadow: var(--modal-shadow-lg);
 }
 
 .step-info h4,
 .algorithm-info h4 {
-    font-size: 14px; /* 17px → 14px */
-    margin: 0 0 10px 0; /* 16px → 10px */
-    color: var(--text);
+    font-size: 15px;
+    margin: 0 0 12px 0;
+    color: var(--modal-text);
     font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 6px; /* 10px → 6px */
+    gap: 8px;
 }
 
 .step-info h4::before { content: "🎯"; }
@@ -799,44 +833,44 @@ body.dark-mode {
 
 .step-label {
     font-size: 16px;
-    color: var(--text);
+    color: var(--modal-text);
     font-weight: 600;
 }
 
 .step-current {
     font-size: 20px;
     font-weight: 700;
-    color: var(--primary);
+    color: var(--modal-primary);
     line-height: 1;
 }
 
 .step-separator {
     font-size: 16px;
-    color: var(--text-light);
+    color: var(--modal-text-light);
     margin: 0 2px;
     font-weight: 400;
 }
 
 .step-total-text {
     font-size: 16px;
-    color: var(--text-light);
+    color: var(--modal-text-light);
     font-weight: 600;
     line-height: 1;
 }
 
 .step-description {
     font-size: 15px;
-    color: var(--text-light);
+    color: var(--modal-text-light);
     padding: 10px 14px;
-    background: var(--bg);
+    background: var(--modal-card-secondary);
     border-radius: 8px;
-    border-left: 4px solid var(--primary);
+    border-left: 4px solid var(--modal-primary);
     line-height: 1.5;
 }
 
 .step-line {
     font-size: 13px;
-    color: var(--primary);
+    color: var(--modal-primary);
     padding: 8px 12px;
     background: rgba(139, 92, 246, 0.1);
     border-radius: 8px;
@@ -847,10 +881,10 @@ body.dark-mode {
 .step-condition {
     font-size: 13px;
     padding: 8px 12px;
-    background: var(--bg);
+    background: var(--modal-card-secondary);
     border-radius: 8px;
     margin-top: 8px;
-    border-left: 4px solid var(--warning);
+    border-left: 4px solid var(--modal-warning);
     line-height: 1.4;
 }
 
@@ -862,12 +896,12 @@ body.dark-mode {
 }
 
 .condition-result.true {
-    background: var(--success);
+    background: var(--modal-success);
     color: white;
 }
 
 .condition-result.false {
-    background: var(--danger);
+    background: var(--modal-danger);
     color: white;
 }
 
@@ -880,9 +914,9 @@ body.dark-mode {
 .algorithm-details span {
     font-size: 13px;
     padding: 8px 12px;
-    background: var(--bg);
+    background: var(--modal-card-secondary);
     border-radius: 8px;
-    color: var(--text-light);
+    color: var(--modal-text-light);
     font-weight: 500;
 }
 
@@ -891,7 +925,7 @@ body.dark-mode {
 .loop-section {
     margin-top: 12px;
     padding-top: 8px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--modal-border);
 }
 
 .variables-section h5,
@@ -900,7 +934,7 @@ body.dark-mode {
     margin: 0 0 6px 0;
     font-size: 12px;
     font-weight: 600;
-    color: var(--text);
+    color: var(--modal-text);
 }
 
 .variables-grid {
@@ -910,23 +944,23 @@ body.dark-mode {
 }
 
 .variable-item {
-    background: var(--bg);
+    background: var(--modal-card-secondary);
     padding: 6px;
     border-radius: 6px;
     text-align: center;
-    border: 1px solid var(--border);
+    border: 1px solid var(--modal-border);
 }
 
 .var-name {
     font-weight: 600;
-    color: var(--primary);
+    color: var(--modal-primary);
     font-size: 12px;
     display: block;
 }
 
 .var-type {
     font-size: 10px;
-    color: var(--text-light);
+    color: var(--modal-text-light);
     display: block;
     margin: 2px 0;
 }
@@ -939,7 +973,7 @@ body.dark-mode {
     border-radius: 4px;
     margin-top: 2px;
     display: inline-block;
-    color: var(--primary);
+    color: var(--modal-primary);
 }
 
 .changes-list {
@@ -949,20 +983,20 @@ body.dark-mode {
 }
 
 .change-item {
-    background: var(--bg);
+    background: var(--modal-card-secondary);
     padding: 6px 8px;
     border-radius: 6px;
-    border-left: 3px solid var(--warning);
+    border-left: 3px solid var(--modal-warning);
     font-size: 12px;
 }
 
 .change-var {
     font-weight: 600;
-    color: var(--primary);
+    color: var(--modal-primary);
 }
 
 .change-arrow {
-    color: var(--text-light);
+    color: var(--modal-text-light);
 }
 
 .loop-info {
@@ -972,15 +1006,88 @@ body.dark-mode {
 }
 
 .loop-info span {
-    background: var(--bg);
+    background: var(--modal-card-secondary);
     padding: 4px 8px;
     border-radius: 6px;
     font-size: 11px;
-    border-left: 3px solid var(--primary);
-    color: var(--text-light);
+    border-left: 3px solid var(--modal-primary);
+    color: var(--modal-text-light);
 }
 
-/* 반응형 - 모바일에서는 세로 배치 */
+/* 🎨 커스텀 스크롤바 디자인 */
+.visualization-modal-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.visualization-modal-scrollbar::-webkit-scrollbar-track {
+    background: var(--modal-card-secondary);
+    border-radius: 4px;
+}
+
+.visualization-modal-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--modal-border);
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.visualization-modal-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--modal-text-light);
+}
+
+/* Firefox 스크롤바 스타일링 */
+.visualization-modal-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--modal-border) var(--modal-card-secondary);
+}
+
+/* 🎨 애니메이션 스타일 */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.info-card {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+.info-card:nth-child(1) { animation-delay: 0.1s; }
+.info-card:nth-child(2) { animation-delay: 0.2s; }
+.info-card:nth-child(3) { animation-delay: 0.3s; }
+.info-card:nth-child(4) { animation-delay: 0.4s; }
+
+/* 🌟 테마 전환 애니메이션 */
+.visualization-modal-container,
+.info-panel-sidebar,
+.main-animation-area,
+.step-info,
+.algorithm-info,
+.control-btn,
+.step-display,
+.speed-controls {
+    transition: background-color 0.3s ease,
+    border-color 0.3s ease,
+    color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1024px) {
+    .modal-content {
+        grid-template-columns: 240px 1fr;
+    }
+
+    .info-panel-sidebar {
+        width: 240px;
+        padding: 16px;
+    }
+}
+
 @media (max-width: 768px) {
     .visualization-modal-container {
         width: 98vw;
@@ -989,16 +1096,20 @@ body.dark-mode {
 
     .modal-header {
         padding: 16px 20px;
+        flex-direction: column;
+        gap: 12px;
     }
 
     .modal-header-controls {
         flex-direction: column;
         gap: 8px;
+        width: 100%;
     }
 
     .visualization-controls {
         gap: 8px;
         flex-wrap: wrap;
+        justify-content: center;
     }
 
     .control-btn {
@@ -1024,30 +1135,34 @@ body.dark-mode {
 
     /* 모바일에서는 세로 배치 */
     .modal-content {
+        display: flex;
         flex-direction: column;
+        grid-template-columns: none;
     }
 
     .info-panel-sidebar {
         width: 100%;
-        max-height: 250px;
+        max-height: 200px;
         border-right: none;
-        border-bottom: 1px solid var(--border);
+        border-bottom: 1px solid var(--modal-border);
         padding: 16px;
+        overflow-y: auto;
     }
 
     .main-animation-area {
         flex: 1;
         min-height: 300px;
         padding: 16px;
+        max-height: calc(100vh - 340px);
     }
 
     .step-info,
     .algorithm-info {
-        padding: 16px;
+        padding: 12px;
     }
 
     .placeholder-box {
-        padding: 30px 20px;
+        padding: 24px 16px;
     }
 }
 
@@ -1056,6 +1171,8 @@ body.dark-mode {
         width: 100vw;
         height: 100vh;
         border-radius: 0;
+        max-width: none;
+        max-height: none;
     }
 
     .modal-header {
@@ -1068,208 +1185,146 @@ body.dark-mode {
     }
 
     .info-panel-sidebar {
-        max-height: 200px;
+        max-height: 180px;
         padding: 12px;
     }
 
     .main-animation-area {
         padding: 12px;
-    }
-}
-/* 스크롤 가능한 시각화 영역 CSS 수정 */
-
-/* 🎬 오른쪽: 메인 애니메이션 영역 (스크롤 개선) */
-.main-animation-area {
-    flex: 1;
-    min-width: 400px;
-    background: var(--card);
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    min-height: 100%;
-
-    /* 🔥 스크롤 설정 개선 */
-    overflow-y: auto;  /* 세로 스크롤 활성화 */
-    overflow-x: hidden; /* 가로 스크롤 숨김 */
-    max-height: 100vh; /* 최대 높이 설정 */
-}
-
-/* 애니메이션 래퍼 - 콘텐츠가 넘칠 때 스크롤 가능하도록 */
-.animation-wrapper {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 400px;
-    width: 100%;
-
-    /* 🔥 스크롤 처리 개선 */
-    overflow-y: auto;
-    overflow-x: hidden;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-/* 플레이스홀더 애니메이션 스크롤 처리 */
-.placeholder-animation {
-    width: 100%;
-    min-height: 400px;
-    display: flex;
-    flex-direction: column;
-    background: var(--card);
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-
-    /* 🔥 스크롤 설정 */
-    overflow-y: auto;
-    overflow-x: hidden;
-    max-height: calc(100vh - 200px); /* 헤더와 여백 고려 */
-}
-
-.placeholder-content {
-    flex: 1;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    padding: 32px 20px;
-
-    /* 🔥 스크롤 처리 */
-    overflow-y: auto;
-    overflow-x: hidden;
-}
-
-/* 🎨 커스텀 스크롤바 디자인 */
-.main-animation-area::-webkit-scrollbar,
-.animation-wrapper::-webkit-scrollbar,
-.placeholder-animation::-webkit-scrollbar {
-    width: 8px;
-}
-
-.main-animation-area::-webkit-scrollbar-track,
-.animation-wrapper::-webkit-scrollbar-track,
-.placeholder-animation::-webkit-scrollbar-track {
-    background: #f1f5f9;
-    border-radius: 4px;
-}
-
-.main-animation-area::-webkit-scrollbar-thumb,
-.animation-wrapper::-webkit-scrollbar-thumb,
-.placeholder-animation::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 4px;
-    transition: background 0.2s;
-}
-
-.main-animation-area::-webkit-scrollbar-thumb:hover,
-.animation-wrapper::-webkit-scrollbar-thumb:hover,
-.placeholder-animation::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
-}
-
-/* Firefox 스크롤바 스타일링 */
-.main-animation-area,
-.animation-wrapper,
-.placeholder-animation {
-    scrollbar-width: thin;
-    scrollbar-color: #cbd5e1 #f1f5f9;
-}
-
-/* 로딩/에러 상태 컨테이너도 스크롤 가능하게 */
-.main-animation-area .loading-container,
-.main-animation-area .error-container,
-.main-animation-area .initial-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start; /* center → flex-start */
-    gap: 16px;
-    padding: 40px;
-    text-align: center;
-    min-height: 400px;
-
-    /* 🔥 스크롤 처리 추가 */
-    overflow-y: auto;
-    max-height: calc(100vh - 200px);
-}
-
-/* 📋 2열 레이아웃 높이 제한 */
-.modal-content {
-    flex: 1;
-    background: var(--bg);
-    overflow: hidden;
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-    height: 100%;
-    max-height: calc(100vh - 120px); /* 헤더 높이 고려 */
-}
-
-/* 📋 왼쪽: 정보 패널 스크롤 개선 */
-.info-panel-sidebar {
-    width: 250px;
-    min-width: 200px;
-    max-width: 280px;
-    background: var(--card);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding: 16px;
-    flex-shrink: 0;
-
-    /* 🔥 스크롤 개선 */
-    overflow-y: auto;
-    overflow-x: hidden;
-    height: 100%;
-    max-height: calc(100vh - 120px);
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
-}
-
-/* 정보 패널 스크롤바도 커스터마이징 */
-.info-panel-sidebar::-webkit-scrollbar {
-    width: 6px;
-}
-
-.info-panel-sidebar::-webkit-scrollbar-track {
-    background: #f8fafc;
-    border-radius: 3px;
-}
-
-.info-panel-sidebar::-webkit-scrollbar-thumb {
-    background: #e2e8f0;
-    border-radius: 3px;
-}
-
-.info-panel-sidebar::-webkit-scrollbar-thumb:hover {
-    background: #cbd5e1;
-}
-
-/* 반응형 - 모바일에서 스크롤 처리 */
-@media (max-width: 768px) {
-    .modal-content {
-        flex-direction: column;
-        max-height: calc(100vh - 80px);
-    }
-
-    .info-panel-sidebar {
-        width: 100%;
-        max-height: 200px;
-        border-right: none;
-        border-bottom: 1px solid var(--border);
-        overflow-y: auto;
-    }
-
-    .main-animation-area {
-        flex: 1;
-        min-height: 250px;
-        padding: 16px;
-        overflow-y: auto;
-        max-height: calc(100vh - 280px);
-    }
-
-    .placeholder-animation {
         max-height: calc(100vh - 320px);
     }
+
+    .placeholder-box {
+        padding: 20px 12px;
+    }
+
+    .placeholder-icon {
+        font-size: 48px;
+    }
+
+    .placeholder-box h4 {
+        font-size: 20px;
+    }
+
+    .placeholder-box > p {
+        font-size: 14px;
+    }
+}
+
+/* 🎯 접근성 개선 */
+@media (prefers-reduced-motion: reduce) {
+    .visualization-modal-container,
+    .loading-spinner,
+    .placeholder-icon,
+    .progress-fill,
+    .step.current {
+        animation: none;
+    }
+
+    .control-btn:hover:not(:disabled),
+    .stat-item:hover {
+        transform: none;
+    }
+}
+
+/* 🌈 고대비 모드 지원 */
+@media (prefers-contrast: high) {
+    :root {
+        --modal-border: #000000;
+        --modal-text: #000000;
+        --modal-bg: #ffffff;
+        --modal-card: #ffffff;
+    }
+
+    body.dark-mode {
+        --modal-border: #ffffff;
+        --modal-text: #ffffff;
+        --modal-bg: #000000;
+        --modal-card: #000000;
+    }
+
+    .control-btn,
+    .step-display,
+    .speed-controls {
+        border: 2px solid var(--modal-border);
+    }
+}
+
+/* 🎨 포커스 스타일 개선 */
+.control-btn:focus,
+.close-modal-btn:focus,
+.regenerate-btn-header:focus,
+.step-input:focus,
+.speed-btn:focus {
+    outline: 2px solid var(--modal-primary);
+    outline-offset: 2px;
+}
+
+/* 🌟 다크모드 특별 효과 */
+body.dark-mode .visualization-modal-container {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+}
+
+body.dark-mode .stat-item:hover {
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+body.dark-mode .control-btn:hover:not(:disabled) {
+    box-shadow: 0 4px 8px rgba(139, 92, 246, 0.2);
+}
+
+/* 🎭 라이트모드 특별 효과 */
+body:not(.dark-mode) .visualization-modal-container {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+body:not(.dark-mode) .stat-item:hover {
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.1);
+}
+
+body:not(.dark-mode) .control-btn:hover:not(:disabled) {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 🎪 로딩 애니메이션 다크모드 조정 */
+body.dark-mode .loading-spinner {
+    border-color: var(--modal-border);
+    border-top-color: var(--modal-primary);
+}
+
+/* 🎨 플레이스홀더 다크모드 조정 */
+body.dark-mode .placeholder-box {
+    border-color: var(--modal-border);
+    background: var(--modal-card-secondary);
+}
+
+/* 🌟 JSON 프리뷰 다크모드 조정 */
+body.dark-mode .json-preview {
+    background: var(--modal-card-secondary);
+    border-color: var(--modal-border);
+    color: var(--modal-text-light);
+}
+
+/* 🎯 API 출력 결과 다크모드 조정 */
+body.dark-mode .api-output {
+    background: var(--modal-card-secondary);
+    border-color: var(--modal-border);
+    color: var(--modal-text);
+}
+
+/* 🎨 부드러운 텍스트 렌더링 */
+* {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* 🌟 선택 텍스트 스타일 */
+::selection {
+    background: var(--modal-primary);
+    color: white;
+}
+
+::-moz-selection {
+    background: var(--modal-primary);
+    color: white;
 }
