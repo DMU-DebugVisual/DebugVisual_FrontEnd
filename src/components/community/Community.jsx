@@ -150,7 +150,9 @@ export default function Community() {
                                 <button key={i} className={i === 0 ? "active" : ""}>{filter}</button>
                             ))}
                         </div>
-                        <button className="write-btn">✏️ 글쓰기</button>
+                        <button className="write-btn" onClick={() => navigate("/community/write")}>
+                            ✏️ 글쓰기
+                        </button>
                     </div>
 
                     <div className="post-list">
