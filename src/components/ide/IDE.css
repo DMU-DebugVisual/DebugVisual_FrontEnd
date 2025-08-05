@@ -1,4 +1,4 @@
-/* Updated IDE.css - ModernSidebar 통합 버전 - 사이드바 접힘 시 에디터 레이아웃 자동 조정 */
+/* Updated IDE.css - 스크롤바 문제 및 이중 테두리 문제 수정 */
 
 /* 기존 CSS 변수들 개선 */
 :root {
@@ -49,6 +49,7 @@ body.dark-mode {
     padding: 0;
 }
 
+/* 🔧 스크롤바 문제 해결: body 오버플로우 제어 */
 body {
     font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
     background-color: var(--bg);
@@ -56,10 +57,11 @@ body {
     padding: 0;
     color: var(--text);
     min-height: 100vh;
+    overflow-x: hidden; /* 가로 스크롤바 방지 */
 }
 
 /* ============================================
-   🆕 ModernSidebar 전용 스타일
+   🆕 ModernSidebar 전용 스타일 - 🔧 이중 테두리 문제 해결
    ============================================ */
 
 .sidebar {
@@ -91,7 +93,7 @@ body {
     height: 100vh;
     width: 100%;
     background-color: var(--element);
-    border-right: 1px solid var(--border);
+    border-right: none; /* 🔧 중복 테두리 제거 */
     overflow: hidden;
 }
 
@@ -647,24 +649,25 @@ body.dark-mode .modern-sidebar-content::-webkit-scrollbar-thumb:hover {
    기존 메인 콘텐츠 스타일 유지 (사이드바 제외) - 🔄 수정된 부분
    ============================================ */
 
+/* 🔧 스크롤바 문제 해결: 메인 콘텐츠 너비 제한 - 애니메이션 개선 */
 .main-content {
     flex: 1;
     display: flex;
     flex-direction: column;
-    transition: margin-left 0.3s ease;
+    transition: none; /* 🔧 transition 제거로 덜컥거림 방지 */
     position: relative;
     background-color: var(--bg);
     height: 100vh;
-    min-width: 0;
+    min-width: 0; /* 플렉스 축소 허용 */
     padding-top: 76px;
-    width: 100%; /* 너비를 명시적으로 100%로 설정 */
+    overflow-x: hidden; /* 🔧 가로 스크롤바 방지 */
 }
 
 .sidebar.collapsed + .main-content {
     margin-left: 0;
-    width: 100%; /* 사이드바가 접혔을 때도 100% 너비 보장 */
 }
 
+/* 🔧 스크롤바 문제 해결: IDE 컨테이너 너비 제한 */
 .ide-container {
     display: flex;
     height: 100vh;
@@ -673,8 +676,9 @@ body.dark-mode .modern-sidebar-content::-webkit-scrollbar-thumb:hover {
     background-color: var(--bg);
     color: var(--text);
     position: relative;
-    width: 100%;
-    overflow-x: hidden;
+    width: 100vw; /* 🔧 명시적으로 뷰포트 너비 설정 */
+    max-width: 100vw; /* 🔧 최대 너비 제한 */
+    overflow-x: hidden; /* 🔧 가로 스크롤바 방지 */
 }
 
 /* 햄버거 메뉴 버튼 */
@@ -947,20 +951,23 @@ body.dark-mode .save-button:hover {
     color: var(--warning);
 }
 
-/* 콘텐츠 레이아웃 */
+/* 콘텐츠 레이아웃 - 🔧 스크롤바 문제 해결 */
 .content-layout {
     display: flex;
     height: calc(100vh - var(--header-height) - 10px);
     position: relative;
+    max-width: 100%; /* 🔧 최대 너비 제한 */
+    overflow-x: hidden; /* 🔧 가로 스크롤바 방지 */
 }
 
+/* 🔧 스크롤바 문제 해결: 에디터 섹션 너비 제한 */
 .editor-section {
     flex: 1;
-    min-width: 0;
+    min-width: 0; /* 🔧 플렉스 축소 허용 */
     height: 100%;
     position: relative;
     background-color: var(--bg);
-    overflow: hidden; /* 오버플로우 방지 */
+    overflow: hidden; /* 🔧 오버플로우 방지 */
 }
 
 .monaco-editor-wrapper {
@@ -970,16 +977,18 @@ body.dark-mode .save-button:hover {
     overflow: hidden; /* 오버플로우 방지 */
 }
 
-/* 오른쪽 패널 */
+/* 🔧 스크롤바 문제 해결: 오른쪽 패널 크기 확장 */
 .right-panel {
-    width: 300px;
-    min-width: 300px;
+    width: 400px; /* 🔄 300px → 400px로 확장 */
+    min-width: 400px; /* 🔄 300px → 400px로 확장 */
+    max-width: 400px; /* 🔄 300px → 400px로 확장 */
     display: flex;
     flex-direction: column;
     border-left: 1px solid var(--border);
     background-color: var(--bg);
     box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
     flex-shrink: 0;
+    overflow: hidden; /* 🔧 오버플로우 방지 */
 }
 
 body.dark-mode .right-panel {
@@ -1438,7 +1447,7 @@ body.dark-mode .context-menu-item:hover {
 }
 
 /* ============================================
-   🆕 반응형 스타일
+   🆕 반응형 스타일 - 🔧 스크롤바 문제 해결 포함
    ============================================ */
 
 @media (max-width: 992px) {
@@ -1448,6 +1457,7 @@ body.dark-mode .context-menu-item:hover {
 
     .right-panel {
         width: 100%;
+        max-width: 100%; /* 🔧 반응형에서도 최대 너비 제한 */
         height: 40%;
         border-left: none;
         border-top: 1px solid var(--border);
@@ -1459,6 +1469,14 @@ body.dark-mode .context-menu-item:hover {
 
     .sidebar {
         width: 260px;
+    }
+
+    .main-content {
+        max-width: calc(100vw - 260px); /* 🔧 반응형 사이드바 너비에 맞춤 */
+    }
+
+    .sidebar.collapsed + .main-content {
+        max-width: 100vw; /* 🔧 사이드바 접힘 시 전체 너비 */
     }
 }
 
@@ -1473,6 +1491,14 @@ body.dark-mode .context-menu-item:hover {
 
     .sidebar {
         width: 240px;
+    }
+
+    .main-content {
+        max-width: calc(100vw - 240px); /* 🔧 모바일 사이드바 너비에 맞춤 */
+    }
+
+    .sidebar.collapsed + .main-content {
+        max-width: 100vw; /* 🔧 사이드바 접힘 시 전체 너비 */
     }
 
     .sidebar-title {
@@ -1548,6 +1574,14 @@ body.dark-mode .context-menu-item:hover {
 
     .sidebar {
         width: 220px;
+    }
+
+    .main-content {
+        max-width: calc(100vw - 220px); /* 🔧 더 작은 화면 사이드바 너비에 맞춤 */
+    }
+
+    .sidebar.collapsed + .main-content {
+        max-width: 100vw; /* 🔧 사이드바 접힘 시 전체 너비 */
     }
 
     .modern-sidebar-header {
