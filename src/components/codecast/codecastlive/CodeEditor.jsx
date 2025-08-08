@@ -1,42 +1,29 @@
-import React from 'react';
-import './CodeEditor.css';
+import React, {useEffect, useState} from 'react';
+import Editor from '@monaco-editor/react';
 import { FaPlay } from 'react-icons/fa';
+import './CodeEditor.css';
 
-const currentUser = {
-    name: '김코딩',
-    role: 'host',
-    code: `# 버블 정렬 구현
-def bubble_sort(arr):
-    n = len(arr)
+const CodeEditor = ({ currentUser }) => {
+    const [code, setCode] = useState(currentUser.code);
 
-    for i in range(n):
-        for j in range(0, n - i - 1):
-            if arr[j] > arr[j + 1]:
-                # 두 요소 교환
-                arr[j], arr[j + 1] = arr[j + 1], arr[j]
+    // ✅ currentUser가 바뀔 때마다 코드 상태를 새로 설정
+    useEffect(() => {
+        setCode(currentUser.code);
+    }, [currentUser]);
 
-    return arr
-
-# 예제 배열
-array = [64, 34, 25, 12, 22, 11, 90]
-print("정렬 전:", array)
-print("정렬 후:", bubble_sort(array.copy()))`
-};
-
-const getIcon = (role) => {
-    switch (role) {
-        case 'host':
-            return '👑';
-        case 'editing':
-            return '✍️';
-        default:
-            return '';
-    }
-};
-
-const CodeEditor = () => {
     const handleRun = () => {
         alert("코드 실행 기능은 아직 미구현입니다.");
+    };
+
+    const getIcon = (role) => {
+        switch (role) {
+            case 'host':
+                return '👑';
+            case 'editing':
+                return '✍️';
+            default:
+                return '';
+        }
     };
 
     return (
@@ -46,12 +33,22 @@ const CodeEditor = () => {
                     {getIcon(currentUser.role)} {currentUser.name}
                 </div>
                 <button className="run-button" onClick={handleRun}>
-                    <FaPlay/> 실행
+                    <FaPlay /> 실행
                 </button>
             </div>
-            <pre className="code-block">
-                <code>{currentUser.code}</code>
-            </pre>
+
+            <Editor
+                height="calc(100vh - 160px)" // 헤더와 버튼 고려
+                defaultLanguage="python"
+                theme="vs-dark"
+                value={code}
+                onChange={(newValue) => setCode(newValue)}
+                options={{
+                    fontSize: 14,
+                    minimap: { enabled: false },
+                    padding: { top: 10 },
+                }}
+            />
         </section>
     );
 };

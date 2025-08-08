@@ -9,6 +9,7 @@
 .sidebar-title {
     font-size: 16px;
     margin-bottom: 12px;
+    color: white;
 }
 
 .participant-list {
@@ -39,4 +40,10 @@
 
 .participant-icon.gray {
     color: #777;
+}
+
+.participant-item.active-user {
+    background-color: #2a2a2a;
+    /*border-left: 4px solid #6a0dad;*/
+    font-weight: bold;
 }
