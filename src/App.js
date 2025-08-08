@@ -20,6 +20,7 @@ import ScrollToTop from "./components/common/ScrollToTop";
 import CommunityWrite from "./components/community/CommunityWrite";
 import VisualizationModal from "./components/ide/VisualizationModal";
 import PostDetail from "./components/community/PostDetail"; // ✅ 게시글 상세 컴포넌트 추가
+import CodecastLive from "./components/codecast/codecastlive/CodecastLive";
 
 function AppContent() {
     const location = useLocation();
@@ -77,6 +78,7 @@ function AppContent() {
                 <Route path="/community/post/:id" element={<PostDetail />} /> {/* ✅ 상세 페이지 라우팅 추가 */}
                 <Route path="/broadcast" element={<Codecast />} />
                 <Route path="/startbroadcast" element={<StartCodecast />} />
+                <Route path="/broadcast/live" element={<CodecastLive />} />
                 <Route path="/mypage" element={<MyPageLayout nickname={nickname} />}>
                     <Route index element={<Mypage nickname={nickname} />} />
                     <Route path="project" element={<MyProject />} />

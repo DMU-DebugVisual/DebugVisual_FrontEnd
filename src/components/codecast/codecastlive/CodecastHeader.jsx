@@ -8,7 +8,7 @@ const CodecastHeader = () => {
     };
 
     return (
-        <header className="broadcast-header">
+        <header className="broadcastlive-header">
             <div className="header-left">
                 <h1 className="broadcast-title">정렬 알고리즘 라이브 코딩</h1>
             </div>
