@@ -1,5 +1,6 @@
 // config.js
-const API_BASE_URL = 'https://api.zivorp.com';
+//const API_BASE_URL = 'https://api.zivorp.com';
+const API_BASE_URL = 'http://52.79.145.160:8080';
 
 const API_ENDPOINTS = {
     LOGIN: `${API_BASE_URL}/api/auth/login`,
