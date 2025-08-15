@@ -1,35 +1,126 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
-import { FaMoon, FaSun, FaUserCircle } from "react-icons/fa";
+import { FaMoon, FaSun, FaUserCircle, FaBell } from "react-icons/fa";
 import "./Header.css";
-import logoImage from '../../assets/logo3.png'; // 경로는 필요에 따라 조정
-
+import logoImage from '../../assets/logo3.png';
 
 const Header = ({ isDark, setIsDark, isLoggedIn, nickname, onLoginModalOpen }) => {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+    const [isNotificationMenuOpen, setIsNotificationMenuOpen] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    const [isViewAll, setIsViewAll] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const notificationsPerPage = 7;
+
     const navigate = useNavigate();
-    const location = useLocation(); // ✅ 현재 경로 확인
+    const location = useLocation();
 
-    const handleLogout = () => {
-        localStorage.clear();
+    const fetchNotifications = async () => {
+        if (!isLoggedIn) return;
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) return;
 
-        if (location.pathname.startsWith("/mypage")) {
-            navigate("/"); // ✅ 마이페이지일 때만 홈으로 이동
-        } else {
-            navigate(location.pathname); // 그대로 현재 페이지 유지
+            const response = await fetch('http://52.79.145.160:8080/api/notifications', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const sortedNotifications = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                setNotifications(sortedNotifications);
+                const count = data.filter(n => !n.read).length;
+                setUnreadCount(count);
+            } else {
+                console.error("Failed to fetch notifications");
+            }
+        } catch (error) {
+            console.error("Error fetching notifications:", error);
         }
-
-        window.location.reload(); // 상태 강제 반영
     };
 
-    const toggleMenu = () => {
-        setIsMenuOpen(!isMenuOpen);
+    useEffect(() => {
+        if (isLoggedIn) {
+            fetchNotifications();
+
+            const intervalId = setInterval(() => {
+                fetchNotifications();
+            }, 10000);
+
+            return () => clearInterval(intervalId);
+        }
+    }, [isLoggedIn]);
+
+    const toggleNotificationMenu = () => {
+        setIsNotificationMenuOpen(!isNotificationMenuOpen);
+        setIsUserMenuOpen(false);
+        if (isNotificationMenuOpen) {
+            setIsViewAll(false);
+            setCurrentPage(1);
+        }
+    };
+
+    const toggleUserMenu = () => {
+        setIsUserMenuOpen(!isUserMenuOpen);
+        setIsNotificationMenuOpen(false);
+        if (isNotificationMenuOpen) {
+            setIsViewAll(false);
+            setCurrentPage(1);
+        }
+    };
+
+    const handleNotificationRead = async (id) => {
+        try {
+            const token = localStorage.getItem('token');
+            await fetch(`http://52.79.145.160:8080/api/notifications/${id}/read`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            fetchNotifications();
+        } catch (error) {
+            console.error("Error marking notification as read:", error);
+        }
+    };
+
+    const handleViewAll = () => {
+        setIsViewAll(true);
+        setCurrentPage(1);
+    };
+
+    // ✅ 닫기 버튼 핸들러 추가
+    const closeViewAll = () => {
+        setIsViewAll(false);
+        setCurrentPage(1);
     };
 
     const goToMyPage = () => {
         navigate("/mypage");
-        setIsMenuOpen(false);
+        setIsUserMenuOpen(false);
     };
+
+    const handleLogout = () => {
+        localStorage.clear();
+        if (location.pathname.startsWith("/mypage")) {
+            navigate("/");
+        } else {
+            navigate(location.pathname);
+        }
+        window.location.reload();
+    };
+
+    const displayNotifications = isViewAll
+        ? notifications.slice((currentPage - 1) * notificationsPerPage, currentPage * notificationsPerPage)
+        : notifications.slice(0, notificationsPerPage);
+
+    const totalPages = Math.ceil(notifications.length / notificationsPerPage);
 
     return (
         <header className="custom-header">
@@ -38,7 +129,6 @@ const Header = ({ isDark, setIsDark, isLoggedIn, nickname, onLoginModalOpen }) =
                     <img src={logoImage} alt="Zivorp Logo" className="site-logo" />
                 </Link>
             </div>
-
 
             <nav className="header-nav">
                 <NavLink to="/" end>홈</NavLink>
@@ -57,18 +147,73 @@ const Header = ({ isDark, setIsDark, isLoggedIn, nickname, onLoginModalOpen }) =
                 </button>
 
                 {isLoggedIn ? (
-                    <div className="user-menu-container">
-                        <span className="user-nickname" onClick={toggleMenu}>
-                            <FaUserCircle size={24} className="user-icon" />
-                            {nickname} 님 ▾
-                        </span>
-                        {isMenuOpen && (
-                            <div className="user-dropdown">
-                                <button onClick={goToMyPage}>마이페이지</button>
-                                <button onClick={handleLogout}>로그아웃</button>
-                            </div>
-                        )}
-                    </div>
+                    <>
+                        <div className="notification-container">
+                            <button className="notification-btn" onClick={toggleNotificationMenu}>
+                                <FaBell size={20} />
+                                {unreadCount > 0 && (
+                                    <span className="notification-badge">{unreadCount}</span>
+                                )}
+                            </button>
+                            {isNotificationMenuOpen && (
+                                <div className={`notification-dropdown ${isViewAll ? 'expanded-dropdown' : ''}`}>
+                                    {/* ✅ 전체보기 모드일 때 닫기 버튼 추가 */}
+                                    {isViewAll && (
+                                        <button className="close-btn" onClick={closeViewAll}>
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    )}
+                                    {displayNotifications.length > 0 ? (
+                                        displayNotifications.map(notification => (
+                                            <div
+                                                key={notification.id}
+                                                className={`notification-item ${!notification.read ? 'unread' : 'read'}`}
+                                                onClick={() => handleNotificationRead(notification.id)}
+                                            >
+                                                <span className="notification-message">
+                                                    {notification.message}
+                                                </span>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="no-notifications">알림이 없습니다.</div>
+                                    )}
+                                    {notifications.length > notificationsPerPage && (
+                                        <div className="notification-footer">
+                                            {isViewAll ? (
+                                                <div className="pagination">
+                                                    {Array.from({ length: totalPages }, (_, i) => (
+                                                        <button
+                                                            key={i + 1}
+                                                            onClick={() => setCurrentPage(i + 1)}
+                                                            className={currentPage === i + 1 ? 'active' : ''}
+                                                        >
+                                                            {i + 1}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <button onClick={handleViewAll}>전체보기</button>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="user-menu-container">
+                            <span className="user-nickname" onClick={toggleUserMenu}>
+                                <FaUserCircle size={24} className="user-icon" />
+                                {nickname} 님 ▾
+                            </span>
+                            {isUserMenuOpen && (
+                                <div className="user-dropdown">
+                                    <button onClick={goToMyPage}>마이페이지</button>
+                                    <button onClick={handleLogout}>로그아웃</button>
+                                </div>
+                            )}
+                        </div>
+                    </>
                 ) : (
                     <>
                         <button onClick={onLoginModalOpen} className="btn btn-outline">
