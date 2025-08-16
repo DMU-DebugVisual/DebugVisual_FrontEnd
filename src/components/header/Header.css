@@ -13,9 +13,9 @@
 }
 
 .site-logo {
-    height: 64px;        /* 고정 높이 */
-    object-fit: contain; /* 비율 유지하며 꽉 채움 */
-    background-color: transparent !important; /* 혹시라도 배경색이 있다면 제거 */
+    height: 64px;
+    object-fit: contain;
+    background-color: transparent !important;
     padding: 2px 0;
 }
 
@@ -24,25 +24,21 @@
     align-items: center;
 }
 
-
 .site-name {
     font-size: 20px;
     font-weight: 600;
     color: #333;
-    text-decoration: none;  /* ✅ 추가: 밑줄 제거 */
+    text-decoration: none;
 }
 
-/* 오른쪽: 로그인/회원가입 */
 .header-right {
     justify-self: end;
     display: flex;
     align-items: center;
     gap: 10px;
-    height: 100%;         /* 세로 정렬 일관성 */
+    height: 100%;
 }
 
-
-/* 가운데: 네비게이션 */
 .header-nav {
     position: absolute;
     left: 50%;
@@ -53,8 +49,6 @@
     height: 100%;
 }
 
-
-/* NavLink 기본 상태 */
 .header-nav a {
     text-decoration: none;
     color: #555;
@@ -63,21 +57,17 @@
     padding-bottom: 2px;
 }
 
-/* NavLink hover */
 .header-nav a:hover {
     color: #6a0dad;
     cursor: pointer;
 }
 
-/* NavLink 활성 상태 */
 .header-nav .active {
     color: #6a0dad;
     border-bottom: 2px solid #6a0dad;
     font-weight: 600;
 }
 
-/* 로그인/회원가입 버튼 */
-/* 공통 버튼 스타일 */
 .btn {
     display: inline-block;
     padding: 0.5rem 1.2rem;
@@ -89,7 +79,6 @@
     cursor: pointer;
 }
 
-/* 테두리형 (로그인) */
 .btn-outline {
     color: #6a1b9a;
     border: 1px solid #6a1b9a;
@@ -100,7 +89,6 @@
     background-color: #f3e5f5;
 }
 
-/* 채움형 (회원가입) */
 .btn-filled {
     background-color: #6a1b9a;
     color: white;
@@ -112,10 +100,8 @@
     border-color: #8e24aa;
 }
 
-
-
 .user-menu-container {
-    position: relative; /* 드롭다운 위치 기준 */
+    position: relative;
 }
 
 .user-nickname {
@@ -125,18 +111,15 @@
     max-width: 200px;
 }
 
-
 .user-icon {
     margin-right: 8px;
     vertical-align: middle;
-    color: #6a1b9a; /* 다크 퍼플 */
+    color: #6a1b9a;
 }
 
-/* 🌙 다크 모드에서도 잘 보이게 */
 .dark-mode .user-icon {
     color: #f0f0f0;
 }
-
 
 .theme-toggle-btn {
     background: none;
@@ -155,35 +138,29 @@
     background-color: rgba(106, 13, 173, 0.1);
 }
 
-/* 🌙 다크 모드: 헤더 전체 */
 .dark-mode .custom-header {
     background-color: #1e1e1e;
     color: #eee;
     box-shadow: 0 2px 6px rgba(255, 255, 255, 0.05);
 }
 
-/* 🌙 사이트명 */
 .dark-mode .site-name {
     color: #eee;
 }
 
-/* 🌙 네비게이션 기본 상태 */
 .dark-mode .header-nav a {
     color: #ccc;
 }
 
-/* 🌙 네비게이션 hover */
 .dark-mode .header-nav a:hover {
     color: #b88eff;
 }
 
-/* 🌙 네비게이션 active 상태 */
 .dark-mode .header-nav .active {
     color: #ffffff;
     border-bottom: 2px solid #b88eff;
 }
 
-/* 🌙 버튼 - 테두리 버튼 */
 .dark-mode .btn-outline {
     border-color: #aaa;
     color: #aaa;
@@ -193,14 +170,10 @@
     background-color: #333;
 }
 
-/* 🌙 버튼 - 채워진 버튼은 기본 보라색 유지 */
-
-/* 🌙 닉네임 표시 */
 .dark-mode .user-nickname {
     color: #b88eff;
 }
 
-/* 🌙 다크모드 토글 버튼 */
 .dark-mode .theme-toggle-btn {
     color: #b88eff;
 }
@@ -213,12 +186,12 @@
     background-color: white;
     border: 1px solid #ccc;
     border-radius: 6px;
-    min-width: 120px; /* ✅ 너비 고정 */
+    min-width: 120px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     z-index: 100;
     display: flex;
     flex-direction: column;
-    align-items: center; /* 버튼 너비가 줄었을 때 가운데 정렬 효과 보강 */
+    align-items: center;
 }
 
 .user-dropdown button {
@@ -231,12 +204,10 @@
     transition: background-color 0.2s ease;
 }
 
-/* ✅ Hover 효과 추가 */
 .user-dropdown button:hover {
     background-color: #f5f5f5;
 }
 
-/* 🌙 다크모드 대응 */
 .dark-mode .user-dropdown {
     background-color: #2a2a2a;
     border-color: #444;
@@ -248,4 +219,208 @@
 
 .dark-mode .user-dropdown button:hover {
     background-color: #3a3a3a;
+}
+
+/* 알림 관련 스타일 */
+.notification-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.notification-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #6a0dad;
+    position: relative;
+    padding: 0;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #ff4d4f;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+}
+
+.notification-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    min-width: 250px;
+    max-height: 300px;
+    overflow-y: auto;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+}
+
+.notification-dropdown.expanded-dropdown {
+    width: 600px;
+    max-height: 80vh;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    padding-top: 30px;
+}
+
+.close-btn {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 101;
+    padding: 0;
+    line-height: 1;
+}
+
+.close-btn:hover {
+    color: #333;
+}
+
+.notification-item {
+    padding: 10px 15px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #333;
+    font-weight: bold;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-item:hover {
+    background-color: #f5f5f5;
+}
+
+.notification-item.unread {
+    color: #333;
+    font-weight: bold;
+}
+
+.notification-item.read {
+    color: #888;
+    font-weight: normal;
+}
+
+.notification-message {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+.no-notifications {
+    padding: 20px 15px;
+    text-align: center;
+    color: #888;
+}
+
+.notification-footer {
+    padding: 10px;
+    text-align: center;
+    border-top: 1px solid #eee;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+    border-top: 1px solid #eee;
+}
+
+.pagination button {
+    background: none;
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    margin: 0 4px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.pagination button.active {
+    background-color: #6a0dad;
+    color: white;
+    border-color: #6a0dad;
+}
+
+.pagination button:hover:not(.active) {
+    background-color: #f0f0f0;
+}
+
+/* 다크모드 스타일 */
+.dark-mode .notification-btn {
+    color: #b88eff;
+}
+
+.dark-mode .notification-dropdown {
+    background-color: #2a2a2a;
+    border-color: #444;
+}
+
+.dark-mode .notification-item {
+    color: #f0f0f0;
+    border-color: #3a3a3a;
+}
+
+.dark-mode .notification-item.read {
+    color: #aaa;
+}
+
+.dark-mode .notification-item:hover {
+    background-color: #3a3a3a;
+}
+
+.dark-mode .notification-item.unread {
+    background-color: #4d3319;
+}
+
+.dark-mode .notification-footer {
+    border-color: #3a3a3a;
+}
+
+.dark-mode .pagination {
+    border-color: #3a3a3a;
+}
+
+.dark-mode .pagination button {
+    background-color: #333;
+    color: #eee;
+    border-color: #555;
+}
+
+.dark-mode .pagination button.active {
+    background-color: #b88eff;
+    color: #1e1e1e;
+    border-color: #b88eff;
+}
+
+.dark-mode .pagination button:hover:not(.active) {
+    background-color: #444;
 }
