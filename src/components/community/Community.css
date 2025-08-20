@@ -379,7 +379,7 @@ html {
     border-radius: 0;
     padding: 12px 0;
     border-bottom: 1px solid #eaeaea;
-
+    min-width: 720px;
 }
 
 .post-card:first-child {

@@ -1,104 +1,91 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import {useNavigate} from "react-router-dom";
 import "./Community.css";
+
+const API_BASE = "http://52.79.145.160:8080";
 
 export default function Community() {
     const navigate = useNavigate();
     const tabs = ["전체", "미해결", "해결됨"];
     const filters = ["최신순", "정확도순", "답변많은순", "좋아요순"];
 
-    const posts = [
-        {
-            status: "해결됨",
-            title: "버블 정렬 시각화 프로젝트 공유합니다",
-            summary: "버블 정렬 알고리즘을 시각적으로 이해하기 쉽게 구현해보았습니다. 피드백 부탁드려요!",
-            tags: ["알고리즘", "정렬", "시각화"],
-            author: "김코딩",
-            date: "2023. 5. 15",
-            likes: 24,
-            comments: 8
-        },
-        {
-            status: "해결됨",
-            title: "그래프 탐색 알고리즘 비교: BFS vs DFS",
-            summary: "그래프 탐색 알고리즘의 차이점을 비교하고 어떤 상황에서 더 적합한지 정리했습니다.",
-            tags: ["그래프", "BFS", "DFS"],
-            author: "이알고",
-            date: "2023. 5. 17",
-            likes: 32,
-            comments: 12
-        },
-        {
-            status: "해결됨",
-            title: "동적 프로그래밍 문제 해결 가이드",
-            summary: "DP 문제를 효율적으로 푸는 전략과 예제를 모아 정리해봤습니다.",
-            tags: ["DP", "문제풀이", "코딩테스트"],
-            author: "박코딩",
-            date: "2023. 5. 18",
-            likes: 40,
-            comments: 15
-        },
-        {
-            status: "해결됨",
-            title: "수강 중 문의드립니다!",
-            summary: "안녕하세요! 수업 강의 잘 듣고 있습니다! 궁금한 게 있어서 문의 남깁니다! numeric_only=True는 이번에 시험환경이 엄...",
-            tags: ["python", "머신러닝", "빅데이터", "pandas", "빅데이터분석기사"],
-            author: "lettig0555",
-            date: "2시간 전",
-            likes: 6,
-            comments: 13
-        },
-        {
-            status: "해결됨",
-            title: "rmse 값 구하기",
-            summary: "랜덤포레스트 후 rmse 값을 구할 때 이렇게 구해도 상관없을까요?? from sklearn.ensemble import RandomForest...",
-            tags: ["python", "머신러닝", "빅데이터", "pandas", "빅데이터분석기사"],
-            author: "민우",
-            date: "6분 전",
-            likes: 0,
-            comments: 2
-        },
-        {
-            status: "미해결",
-            title: "2025년 1회 구조체와 연결리스트 문제누락",
-            summary: "5페이지 구조체와 연결리스트 해설 누락된 것 같습니다.",
-            tags: ["python", "java", "c", "정보처리기사"],
-            author: "hyungjun jo",
-            date: "7시간 전",
-            likes: 0,
-            comments: 3
-        },
-        {
-            status: "해결됨",
-            title: "작업형2, 작업형3 pd.get_dummies 시 drop_first 유무",
-            summary: "작업형2 할때는 pd.get_dummies(df) 할때 drop_first가 들어가 있지 않았는데 작업형3 강의에서는 다중공선성 피해...",
-            tags: ["python", "머신러닝", "빅데이터", "pandas", "빅데이터분석기사"],
-            author: "섭식",
-            date: "9시간 전",
-            likes: 6,
-            comments: 3
-        },
-        {
-            status: "미해결",
-            title: "궁금한게 있습니다!",
-            summary: "학습 관련 질문을 남겨주세요. 상세히 작성하면 더 좋아요! 질문글과 관련된 영상 위치를 알려주면 더 빠르게 답변드릴 수 있어요!",
-            tags: ["python", "머신러닝", "빅데이터", "pandas", "빅데이터분석기사"],
-            author: "eovnffppa",
-            date: "9시간 전",
-            likes: 0,
-            comments: 15
-        },
-        {
-            status: "해결됨",
-            title: "안녕하세요 주말코딩님 질문드립니다",
-            summary: "안녕하세요 주말코딩님. 저는 완전 문과 노베이스고 지금은 대기업 하청 전산실 OP로 일하면서 정보처리기사 실기 시험을...",
-            tags: ["python", "정보처리기사"],
-            author: "김재호",
-            date: "10시간 전",
-            likes: 0,
-            comments: 10
-        }
-    ];
+    // ✅ 서버 데이터 상태
+    const [posts, setPosts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    useEffect(() => {
+        let ignore = false;
+        const controller = new AbortController();
+
+        (async () => {
+            try {
+                setLoading(true);
+                setError("");
+
+                const token = localStorage.getItem("token");
+                if (!token) {
+                    // 🚨 비회원 접근 차단
+                    alert("로그인이 필요합니다.");
+                    navigate("/");
+                    return;
+                }
+
+                const res = await fetch(`${API_BASE}/api/posts`, {
+                    method: "GET",
+                    headers: {
+                        Accept: "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    signal: controller.signal,
+                    credentials: "include",
+                });
+
+                if (!res.ok) {
+                    const text = await res.text();
+                    throw new Error(text || `목록 조회 실패 (${res.status})`);
+                }
+
+                const data = await res.json(); // ← 배열 형태 가정
+                if (ignore) return;
+
+                // ✅ createdAt(또는 id) 기준으로 최신 글이 먼저 오도록 정렬
+                const getTime = (x) => (x ? Date.parse(x) || 0 : 0);
+                const sorted = (Array.isArray(data) ? data : [])
+                    .slice()
+                    .sort((a, b) => {
+                        const diff = getTime(b.createdAt) - getTime(a.createdAt);
+                        if (diff !== 0) return diff;
+                        // createdAt이 같거나 비어있으면 id 내림차순으로 보정
+                        return (b.id ?? 0) - (a.id ?? 0);
+                    });
+
+                // 🔄 정렬된 목록을 UI 필드로 매핑
+                const mapped = sorted.map((p) => ({
+                    id: p.id,
+                    status: p.status || "",
+                    title: p.title,
+                    summary: (p.content || "").replace(/<[^>]+>/g, "").slice(0, 120),
+                    tags: p.tags || [],
+                    author: p.writer || "익명",
+                    date: p.createdAt ? new Date(p.createdAt).toLocaleString() : "",
+                    likes: p.likeCount ?? 0,
+                    comments: p.commentCount ?? 0,
+                }));
+
+                setPosts(mapped);
+            } catch (e) {
+                if (!ignore) setError(e.message || "알 수 없는 오류");
+            } finally {
+                if (!ignore) setLoading(false);
+            }
+        })();
+
+        return () => {
+            ignore = true;
+            controller.abort();
+        };
+    }, []);
 
     return (
         <div className="community-wrapper">
@@ -155,42 +142,55 @@ export default function Community() {
                         </button>
                     </div>
 
-                    <div className="post-list">
-                        {posts.map((post, i) => (
-                            <div
-                                key={i}
-                                className="post-card"
-                                onClick={() => navigate(`/community/post/${i}`)}
-                                style={{ cursor: "pointer" }}
-                            >
-                                <div className="post-meta">
-                                    <div className="title-row">
-                                        <span className={`badge ${post.status === "해결됨" ? "badge-solved" : ""}`}>
-                                            {post.status}
-                                        </span>
-                                        <h3 className="post-title">{post.title}</h3>
-                                    </div>
-                                    <p className="post-summary">{post.summary}</p>
-                                </div>
-                                <div className="post-tags">
-                                    {post.tags.map((tag, j) => (
-                                        <span key={j} className="tag">{tag}</span>
-                                    ))}
-                                </div>
-                                <div className="post-footer">
-                                    <div className="post-footer-left">
-                                        <span>{post.author}</span>
-                                        <span>{post.date}</span>
-                                    </div>
-                                    <div className="post-footer-right">
-                                        <span>👍 {post.likes}</span>
-                                        <span>💬 {post.comments}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                    {/* ✅ 로딩/에러/빈 상태 */}
+                    {loading && <div className="post-list"><p>불러오는 중…</p></div>}
+                    {!loading && error && <div className="post-list"><p className="error">{error}</p></div>}
+                    {!loading && !error && posts.length === 0 && (
+                        <div className="post-list"><p>게시글이 없습니다.</p></div>
+                    )}
 
+                    {!loading && !error && posts.length > 0 && (
+                        <div className="post-list">
+                            {posts.map((post) => (
+                                <div
+                                    key={post.id}
+                                    className="post-card"
+                                    onClick={() => navigate(`/community/post/${post.id}`)} // ← id 사용
+                                    style={{ cursor: "pointer" }}
+                                >
+                                    <div className="post-meta">
+                                        <div className="title-row">
+                                            {/* 상태값 없으면 뱃지 숨김 */}
+                                            {post.status ? (
+                                                <span className={`badge ${post.status === "해결됨" ? "badge-solved" : ""}`}>
+                                                    {post.status}
+                                                </span>
+                                            ) : null}
+                                            <h3 className="post-title">{post.title}</h3>
+                                        </div>
+                                        <p className="post-summary">{post.summary}</p>
+                                    </div>
+                                    <div className="post-tags">
+                                        {(post.tags || []).map((tag, j) => (
+                                            <span key={j} className="tag">{tag}</span>
+                                        ))}
+                                    </div>
+                                    <div className="post-footer">
+                                        <div className="post-footer-left">
+                                            <span>{post.author}</span>
+                                            <span>{post.date}</span>
+                                        </div>
+                                        <div className="post-footer-right">
+                                            <span>👍 {post.likes}</span>
+                                            <span>💬 {post.comments}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* 기존 페이징 UI는 유지 (서버 페이징 스펙 나오면 연결) */}
                     <div className="pagination-wrapper">
                         <div className="page-numbers">
                             <button className="page-button active">1</button>
@@ -215,26 +215,11 @@ export default function Community() {
                     <div className="popular-posts">
                         <h4>주간 인기글</h4>
                         <ul>
-                            <li>
-                                <div className="post-title">버블 정렬 시각화 프로젝트 공유합니다</div>
-                                <div className="post-author">김코딩</div>
-                            </li>
-                            <li>
-                                <div className="post-title">그래프 탐색 알고리즘 비교: BFS vs DFS</div>
-                                <div className="post-author">이알고</div>
-                            </li>
-                            <li>
-                                <div className="post-title">동적 프로그래밍 문제 해결 가이드</div>
-                                <div className="post-author">박코딩</div>
-                            </li>
-                            <li>
-                                <div className="post-title">백엔드 신입 CS 스터디 3기 모집</div>
-                                <div className="post-author">김지훈</div>
-                            </li>
-                            <li>
-                                <div className="post-title">AI 실전 활용을 위한 4주 집중 스터디, 애사모!</div>
-                                <div className="post-author">Edun</div>
-                            </li>
+                            <li><div className="post-title">버블 정렬 시각화 프로젝트 공유합니다</div><div className="post-author">김코딩</div></li>
+                            <li><div className="post-title">그래프 탐색 알고리즘 비교: BFS vs DFS</div><div className="post-author">이알고</div></li>
+                            <li><div className="post-title">동적 프로그래밍 문제 해결 가이드</div><div className="post-author">박코딩</div></li>
+                            <li><div className="post-title">백엔드 신입 CS 스터디 3기 모집</div><div className="post-author">김지훈</div></li>
+                            <li><div className="post-title">AI 실전 활용을 위한 4주 집중 스터디, 애사모!</div><div className="post-author">Edun</div></li>
                         </ul>
                     </div>
                 </aside>
