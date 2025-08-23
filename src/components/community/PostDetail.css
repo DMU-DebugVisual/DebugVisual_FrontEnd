@@ -7,6 +7,7 @@
     margin: 60px auto;
     font-family: "Noto Sans KR", sans-serif;
     min-height: calc(100vh - 160px); /* 👈 추가! */
+
 }
 
 .post-top-divider {
