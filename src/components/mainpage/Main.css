@@ -1,0 +1,38 @@
+/* ✅ Main 페이지에만 풀페이지 스크롤 적용 */
+.fullpage-container {
+    height: 100vh;
+    overflow-y: auto;             /* ✅ 풀페이지 안에서만 스크롤 */
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+}
+
+/* ✅ 각 섹션은 한 화면(풀스크린) */
+.fullpage-container > section {
+    height: 100vh;
+    scroll-snap-align: start;
+    box-sizing: border-box;
+}
+
+/* ✅ 마지막 섹션 (StartNow + Footer 포함) */
+.last-section {
+    height: 100vh;                 /* 풀페이지 높이 */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* StartNow는 위쪽, Footer는 아래쪽 */
+}
+
+/* ✅ StartNow는 위쪽에 여백 */
+.last-section .start-section {
+    flex: 1;                        /* 위쪽 공간 차지 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;        /* 내용 가운데 정렬 */
+    align-items: center;
+    padding: 40px 20px;
+    box-sizing: border-box;
+}
+
+/* ✅ Footer는 아래쪽 */
+.last-section .footer {
+    margin-top: auto;               /* 자동으로 아래로 밀림 */
+}

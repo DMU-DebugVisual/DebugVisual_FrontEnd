@@ -1,12 +1,14 @@
 import React from "react";
 import "./Features.css";
-import {FaRegFileAlt, FaUsers, FaVideo} from "react-icons/fa";
+import { FaRegFileAlt, FaUsers, FaVideo } from "react-icons/fa";
 
-const Features = () => {
+const Features = ({ id }) => {
     return (
-        <section className="features-section">
+        <section id={id} className="features-section">
             <h2 className="features-title">주요 기능</h2>
-            <p className="features-subtitle">코드 시각화 플랫폼의 강력한 기능들을 살펴보세요</p>
+            <p className="features-subtitle">
+                코드 시각화 플랫폼의 강력한 기능들을 살펴보세요
+            </p>
 
             <div className="features-cards">
                 <div className="feature-card">
