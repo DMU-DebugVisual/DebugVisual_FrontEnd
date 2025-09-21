@@ -66,11 +66,11 @@ body {
 
 .sidebar {
     width: 280px;
-    border-right: 1px solid var(--border);
+    border: none; /* ✅ 테두리 완전히 제거 */
     display: flex;
     flex-direction: column;
     transition: width 0.3s ease, transform 0.3s ease;
-    background-color: var(--element);
+    background-color: var(--bg);   /* ✅ 회색톤으로 변경 */
     color: var(--text);
     height: 100vh;
     z-index: 10;
@@ -92,7 +92,7 @@ body {
     flex-direction: column;
     height: 100vh;
     width: 100%;
-    background-color: var(--element);
+    background-color: var(--bg);   /* ✅ 내부도 동일하게 */
     border-right: none; /* 🔧 중복 테두리 제거 */
     overflow: hidden;
 }
@@ -492,12 +492,13 @@ body.dark-mode .active-file-name {
     color: #60a5fa;
 }
 
-/* 인증 섹션 - 정렬 수정 */
 .auth-section {
     display: flex;
     flex-direction: column;
     height: 100%;
     padding: 0;
+    color: var(--text); /* ✅ 라이트/다크 모드 대응 */
+    font-size:13px;
 }
 
 .auth-header {

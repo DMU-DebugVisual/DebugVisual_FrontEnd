@@ -19,7 +19,7 @@ import MyCommunity from "./components/mypage/MyCommunity";
 import ScrollToTop from "./components/common/ScrollToTop";
 import CommunityWrite from "./components/community/CommunityWrite";
 import VisualizationModal from "./components/ide/VisualizationModal";
-import PostDetail from "./components/community/PostDetail"; // ✅ 게시글 상세 컴포넌트 추가
+import PostDetail from "./components/community/PostDetail"; // ✅ 게시글 상세 컴포넌트
 import CodecastLive from "./components/codecast/codecastlive/CodecastLive";
 
 function AppContent() {
@@ -30,6 +30,7 @@ function AppContent() {
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
     const isSignupPage = location.pathname === "/signup";
+    const isIdePage = location.pathname.startsWith("/ide"); // ✅ IDE 페이지 판별
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -75,7 +76,7 @@ function AppContent() {
                 <Route path="/ide/:language/:filename" element={<IDE />} />
                 <Route path="/community" element={<Community />} />
                 <Route path="/community/write" element={<CommunityWrite />} />
-                <Route path="/community/post/:id" element={<PostDetail />} /> {/* ✅ 상세 페이지 라우팅 추가 */}
+                <Route path="/community/post/:id" element={<PostDetail />} /> {/* ✅ 상세 페이지 */}
                 <Route path="/broadcast" element={<Codecast />} />
                 <Route path="/startbroadcast" element={<StartCodecast />} />
                 <Route path="/broadcast/live" element={<CodecastLive />} />
@@ -88,7 +89,8 @@ function AppContent() {
                 </Route>
             </Routes>
 
-            {!isSignupPage && <Footer />}
+            {/* ✅ 푸터는 회원가입/IDE 페이지에서는 숨김 */}
+            {(!isSignupPage && !isIdePage) && <Footer />}
 
             {isLoginModalOpen && (
                 <Login
