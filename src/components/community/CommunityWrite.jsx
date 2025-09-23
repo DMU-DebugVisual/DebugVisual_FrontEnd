@@ -13,7 +13,7 @@ const ALLOWED_TAGS = [
     "JAVA","C","CPP","JPA","JAVASCRIPT","PYTHON","OOP","BIGDATA","SPRING","TYPESCRIPT","ML"
 ];
 
-// ✅ 흔한 표기 → ENUM 매핑(한국어/소문자/동의어 흡수)
+// ✅ 흔한 표기 → ENUM 매핑
 const TAG_SYNONYM = {
     js: "JAVASCRIPT", javascript: "JAVASCRIPT", 자바스크립트: "JAVASCRIPT",
     java: "JAVA", 자바: "JAVA",
@@ -31,7 +31,7 @@ function normalizeToEnumTag(raw) {
     if (!raw) return null;
     const k = raw.replace(/^#/, "").trim();
     const keyLC = k.toLowerCase();
-    if (TAG_SYNONYM[keyLC]) return TAG_SYNONYM[keyLC]; // 동의어 우선
+    if (TAG_SYNONYM[keyLC]) return TAG_SYNONYM[keyLC];
     const upper = k.toUpperCase();
     return ALLOWED_TAGS.includes(upper) ? upper : null;
 }
@@ -39,7 +39,7 @@ function normalizeToEnumTag(raw) {
 // 입력 문자열 → ENUM 배열(중복 제거, 최대 10개)
 function parseTagsInput(input) {
     const list = input
-        .split(/[#,，,\s]+/) // 쉼표/공백/# 구분
+        .split(/[#,，,\s]+/)
         .map(normalizeToEnumTag)
         .filter(Boolean);
     return Array.from(new Set(list)).slice(0, 10);
@@ -59,11 +59,12 @@ export default function CommunityWrite() {
     const [content, setContent] = useState(defaultGuide);
     const [submitting, setSubmitting] = useState(false);
 
-    // 비회원 접근 차단(알림은 로그인 페이지에서 처리)
+    // ✅ 비회원 접근 차단: 알림 + 커뮤니티 페이지로 이동
     useEffect(() => {
         const token = localStorage.getItem("token");
         if (!token) {
-            navigate("/", { replace: true, state: { reason: "auth-required", from: location.pathname } });
+            alert("로그인이 필요합니다.");
+            navigate("/community", { replace: true, state: { from: location.pathname } });
         }
     }, [navigate, location.pathname]);
 
@@ -77,7 +78,7 @@ export default function CommunityWrite() {
     const handleSubmit = async () => {
         const token = localStorage.getItem("token");
         if (!token) {
-            navigate("/login", { replace: true, state: { reason: "auth-required", from: location.pathname } });
+            // 🚨 여기서는 다시 알림 필요 없음 → 이미 진입 차단됨
             return;
         }
 
@@ -88,10 +89,8 @@ export default function CommunityWrite() {
             return;
         }
 
-        // ✅ 태그 정규화/검증 → ENUM 배열
         const tagArray = parseTagsInput(tags);
 
-        // 사용자가 뭔가 입력했는데 결과가 0개면 허용값 아님
         if (tags.trim() && tagArray.length === 0) {
             alert(`지원하는 태그만 사용할 수 있어요.\n허용값: ${ALLOWED_TAGS.join(", ")}`);
             return;
@@ -114,10 +113,6 @@ export default function CommunityWrite() {
                 body: JSON.stringify(payload),
             });
 
-            if (res.status === 401 || res.status === 403) {
-                navigate("/login", { replace: true, state: { reason: "auth-required", from: location.pathname } });
-                return;
-            }
             if (!res.ok) {
                 const ct = res.headers.get("content-type") || "";
                 const msg = ct.includes("application/json") ? (await res.json()).message : await res.text();

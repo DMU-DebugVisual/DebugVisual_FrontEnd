@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "./Community.css";
 
 const API_BASE = "http://52.79.145.160:8080";
@@ -24,19 +24,18 @@ export default function Community() {
                 setError("");
 
                 const token = localStorage.getItem("token");
-                if (!token) {
-                    // 🚨 비회원 접근 차단
-                    alert("로그인이 필요합니다.");
-                    navigate("/");
-                    return;
+
+                // ✅ 토큰이 있으면 Authorization 헤더 추가
+                const headers = {
+                    Accept: "application/json",
+                };
+                if (token) {
+                    headers.Authorization = `Bearer ${token}`;
                 }
 
                 const res = await fetch(`${API_BASE}/api/posts`, {
                     method: "GET",
-                    headers: {
-                        Accept: "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
+                    headers,
                     signal: controller.signal,
                     credentials: "include",
                 });
@@ -56,7 +55,6 @@ export default function Community() {
                     .sort((a, b) => {
                         const diff = getTime(b.createdAt) - getTime(a.createdAt);
                         if (diff !== 0) return diff;
-                        // createdAt이 같거나 비어있으면 id 내림차순으로 보정
                         return (b.id ?? 0) - (a.id ?? 0);
                     });
 
@@ -155,12 +153,11 @@ export default function Community() {
                                 <div
                                     key={post.id}
                                     className="post-card"
-                                    onClick={() => navigate(`/community/post/${post.id}`)} // ← id 사용
+                                    onClick={() => navigate(`/community/post/${post.id}`)}
                                     style={{ cursor: "pointer" }}
                                 >
                                     <div className="post-meta">
                                         <div className="title-row">
-                                            {/* 상태값 없으면 뱃지 숨김 */}
                                             {post.status ? (
                                                 <span className={`badge ${post.status === "해결됨" ? "badge-solved" : ""}`}>
                                                     {post.status}
@@ -190,7 +187,6 @@ export default function Community() {
                         </div>
                     )}
 
-                    {/* 기존 페이징 UI는 유지 (서버 페이징 스펙 나오면 연결) */}
                     <div className="pagination-wrapper">
                         <div className="page-numbers">
                             <button className="page-button active">1</button>
