@@ -1,9 +1,11 @@
+/* ========== 기본: Light ========== */
+
 .broadcast-wrapper {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    background-color: #111;
-    color: white;
+    background-color: #f7f7f9; /* 라이트 배경 */
+    color: #222;
     padding-top: 70px;
 }
 
@@ -12,3 +14,105 @@
     display: flex;
     overflow: hidden;
 }
+
+/* 중앙 에디터 영역 컨테이너 */
+.editor-area {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    background: #ffffff;            /* 라이트에서 흰 배경 */
+    border-left: 1px solid #e6e6ea; /* 라이트 보더 */
+    display: flex;                  /* 에디터 섹션이 꽉 차게 */
+    position: relative;
+    padding: 0;
+}
+
+/* 공유 전(empty) 안내 */
+.empty-state {
+    position: absolute;
+    inset: 0;
+    display: flex;                 /* grid → flex */
+    flex-direction: column;        /* 세로로 정렬 */
+    align-items: center;
+    justify-content: center;
+    gap: 8px;                      /* 버튼–문구 간격만 제어 */
+    user-select: none;
+}
+
+.plus-button {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: none;
+    background: #6f42c1;  /* 보라 */
+    color: #fff;
+    font-size: 50px;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(111,66,193,0.25);
+    transition: transform 0.15s ease, filter 0.15s ease, background 0.2s ease;
+}
+.plus-button:hover {
+    transform: scale(1.06);
+    filter: brightness(1.05);
+}
+
+.empty-help {
+    margin: 0;                     /* ✅ 기본 마진 제거! */
+    color: #555;
+    font-size: 15px;
+    letter-spacing: 0.2px;
+    opacity: 0.9;
+}
+
+/* ========== Dark Mode Overrides ========== */
+
+.dark-mode .broadcast-wrapper {
+    background-color: #111;
+    color: #eee;
+}
+
+.dark-mode .editor-area {
+    background: #0b0b0f;
+    border-left: 1px solid rgba(255,255,255,0.06);
+}
+
+.dark-mode .plus-button {
+    background: #3a2a55;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+}
+.dark-mode .plus-button:hover {
+    transform: scale(1.05);
+    filter: brightness(1.05);
+}
+
+.dark-mode .empty-help {
+    color: #c8c1d9;
+    font-size: 14px;
+}
+
+/* 전체화면일 때 wrapper에 적용 (표준) */
+.broadcast-wrapper:fullscreen {
+    padding-top: 0;           /* 헤더 여백 제거하고 싶으면 0, 유지하고 싶으면 삭제 */
+    background: #000;         /* 검은 배경으로 감싸기 (선택) */
+}
+
+/* Safari(WebKit) 대응 */
+:-webkit-full-screen .broadcast-wrapper {
+    padding-top: 0;
+    background: #000;
+}
+
+/* 전체화면 시 내부 영역 확장 */
+.broadcast-wrapper:fullscreen .main-section {
+    height: 100vh;            /* 내부 섹션이 화면을 꽉 채우도록 */
+}
+.broadcast-wrapper:fullscreen .editor-area {
+    padding: 0;
+}
+.broadcast-wrapper:fullscreen .code-editor {
+    padding: 0;
+}
+
+/* 필요시 헤더를 얇게 만들고 싶다면
+.broadcast-wrapper:fullscreen .broadcastlive-header { height: 48px; padding: 8px 16px; }
+*/

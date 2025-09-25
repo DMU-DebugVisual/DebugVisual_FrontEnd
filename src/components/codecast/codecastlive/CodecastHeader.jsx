@@ -1,26 +1,41 @@
 import React from 'react';
 import './CodecastHeader.css';
 
-const CodecastHeader = () => {
-    const handleExit = () => {
-        // 실제 방송 종료 처리 로직이 들어갈 수 있음
-        alert('방송을 종료하고 나갑니다.');
-    };
-
+/**
+ * Props
+ * - roomTitle: string
+ * - onLeave: () => void
+ * - isFocusMode?: boolean          // 포커스 모드 여부
+ * - onToggleFocus?: () => void     // 포커스 모드 토글
+ */
+export default function CodecastHeader({
+                                           roomTitle,
+                                           onLeave,
+                                           isFocusMode = false,
+                                           onToggleFocus,
+                                       }) {
     return (
         <header className="broadcastlive-header">
             <div className="header-left">
-                <h1 className="broadcast-title">정렬 알고리즘 라이브 코딩</h1>
+                <h1 className="broadcast-title">{roomTitle}</h1>
+                {/* 파일명/언어/공유시작 제거 */}
             </div>
 
             <div className="header-right">
-                <span className="language-tag">Python</span>
-                <button className="exit-button" onClick={handleExit}>
+                {/* 포커스 모드 버튼 */}
+                {onToggleFocus && (
+                    <button
+                        className={`focus-button ${isFocusMode ? 'active' : ''}`}
+                        aria-pressed={isFocusMode}
+                        onClick={onToggleFocus}
+                    >
+                        {isFocusMode ? '포커스 해제' : '포커스 모드'}
+                    </button>
+                )}
+                <button className="exit-button" onClick={onLeave}>
                     나가기
                 </button>
             </div>
         </header>
     );
-};
-
-export default CodecastHeader;
+}

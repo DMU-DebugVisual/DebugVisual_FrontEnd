@@ -1,0 +1,103 @@
+/* ========== 기본: Light ========== */
+
+.fpm-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: grid;
+    place-items: center;
+    z-index: 2000;
+}
+
+.fpm-modal {
+    width: 520px;
+    max-width: calc(100% - 32px);
+    background: #ffffff;                /* 라이트 배경 */
+    border: 1px solid #e6e6ef;
+    border-radius: 14px;
+    padding: 18px 18px 14px;
+    color: #222;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.fpm-modal h3 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #222;
+}
+
+.fpm-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 320px;
+    overflow: auto;
+}
+
+.fpm-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 8px;
+    border-radius: 10px;
+    background: #f7f7fb;
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+.fpm-item + .fpm-item { margin-top: 8px; }
+.fpm-item:hover {
+    border-color: #d7d7ec;
+    background: #eef0fb;
+}
+
+.fpm-name {
+    font-weight: 600;
+    color: #333;
+}
+.fpm-lang {
+    font-size: 12px;
+    color: #666;
+}
+
+.fpm-close {
+    margin-top: 12px;
+    width: 100%;
+    border: 1px solid #e0e0ea;
+    background: #f7f7fb;
+    color: #333;
+    padding: 10px 0;
+    border-radius: 10px;
+    cursor: pointer;
+}
+.fpm-close:hover { filter: brightness(1.03); }
+
+/* ========== Dark Mode Overrides ========== */
+
+.dark-mode .fpm-modal {
+    background: #151520;
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #eee;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
+.dark-mode .fpm-modal h3 {
+    color: white;
+}
+
+.dark-mode .fpm-item {
+    background: #1a1a26;
+}
+.dark-mode .fpm-item:hover {
+    border-color: rgba(128,90,213,0.5);
+    background: #1f1f2c;
+}
+
+.dark-mode .fpm-name { color: #eee; }
+.dark-mode .fpm-lang { color: #bdbdbd; }
+
+.dark-mode .fpm-close {
+    background: #2a2a38;
+    color: #ddd;
+    border: none;
+}
+.dark-mode .fpm-close:hover { filter: brightness(1.05); }
