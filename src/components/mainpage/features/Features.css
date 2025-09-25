@@ -1,99 +1,101 @@
 .features-section {
-    padding: 80px 20px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     background-color: white;
     text-align: center;
+    padding: 3rem;
+    box-sizing: border-box;
 }
 
 .features-title {
-    font-size: 26px;
+    font-size: 36px;     /* 크게 */
     font-weight: bold;
-    margin-bottom: 10px;
+    margin-bottom: 16px;
 }
 
 .features-subtitle {
-    font-size: 16px;
+    font-size: 20px;     /* 크게 */
     color: #666;
-    margin-bottom: 40px;
+    margin-bottom: 48px;
 }
 
 .features-cards {
     display: flex;
     justify-content: center;
-    gap: 24px;
+    gap: 32px;
     flex-wrap: wrap;
+    max-width: 1200px;
 }
 
 .feature-card {
-    width: 280px;
-    padding: 24px;
+    width: 320px;        /* 더 크게 */
+    padding: 32px;
     border: 1px solid #eaeaea;
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.03);
+    border-radius: 16px;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.05);
     background-color: #fff;
     text-align: left;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .feature-card:hover {
-    transform: scale(1.03);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
 .feature-icon {
     background-color: #f5ebff;
     color: #7a52c6;
-    font-size: 24px;
-    width: 40px;
-    height: 40px;
+    font-size: 28px;
+    width: 48px;
+    height: 48px;
     border-radius: 999px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
 }
 
 .feature-name {
-    font-size: 16px;
+    font-size: 18px;     /* 크게 */
     font-weight: bold;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 .feature-desc {
-    font-size: 14px;
+    font-size: 16px;     /* 크게 */
     color: #555;
-    line-height: 1.6;
+    line-height: 1.8;
 }
 
-/* 🌙 전체 섹션 배경 */
+/* 🌙 다크모드 */
 .dark-mode .features-section {
     background-color: #1e1e1e;
     color: #eee;
 }
 
-/* 🌙 서브타이틀 */
 .dark-mode .features-subtitle {
     color: #aaa;
 }
 
-/* 🌙 카드 배경 및 테두리 */
 .dark-mode .feature-card {
     background-color: #2a2a2a;
     border-color: #444;
-    box-shadow: 0 4px 10px rgba(255, 255, 255, 0.05);
+    box-shadow: 0 6px 12px rgba(255, 255, 255, 0.05);
 }
 
-/* 🌙 카드 hover 시 */
 .dark-mode .feature-card:hover {
-    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 24px rgba(255, 255, 255, 0.1);
 }
 
-/* 🌙 아이콘 배경 및 색상 */
 .dark-mode .feature-icon {
     background-color: #3a2d4f;
     color: #b88eff;
 }
 
-/* 🌙 설명 텍스트 */
 .dark-mode .feature-desc {
     color: #ccc;
 }

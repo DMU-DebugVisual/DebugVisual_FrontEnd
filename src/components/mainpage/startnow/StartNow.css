@@ -1,31 +1,37 @@
 .start-section {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     background-color: #7a52c6;
     color: white;
     text-align: center;
-    padding: 80px 20px;
+    padding: 3rem;
+    box-sizing: border-box;
 }
 
 .start-title {
-    font-size: 28px;
+    font-size: 40px;     /* 크게 */
     font-weight: bold;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 
 .start-description {
-    font-size: 16px;
-    max-width: 640px;
-    margin: 0 auto 24px;
-    line-height: 1.6;
+    font-size: 20px;     /* 크게 */
+    max-width: 720px;
+    margin: 0 auto 32px;
+    line-height: 1.8;
 }
 
 .start-button {
     background-color: white;
     color: #7a52c6;
-    padding: 12px 24px;
+    padding: 16px 32px;  /* 더 크게 */
     border: none;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: 500;
+    border-radius: 10px;
+    font-size: 18px;     /* 크게 */
+    font-weight: 600;
     cursor: pointer;
     transition: background-color 0.2s ease;
     text-decoration: none;
@@ -35,18 +41,16 @@
     background-color: #f2e9ff;
 }
 
-/* 🌙 섹션 전체 배경 및 텍스트 */
+/* 🌙 다크모드 */
 .dark-mode .start-section {
-    background-color: #4e378a; /* 더 어두운 보라 */
+    background-color: #4e378a;
     color: #f5f5f5;
 }
 
-/* 🌙 설명 텍스트 */
 .dark-mode .start-description {
     color: #ddd;
 }
 
-/* 🌙 버튼 색상 반전 */
 .dark-mode .start-button {
     background-color: #1e1e1e;
     color: #b88eff;

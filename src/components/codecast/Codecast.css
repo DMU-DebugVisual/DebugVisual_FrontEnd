@@ -3,9 +3,14 @@
 .broadcast-container {
     background-color: #ffffff;
     min-height: 100vh;
-    padding: 100px 20px;
+    display: flex;              /* 가운데 정렬용 */
+    justify-content: center;    /* 가로 가운데 */
+    align-items: center;        /* 세로 가운데 */
+    flex-direction: column;     /* 위아래 배치 */
+    padding: 20px;              /* 좌우만 여백 */
     text-align: center;
 }
+
 
 .broadcast-header {
     margin-bottom: 30px;

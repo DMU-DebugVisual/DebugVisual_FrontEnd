@@ -1300,19 +1300,12 @@ int main() {
                                 <span className="auth-icon">🔐</span>
                                 <span className="auth-title">계정 접속</span>
                             </div>
-                            <div className="auth-content">
-                                <p className="auth-message">아직 계정이 없으신가요?</p>
-                                <div className="auth-buttons">
-                                    <Link to="/login" className="auth-button login-button">
-                                        <span className="button-icon">🔑</span>
-                                        로그인
-                                    </Link>
-                                    <Link to="/signup" className="auth-button signup-button">
-                                        <span className="button-icon">✏️</span>
-                                        회원가입
-                                    </Link>
+                            <div className="auth-section">
+                                <div className="auth-content sidebar-guest-message">
+                                    <p>🔒 로그인 후 이용 가능합니다</p>
                                 </div>
                             </div>
+
                         </div>
                     )}
                 </div>

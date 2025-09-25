@@ -109,6 +109,13 @@
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 200px;
+    cursor: pointer; /* ✅ 마우스 올리면 포인터 */
+    transition: color 0.2s ease, text-decoration 0.2s ease; /* ✅ hover 효과 부드럽게 */
+}
+
+.user-nickname:hover {
+    color: #6a1b9a;              /* ✅ hover 시 보라색 */
+    text-decoration: underline;  /* ✅ hover 시 밑줄 */
 }
 
 .user-icon {
@@ -423,4 +430,13 @@
 
 .dark-mode .pagination button:hover:not(.active) {
     background-color: #444;
+}
+.dark-mode .user-nickname {
+    color: #b88eff;
+}
+
+/* ✅ 다크모드 hover 스타일 */
+.dark-mode .user-nickname:hover {
+    color: #ffffff;             /* hover 시 흰색 */
+    text-decoration: underline; /* 밑줄 유지 */
 }

@@ -36,3 +36,16 @@
     transform: rotate(360deg);
   }
 }
+/* 전체 텍스트 선택 방지 */
+* {
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none;    /* Firefox */
+  -ms-user-select: none;     /* IE10+ */
+  user-select: none;         /* 표준 */
+}
+
+/* 단, Monaco Editor(IDE)는 선택 허용 */
+.monaco-editor,
+.monaco-editor * {
+  user-select: text !important;
+}

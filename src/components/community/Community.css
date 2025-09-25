@@ -136,14 +136,17 @@ html {
 }
 
 .community-page {
-    display: flex;
+    display: flex !important;
     gap: 24px;
-    max-width: 1280px;
-    margin: 100px auto 40px;
+    width: 100% !important;      /* ✅ 전체 폭 차지 */
+    max-width: 1280px !important;
+    margin: 100px auto 40px !important;
     padding: 0 20px;
     font-family: "Noto Sans KR", sans-serif;
-    justify-content: center;
+    justify-content: flex-start !important; /* ✅ 왼쪽 정렬 */
+    align-items: flex-start !important;     /* ✅ 위에서부터 배치 */
 }
+
 
 /* 좌측 사이드바 */
 .sidebar-left {

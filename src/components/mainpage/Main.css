@@ -1,0 +1,14 @@
+.fullpage-container {
+    height: auto;        /* ✅ 전체 페이지 높이 자동 */
+    overflow: visible;   /* ✅ 윈도우 스크롤 사용 */
+}
+
+.page-section {
+    height: 100vh;       /* 각 섹션은 한 화면 크기 */
+    width: 100%;
+}
+
+.page-section.last-section {
+    height: auto;        /* 마지막 섹션은 콘텐츠 크기 */
+    min-height: 100vh;
+}
