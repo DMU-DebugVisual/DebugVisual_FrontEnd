@@ -78,7 +78,7 @@ function AppContent() {
                 <Route path="/community/post/:id" element={<PostDetail />} /> {/* ✅ 상세 페이지 라우팅 추가 */}
                 <Route path="/broadcast" element={<Codecast />} />
                 <Route path="/startbroadcast" element={<StartCodecast />} />
-                <Route path="/broadcast/live" element={<CodecastLive />} />
+                <Route path="/broadcast/live" element={<CodecastLive isDark={isDark} />} />
                 <Route path="/mypage" element={<MyPageLayout nickname={nickname} />}>
                     <Route index element={<Mypage nickname={nickname} />} />
                     <Route path="project" element={<MyProject />} />
