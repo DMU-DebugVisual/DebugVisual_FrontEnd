@@ -1,50 +1,34 @@
-.App {
-  text-align: center;
+/* App.css - 모든 내용을 지우고 아래 코드로 교체해주세요 */
+
+/* 브라우저 기본 여백 제거 및 전체 레이아웃 설정 (최강력 적용) */
+html, body, #root {
+  margin: 0 !important; /* 모든 마진 제거 */
+  padding: 0 !important; /* 모든 패딩 제거 */
+  width: 100% !important; /* 너비를 100%로 설정 */
+  height: 100% !important; /* 높이를 100%로 설정 */
+  overflow: hidden !important; /* 불필요한 스크롤 방지 */
+  background-color: #f8f9fa !important; /* 기본 배경색 (라이트 모드) */
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* 다크 모드일 때 body 배경색 변경 */
+body.dark-mode {
+  background-color: #1e1e1e !important; /* 다크 모드 배경색 */
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+/* Flexbox 레이아웃을 위한 래퍼 스타일 (이전 App.js 수정에서 사용) */
+/* 만약 App.js를 이전으로 되돌리셨다면 이 부분은 무시하셔도 됩니다. */
+.app-wrapper {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  height: 100vh;
 }
 
-.App-link {
-  color: #61dafb;
+.main-app-content {
+  flex-grow: 1;
+  overflow-y: auto;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-/* 전체 텍스트 선택 방지 */
-* {
-  -webkit-user-select: none; /* Safari */
-  -moz-user-select: none;    /* Firefox */
-  -ms-user-select: none;     /* IE10+ */
-  user-select: none;         /* 표준 */
-}
-
-/* 단, Monaco Editor(IDE)는 선택 허용 */
+/* Monaco Editor(IDE)는 텍스트 선택 허용 */
 .monaco-editor,
 .monaco-editor * {
   user-select: text !important;
