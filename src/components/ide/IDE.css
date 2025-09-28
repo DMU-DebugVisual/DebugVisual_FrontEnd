@@ -1,6 +1,6 @@
-/* Updated IDE.css - 스크롤바 문제 및 이중 테두리 문제 수정 */
+/* Updated IDE.css - 최종 수정본 (클래스 충돌 해결) */
 
-/* 기존 CSS 변수들 개선 */
+/* CSS 변수 */
 :root {
     --primary: #6a47b8;
     --primary-hover: #5339a0;
@@ -21,7 +21,7 @@
     --footer-height: 60px;
 }
 
-/* 다크 모드 변수들 */
+/* 다크 모드 변수 */
 body.dark-mode {
     --primary: #7e57c2;
     --primary-hover: #5e35b1;
@@ -38,7 +38,7 @@ body.dark-mode {
     background-color: var(--bg);
 }
 
-/* 기존 기본 스타일들 유지 */
+/* 기본 스타일 */
 *, *::before, *::after {
     transition: var(--transition);
 }
@@ -49,7 +49,6 @@ body.dark-mode {
     padding: 0;
 }
 
-/* 🔧 스크롤바 문제 해결: body 오버플로우 제어 */
 body {
     font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
     background-color: var(--bg);
@@ -57,52 +56,101 @@ body {
     padding: 0;
     color: var(--text);
     min-height: 100vh;
-    overflow-x: hidden; /* 가로 스크롤바 방지 */
+    overflow-x: hidden;
 }
 
 /* ============================================
-   🆕 ModernSidebar 전용 스타일 - 🔧 이중 테두리 문제 해결
+   메인 레이아웃 수정
    ============================================ */
 
-.sidebar {
-    width: 280px;
-    border: none; /* ✅ 테두리 완전히 제거 */
+.ide-container {
     display: flex;
-    flex-direction: column;
-    transition: width 0.3s ease, transform 0.3s ease;
-    background-color: var(--bg);   /* ✅ 회색톤으로 변경 */
-    color: var(--text);
+    width: 100%;
     height: 100vh;
-    z-index: 10;
-    position: relative;
-    flex-shrink: 0;
+    padding-top: 64px;
+    box-sizing: border-box;
+    background-color: var(--bg);
+    color: var(--text);
+    overflow: hidden;
 }
 
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    transition: none;
+    position: relative;
+    background-color: var(--bg);
+    height: 100%;
+    min-width: 0;
+    padding-top: 0;
+    overflow-x: hidden;
+}
+
+.sidebar.collapsed + .main-content {
+    margin-left: 0;
+}
+
+.content-layout {
+    display: flex;
+    flex-grow: 1;
+    position: relative;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+/* ============================================
+   ModernSidebar (왼쪽 패널)
+   ============================================ */
+
+/* ▼▼▼ [최종 수정] 다른 CSS 파일과의 충돌을 막기 위해 !important 추가 ▼▼▼ */
+.sidebar {
+    width: 280px !important;
+    border: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    transition: width 0.3s ease, transform 0.3s ease !important;
+    background-color: var(--element) !important; /* 배경색 강제 적용 */
+    padding: 0 !important; /* 문제의 padding을 강제로 제거 */
+    color: var(--text) !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    z-index: 10 !important;
+    position: relative !important;
+    flex-shrink: 0 !important;
+    box-shadow: none !important; /* 다른 스타일의 그림자 효과 제거 */
+}
+
+
 .sidebar.collapsed {
-    width: 0;
+    width: 0 !important;
     transform: translateX(-100%);
     overflow: hidden;
     margin-left: -1px;
-    padding: 0;
-    border: none;
 }
 
 .modern-sidebar {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    height: 100%;
     width: 100%;
-    background-color: var(--bg);   /* ✅ 내부도 동일하게 */
-    border-right: none; /* 🔧 중복 테두리 제거 */
+    background-color: var(--element);
+    border-right: none;
     overflow: hidden;
 }
 
-/* 사이드바 헤더 - 정렬 수정 */
 .modern-sidebar-header {
     padding: 12px 16px;
     border-bottom: 1px solid var(--border-light);
     background-color: var(--element);
     flex-shrink: 0;
+}
+
+.modern-sidebar-content {
+    overflow-y: auto;
+    padding: 8px 12px;
+    background-color: var(--element);
+    flex-grow: 1;
 }
 
 .sidebar-title-container {
@@ -153,51 +201,26 @@ body.dark-mode .new-file-button:hover {
     font-weight: 600;
 }
 
-/* 사이드바 콘텐츠 */
-.modern-sidebar-content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 8px 12px;
-    background-color: var(--element);
-}
-
-/* 섹션 스타일 - 간격 줄이고 컴팩트하게 */
 .sidebar-section {
-    margin-bottom: 4px; /* 간격 줄임 */
+    margin-bottom: 4px;
 }
 
-/* 섹션 제목을 헤더 텍스트와 같은 크기로 맞춤 */
-.section-title {
-    flex: 1 !important;
-    font-weight: 500 !important;
-    font-size: 12px !important; /* 헤더 파일 타입 배지와 같은 크기 */
-    margin: 0 !important;
-    line-height: 1.3 !important; /* 줄간격 줄임 */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-    display: flex !important;
-    align-items: center !important;
-    height: 18px !important; /* 높이 줄임 */
-}
-
-/* 섹션 헤더 전체도 같은 크기로 */
 .section-header {
     display: flex !important;
     align-items: center !important;
-    gap: 6px !important; /* 간격 줄임 */
+    gap: 6px !important;
     width: 100% !important;
-    padding: 6px 10px !important; /* 패딩 줄임 */
+    padding: 6px 10px !important;
     border: none !important;
     background: none !important;
     cursor: pointer !important;
     border-radius: var(--radius) !important;
     transition: var(--transition) !important;
-    font-size: 12px !important; /* 헤더와 같은 크기 */
+    font-size: 12px !important;
     font-weight: 500 !important;
     color: var(--text) !important;
     text-align: left !important;
-    height: 30px !important; /* 높이 줄임 */
+    height: 30px !important;
     line-height: 1.3 !important;
     min-height: 30px !important;
 }
@@ -210,14 +233,28 @@ body.dark-mode .section-header:hover {
     background-color: rgba(255, 255, 255, 0.05) !important;
 }
 
+.section-title {
+    flex: 1 !important;
+    font-weight: 500 !important;
+    font-size: 12px !important;
+    margin: 0 !important;
+    line-height: 1.3 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    display: flex !important;
+    align-items: center !important;
+    height: 18px !important;
+}
+
 .chevron-icon {
-    width: 14px !important; /* 크기 줄임 */
+    width: 14px !important;
     height: 14px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     color: var(--text-light) !important;
-    font-size: 10px !important; /* 크기 줄임 */
+    font-size: 10px !important;
     transition: var(--transition) !important;
     flex-shrink: 0 !important;
     margin-right: 2px !important;
@@ -232,10 +269,9 @@ body.dark-mode .section-header:hover {
     flex-shrink: 0 !important;
     margin-right: 6px !important;
     color: var(--text-light) !important;
-    stroke-width: 2px !important; /* 🎨 Feather Icons 선 굵기 */
+    stroke-width: 2px !important;
 }
 
-/* 🎨 Feather Icons SVG 스타일 */
 .section-icon svg {
     width: 14px !important;
     height: 14px !important;
@@ -245,70 +281,29 @@ body.dark-mode .section-header:hover {
     stroke-linejoin: round !important;
 }
 
-/* 다크 모드에서 아이콘 색상 */
 body.dark-mode .section-icon {
     color: var(--text-light) !important;
 }
 
 .section-content {
-    margin-left: 24px !important; /* 들여쓰기 줄임 */
+    margin-left: 24px !important;
     margin-top: 2px !important;
     margin-bottom: 4px !important;
     padding-left: 2px !important;
 }
 
-/* 모든 사이드바 섹션에 강제 적용 */
-.modern-sidebar .section-header,
-.modern-sidebar .section-header .section-title,
-.sidebar .section-header,
-.sidebar .section-header .section-title,
-.modern-sidebar-content .sidebar-section .section-header,
-.modern-sidebar-content .sidebar-section .section-header .section-title {
-    display: flex !important;
-    align-items: center !important;
-    height: 36px !important;
-    line-height: 1.4 !important;
-}
-
-.modern-sidebar .section-header span,
-.sidebar .section-header span {
-    display: flex !important;
-    align-items: center !important;
-    font-size: 12px !important;
-    font-weight: 500 !important;
-}
-
-.modern-sidebar .chevron-icon,
-.sidebar .chevron-icon {
-    width: 16px !important;
-    height: 16px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-}
-
-.modern-sidebar .section-icon,
-.sidebar .section-icon {
-    width: 16px !important;
-    height: 16px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-}
-
-/* 파일 아이템 스타일 - 컴팩트하게 */
 .file-item {
     display: flex !important;
     align-items: center !important;
-    gap: 6px !important; /* 간격 줄임 */
-    padding: 4px 6px !important; /* 패딩 줄임 */
+    gap: 6px !important;
+    padding: 4px 6px !important;
     cursor: pointer !important;
     border-radius: var(--radius) !important;
     transition: var(--transition) !important;
     font-size: 12px !important;
     color: var(--text-light) !important;
-    margin-bottom: 1px !important; /* 간격 줄임 */
-    height: 26px !important; /* 높이 줄임 */
+    margin-bottom: 1px !important;
+    height: 26px !important;
     position: relative !important;
     min-height: 26px !important;
 }
@@ -347,17 +342,14 @@ body.dark-mode .file-item.active:hover {
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
     font-size: 12px !important;
-    line-height: 1.3 !important; /* 줄간격 줄임 */
+    line-height: 1.3 !important;
     display: flex !important;
     align-items: center !important;
-    height: 18px !important; /* 높이 줄임 */
+    height: 18px !important;
 }
 
-/* 🔄 사이드바 file-type-badge 관련 스타일 제거됨 - 이제 헤더에서만 사용 */
-
-/* 파일 아이콘 스타일 - 크기 줄임 */
 .file-icon {
-    width: 14px !important; /* 크기 줄임 */
+    width: 14px !important;
     height: 14px !important;
     border-radius: 2px !important;
     display: flex !important;
@@ -372,115 +364,40 @@ body.dark-mode .file-item.active:hover {
     margin-right: 1px !important;
 }
 
-/* 모든 파일 아이템에 강제 적용 */
-.modern-sidebar .file-item,
-.sidebar .file-item,
-.modern-sidebar-content .file-item,
-.section-content .file-item {
-    display: flex !important;
-    align-items: center !important;
-    height: 32px !important;
-    min-height: 32px !important;
-}
+.file-icon.python-icon { background-color: #3b82f6; }
+.file-icon.c-icon { background-color: #6b7280; }
+.file-icon.cpp-icon { background-color: #f34b7d; }
+.file-icon.java-icon { background-color: #B07219; }
+.file-icon.js-icon { background-color: #f1e05a; color: #333; }
+.file-icon.json-icon { background-color: #eab308; }
+.file-icon.default-icon { background-color: var(--text-light); font-size: 8px; }
 
-.modern-sidebar .file-icon,
-.sidebar .file-icon,
-.modern-sidebar-content .file-icon,
-.section-content .file-icon {
-    width: 16px !important;
-    height: 16px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-}
-
-.modern-sidebar .file-name,
-.sidebar .file-name,
-.modern-sidebar-content .file-name,
-.section-content .file-name {
-    display: flex !important;
-    align-items: center !important;
-    height: 20px !important;
-    line-height: 1.4 !important;
-}
-
-.file-icon.python-icon {
-    background-color: #3b82f6;
-}
-
-.file-icon.c-icon {
-    background-color: #6b7280;
-}
-
-.file-icon.cpp-icon {
-    background-color: #f34b7d;
-}
-
-.file-icon.java-icon {
-    background-color: #B07219;
-}
-
-.file-icon.js-icon {
-    background-color: #f1e05a;
-    color: #333;
-}
-
-.file-icon.json-icon {
-    background-color: #eab308;
-}
-
-.file-icon.default-icon {
-    background-color: var(--text-light);
-    font-size: 8px;
-}
-
-/* 예제 파일 특별 스타일 */
-.file-item.example-file {
-    opacity: 0.9;
-}
-
-.file-item.example-file:hover {
-    opacity: 1;
-}
-
-.file-item.json-file {
-    border-left: 2px solid #eab308; /* 테두리 줄임 */
-    padding-left: 6px; /* 패딩 줄임 */
-}
-
-body.dark-mode .file-item.json-file {
-    border-left-color: rgba(234, 179, 8, 0.6);
-}
-
-/* 사이드바 푸터 - 컴팩트하게 */
-.modern-sidebar-footer {
-    padding: 6px 10px; /* 패딩 줄임 */
-    border-top: 1px solid var(--border-light);
-    background-color: var(--element);
-    flex-shrink: 0;
-}
+.file-item.example-file { opacity: 0.9; }
+.file-item.example-file:hover { opacity: 1; }
+.file-item.json-file { border-left: 2px solid #eab308; padding-left: 6px; }
+body.dark-mode .file-item.json-file { border-left-color: rgba(234, 179, 8, 0.6); }
 
 .sidebar-stats {
-    font-size: 10px !important; /* 크기 줄임 */
+    font-size: 10px !important;
     color: var(--text-light);
     display: flex;
     flex-direction: column;
-    gap: 2px; /* 간격 줄임 */
+    gap: 2px;
 }
 
 .stat-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 10px !important; /* 크기 줄임 */
-    height: 16px; /* 높이 줄임 */
+    font-size: 10px !important;
+    height: 16px;
     min-height: 16px;
 }
 
 .active-file-name {
     color: #2563eb;
     font-weight: 500 !important;
-    font-size: 10px !important; /* 크기 줄임 */
+    font-size: 10px !important;
     max-width: 120px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -488,16 +405,12 @@ body.dark-mode .file-item.json-file {
     line-height: 1.3;
 }
 
-body.dark-mode .active-file-name {
-    color: #60a5fa;
-}
-
 .auth-section {
     display: flex;
     flex-direction: column;
     height: 100%;
     padding: 0;
-    color: var(--text); /* ✅ 라이트/다크 모드 대응 */
+    color: var(--text);
     font-size:13px;
 }
 
@@ -601,141 +514,19 @@ body.dark-mode .auth-button.signup-button:hover {
     background-color: rgba(126, 87, 194, 0.25);
 }
 
-.button-icon {
-    font-size: 16px;
-}
+.modern-sidebar-content::-webkit-scrollbar { width: 6px; }
+.modern-sidebar-content::-webkit-scrollbar-track { background: var(--element); }
+.modern-sidebar-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.modern-sidebar-content::-webkit-scrollbar-thumb:hover { background: var(--text-light); }
+body.dark-mode .modern-sidebar-content::-webkit-scrollbar-track { background: var(--element); }
+body.dark-mode .modern-sidebar-content::-webkit-scrollbar-thumb { background: var(--border); }
+body.dark-mode .modern-sidebar-content::-webkit-scrollbar-thumb:hover { background: var(--text-light); }
 
-/* 스크롤바 스타일 */
-.modern-sidebar-content::-webkit-scrollbar {
-    width: 6px;
-}
-
-.modern-sidebar-content::-webkit-scrollbar-track {
-    background: var(--element);
-}
-
-.modern-sidebar-content::-webkit-scrollbar-thumb {
-    background: var(--border);
-    border-radius: 3px;
-}
-
-.modern-sidebar-content::-webkit-scrollbar-thumb:hover {
-    background: var(--text-light);
-}
-
-/* 다크 모드 스크롤바 */
-body.dark-mode .modern-sidebar-content::-webkit-scrollbar-track {
-    background: var(--element);
-}
-
-body.dark-mode .modern-sidebar-content::-webkit-scrollbar-thumb {
-    background: var(--border);
-}
-
-body.dark-mode .modern-sidebar-content::-webkit-scrollbar-thumb:hover {
-    background: var(--text-light);
-}
-
-/* 기존 사이드바와의 호환성 */
-.sidebar .modern-sidebar {
-    height: 100%;
-    width: 100%;
-}
-
-.sidebar.collapsed .modern-sidebar {
-    display: none;
-}
 
 /* ============================================
-   기존 메인 콘텐츠 스타일 유지 (사이드바 제외) - 🔄 수정된 부분
+   메인 헤더 및 컨트롤
    ============================================ */
 
-/* 🔧 스크롤바 문제 해결: 메인 콘텐츠 너비 제한 - 애니메이션 개선 */
-.main-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    transition: none; /* 🔧 transition 제거로 덜컥거림 방지 */
-    position: relative;
-    background-color: var(--bg);
-    height: 100vh;
-    min-width: 0; /* 플렉스 축소 허용 */
-    padding-top: 76px;
-    overflow-x: hidden; /* 🔧 가로 스크롤바 방지 */
-}
-
-.sidebar.collapsed + .main-content {
-    margin-left: 0;
-}
-
-/* 🔧 스크롤바 문제 해결: IDE 컨테이너 너비 제한 */
-.ide-container {
-    display: flex;
-    height: 100vh;
-    padding-top: 0;
-    padding-bottom: 0;
-    background-color: var(--bg);
-    color: var(--text);
-    position: relative;
-    width: 100vw; /* 🔧 명시적으로 뷰포트 너비 설정 */
-    max-width: 100vw; /* 🔧 최대 너비 제한 */
-    overflow-x: hidden; /* 🔧 가로 스크롤바 방지 */
-}
-
-/* 햄버거 메뉴 버튼 */
-.sidebar-toggle-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 12px;
-    border-radius: 12px;
-    transition: all 0.3s ease;
-    width: 44px;
-    height: 44px;
-    position: relative;
-    flex-shrink: 0;
-}
-
-.sidebar-toggle-button:hover {
-    background-color: rgba(106, 71, 184, 0.1);
-    transform: scale(1.05);
-}
-
-.sidebar-toggle-button:hover .hamburger-icon span {
-    background-color: var(--primary);
-    transform: scaleX(1.1);
-}
-
-body.dark-mode .sidebar-toggle-button:hover {
-    background-color: rgba(126, 87, 194, 0.15);
-}
-
-.hamburger-icon {
-    width: 22px;
-    height: 18px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.hamburger-icon span {
-    display: block;
-    height: 2px;
-    width: 100%;
-    background-color: var(--text);
-    border-radius: 2px;
-    transition: all 0.1s cubic-bezier(0.25, 0.8, 0.25, 1);
-    transform-origin: center;
-    flex-shrink: 0;
-    box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.1);
-}
-
-/* 메인 헤더 */
 .main-header {
     display: flex;
     align-items: center;
@@ -760,7 +551,58 @@ body.dark-mode .sidebar-toggle-button:hover {
     gap: 12px;
 }
 
-/* 언어 선택 드롭다운 */
+.sidebar-toggle-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    width: 44px;
+    height: 44px;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.sidebar-toggle-button:hover {
+    background-color: rgba(106, 71, 184, 0.1);
+    transform: scale(1.05);
+}
+
+body.dark-mode .sidebar-toggle-button:hover {
+    background-color: rgba(126, 87, 194, 0.15);
+}
+
+.sidebar-toggle-button:hover .hamburger-icon span {
+    background-color: var(--primary);
+    transform: scaleX(1.1);
+}
+
+.hamburger-icon {
+    width: 22px;
+    height: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.hamburger-icon span {
+    display: block;
+    height: 2px;
+    width: 100%;
+    background-color: var(--text);
+    border-radius: 2px;
+    transition: all 0.1s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transform-origin: center;
+    flex-shrink: 0;
+    box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.1);
+}
+
 .language-selector {
     position: relative;
     display: inline-block;
@@ -833,7 +675,6 @@ body.dark-mode .language-item:hover {
     background-color: rgba(255, 255, 255, 0.05);
 }
 
-/* 파일 타입 인디케이터 - 헤더 전용 */
 .file-type-indicator {
     margin-left: 12px;
 }
@@ -842,16 +683,16 @@ body.dark-mode .language-item:hover {
     display: inline-flex !important;
     align-items: center !important;
     gap: 6px !important;
-    padding: 6px 12px !important; /* 🔄 적당한 크기로 조정 */
+    padding: 6px 12px !important;
     border-radius: 16px !important;
-    font-size: 13px !important; /* 🔄 적당한 크기로 조정 */
+    font-size: 13px !important;
     font-weight: 600 !important;
     border: 1px solid !important;
     letter-spacing: 0.3px !important;
     text-transform: none !important;
     transition: all 0.2s ease !important;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
-    min-height: 32px !important; /* 🔄 적당한 높이로 조정 */
+    min-height: 32px !important;
     white-space: nowrap !important;
 }
 
@@ -884,7 +725,6 @@ body.dark-mode .file-type-indicator .file-type-badge.json-type {
     border-color: rgba(234, 179, 8, 0.4) !important;
 }
 
-/* 파일명 입력 및 저장 버튼 */
 .filename-input {
     border: 1px solid var(--border);
     border-radius: var(--radius);
@@ -944,59 +784,47 @@ body.dark-mode .save-button:hover {
     letter-spacing: 0.3px;
 }
 
-.login-status.logged-in {
-    color: var(--success);
-}
+.login-status.logged-in { color: var(--success); }
+.login-status.guest { color: var(--warning); }
 
-.login-status.guest {
-    color: var(--warning);
-}
 
-/* 콘텐츠 레이아웃 - 🔧 스크롤바 문제 해결 */
-.content-layout {
-    display: flex;
-    height: calc(100vh - var(--header-height) - 10px);
-    position: relative;
-    max-width: 100%; /* 🔧 최대 너비 제한 */
-    overflow-x: hidden; /* 🔧 가로 스크롤바 방지 */
-}
+/* ============================================
+   에디터 및 오른쪽 패널
+   ============================================ */
 
-/* 🔧 스크롤바 문제 해결: 에디터 섹션 너비 제한 */
 .editor-section {
     flex: 1;
-    min-width: 0; /* 🔧 플렉스 축소 허용 */
+    min-width: 0;
     height: 100%;
     position: relative;
     background-color: var(--bg);
-    overflow: hidden; /* 🔧 오버플로우 방지 */
+    overflow: hidden;
 }
 
 .monaco-editor-wrapper {
     height: 100%;
-    width: 100%; /* 명시적으로 100% 너비 설정 */
+    width: 100%;
     position: relative;
-    overflow: hidden; /* 오버플로우 방지 */
+    overflow: hidden;
 }
 
-/* 🔧 스크롤바 문제 해결: 오른쪽 패널 크기 확장 */
 .right-panel {
-    width: 400px; /* 🔄 300px → 400px로 확장 */
-    min-width: 400px; /* 🔄 300px → 400px로 확장 */
-    max-width: 400px; /* 🔄 300px → 400px로 확장 */
+    width: 400px;
+    min-width: 400px;
+    max-width: 400px;
     display: flex;
     flex-direction: column;
     border-left: 1px solid var(--border);
     background-color: var(--bg);
     box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
     flex-shrink: 0;
-    overflow: hidden; /* 🔧 오버플로우 방지 */
+    overflow: hidden;
 }
 
 body.dark-mode .right-panel {
     box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
 }
 
-/* 액션 버튼들 */
 .action-buttons {
     display: flex;
     padding: 12px;
@@ -1022,60 +850,22 @@ body.dark-mode .right-panel {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-.run-code-button {
-    background-color: var(--primary);
-}
+.run-code-button { background-color: var(--primary); }
+.run-code-button:hover { background-color: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25); }
+.run-code-button:disabled { background-color: #9ca3af; cursor: not-allowed; opacity: 0.6; }
+.run-code-button:disabled:hover { background-color: #9ca3af; transform: none; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); }
 
-.run-code-button:hover {
-    background-color: var(--primary-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
-}
-
-.run-code-button:disabled {
-    background-color: #9ca3af;
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
-.run-code-button:disabled:hover {
-    background-color: #9ca3af;
-    transform: none;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-.visualization-button {
-    background-color: #666;
-}
-
-body.dark-mode .visualization-button {
-    background-color: #444444;
-}
-
-.visualization-button:hover, .visualization-button.active {
-    background-color: #777;
-    transform: translateY(-1px);
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
-}
-
-body.dark-mode .visualization-button:hover,
-body.dark-mode .visualization-button.active {
-    background-color: #555555;
-}
-
-.visualization-button.json-mode {
-    background-color: #3b82f6;
-}
-
-.visualization-button.json-mode:hover {
-    background-color: #2563eb;
-}
+.visualization-button { background-color: #666; }
+body.dark-mode .visualization-button { background-color: #444444; }
+.visualization-button:hover, .visualization-button.active { background-color: #777; transform: translateY(-1px); box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25); }
+body.dark-mode .visualization-button:hover, body.dark-mode .visualization-button.active { background-color: #555555; }
+.visualization-button.json-mode { background-color: #3b82f6; }
+.visualization-button.json-mode:hover { background-color: #2563eb; }
 
 .button-icon {
     font-size: 14px;
 }
 
-/* 입력 및 출력 영역 */
 .input-section, .output-section {
     display: flex;
     flex-direction: column;
@@ -1093,7 +883,7 @@ body.dark-mode .visualization-button.active {
     flex: 0.6;
 }
 
-.section-header {
+.input-section .section-header, .output-section .section-header {
     padding: 12px 16px;
     font-size: 14px;
     font-weight: 600;
@@ -1103,9 +893,10 @@ body.dark-mode .visualization-button.active {
     display: flex;
     align-items: center;
     gap: 8px;
+    height: auto;
 }
 
-.section-header::before {
+.input-section .section-header::before, .output-section .section-header::before {
     content: "";
     display: block;
     width: 4px;
@@ -1162,609 +953,126 @@ body.dark-mode .program-output.json-info {
     background-color: rgba(59, 130, 246, 0.1);
 }
 
-/* 토스트 메시지 */
-#toast-container {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 9999;
-}
-
-.toast {
-    padding: 12px 16px;
-    margin-top: 8px;
-    background-color: var(--element);
-    border-radius: var(--radius);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    font-size: 14px;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.3s, transform 0.3s;
-    color: var(--text);
-}
-
-.toast.show {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.toast-success {
-    border-left: 4px solid var(--success);
-}
-
-.toast-error {
-    border-left: 4px solid #f44336;
-}
-
-.toast-warning {
-    border-left: 4px solid var(--warning);
-}
-
-.toast-info {
-    border-left: 4px solid #3b82f6;
-    background-color: rgba(59, 130, 246, 0.1);
-}
-
-.toast-json {
-    border-left: 4px solid #f59e0b;
-    background-color: rgba(245, 158, 11, 0.1);
-}
-
-/* 언어별 색상 스타일 */
-.lang-python .language-button,
-.language-button.lang-python {
-    background-color: #3572A5;
-}
-
-.lang-python .language-button:hover,
-.language-button.lang-python:hover {
-    background-color: #2d5a85;
-}
-
-.lang-java .language-button,
-.language-button.lang-java {
-    background-color: #B07219;
-}
-
-.lang-java .language-button:hover,
-.language-button.lang-java:hover {
-    background-color: #8f5c14;
-}
-
-.lang-cpp .language-button,
-.language-button.lang-cpp {
-    background-color: #f34b7d;
-}
-
-.lang-cpp .language-button:hover,
-.language-button.lang-cpp:hover {
-    background-color: #d93a6a;
-}
-
-.lang-c .language-button,
-.language-button.lang-c {
-    background-color: #555555;
-}
-
-.lang-c .language-button:hover,
-.language-button.lang-c:hover {
-    background-color: #444444;
-}
-
-.lang-javascript .language-button,
-.language-button.lang-javascript {
-    background-color: #f1e05a;
-    color: #333;
-}
-
-.lang-javascript .language-button:hover,
-.language-button.lang-javascript:hover {
-    background-color: #e6d147;
-    color: #333;
-}
-
-/* 언어별 테두리 색상 */
-.lang-border-python {
-    border-left: 3px solid #3572A5;
-}
-
-.lang-border-java {
-    border-left: 3px solid #B07219;
-}
-
-.lang-border-cpp {
-    border-left: 3px solid #f34b7d;
-}
-
-.lang-border-c {
-    border-left: 3px solid #555555;
-}
-
-.lang-border-javascript {
-    border-left: 3px solid #f1e05a;
-}
 
 /* ============================================
-   🆕 ModernSidebar 애니메이션 및 추가 스타일
+   기타 컴포넌트 및 유틸리티
    ============================================ */
 
-/* 애니메이션 효과 */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
+#toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
+.toast { padding: 12px 16px; margin-top: 8px; background-color: var(--element); border-radius: var(--radius); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); font-size: 14px; opacity: 0; transform: translateY(20px); transition: opacity 0.3s, transform 0.3s; color: var(--text); }
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast-success { border-left: 4px solid var(--success); }
+.toast-error { border-left: 4px solid #f44336; }
+.toast-warning { border-left: 4px solid var(--warning); }
+.toast-info { border-left: 4px solid #3b82f6; background-color: rgba(59, 130, 246, 0.1); }
+.toast-json { border-left: 4px solid #f59e0b; background-color: rgba(245, 158, 11, 0.1); }
 
-.section-content {
-    animation: fadeInUp 0.3s ease-out;
-}
+.lang-python .language-button, .language-button.lang-python { background-color: #3572A5; }
+.lang-python .language-button:hover, .language-button.lang-python:hover { background-color: #2d5a85; }
+.lang-java .language-button, .language-button.lang-java { background-color: #B07219; }
+.lang-java .language-button:hover, .language-button.lang-java:hover { background-color: #8f5c14; }
+.lang-cpp .language-button, .language-button.lang-cpp { background-color: #f34b7d; }
+.lang-cpp .language-button:hover, .language-button.lang-cpp:hover { background-color: #d93a6a; }
+.lang-c .language-button, .language-button.lang-c { background-color: #555555; }
+.lang-c .language-button:hover, .language-button.lang-c:hover { background-color: #444444; }
+.lang-javascript .language-button, .language-button.lang-javascript { background-color: #f1e05a; color: #333; }
+.lang-javascript .language-button:hover, .language-button.lang-javascript:hover { background-color: #e6d147; color: #333; }
 
-.file-item {
-    animation: fadeInUp 0.2s ease-out;
-}
+.guest-controls { display: flex; align-items: center; }
+.guest-mode-text { font-size: 13px; color: var(--text-light); font-style: italic; }
 
-.file-item:nth-child(1) { animation-delay: 0.05s; }
-.file-item:nth-child(2) { animation-delay: 0.1s; }
-.file-item:nth-child(3) { animation-delay: 0.15s; }
-.file-item:nth-child(4) { animation-delay: 0.2s; }
-.file-item:nth-child(5) { animation-delay: 0.25s; }
+.context-menu { position: absolute; background-color: var(--element); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); z-index: 1000; min-width: 150px; padding: 4px 0; }
+.context-menu-item { padding: 8px 12px; cursor: pointer; font-size: 14px; color: var(--text); border: none; background: none; width: 100%; text-align: left; display: flex; align-items: center; gap: 8px; }
+.context-menu-item:hover { background-color: var(--element-light); }
+body.dark-mode .context-menu-item:hover { background-color: rgba(255, 255, 255, 0.05); }
+.context-menu-separator { height: 1px; background-color: var(--border); margin: 4px 0; }
 
-/* 호버 효과 */
-.file-item:hover .file-icon {
-    transform: scale(1.1);
-}
-
-.section-header:hover .chevron-icon {
-    transform: scale(1.1);
-}
-
-/* 포커스 접근성 */
-.section-header:focus,
-.file-item:focus,
-.new-file-button:focus,
-.auth-button:focus {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
-}
-
-/* 로딩 상태 */
-.file-item.loading {
-    opacity: 0.6;
-    pointer-events: none;
-    position: relative;
-}
-
-.file-item.loading::after {
-    content: "";
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 12px;
-    height: 12px;
-    border: 2px solid var(--border);
-    border-top: 2px solid var(--primary);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: translateY(-50%) rotate(0deg); }
-    100% { transform: translateY(-50%) rotate(360deg); }
-}
-
-/* 특별한 상태 표시 */
-.file-item.modified {
-    position: relative;
-}
-
-.file-item.modified::before {
-    content: "●";
-    position: absolute;
-    left: -8px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--warning);
-    font-size: 12px;
-}
-
-.file-item.new {
-    background-color: rgba(67, 160, 71, 0.1);
-    border-left: 2px solid var(--success);
-}
-
-body.dark-mode .file-item.new {
-    background-color: rgba(67, 160, 71, 0.15);
-}
-
-/* 드래그 앤 드롭 효과 */
-.file-item.drag-over {
-    background-color: rgba(126, 87, 194, 0.1);
-    border: 2px dashed var(--primary);
-}
-
-.section-content.drag-over {
-    background-color: rgba(126, 87, 194, 0.05);
-    border-radius: var(--radius);
-}
-
-/* 컨텍스트 메뉴 스타일 */
-.context-menu {
-    position: absolute;
-    background-color: var(--element);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    z-index: 1000;
-    min-width: 150px;
-    padding: 4px 0;
-}
-
-.context-menu-item {
-    padding: 8px 12px;
-    cursor: pointer;
-    font-size: 14px;
-    color: var(--text);
-    border: none;
-    background: none;
-    width: 100%;
-    text-align: left;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.context-menu-item:hover {
-    background-color: var(--element-light);
-}
-
-body.dark-mode .context-menu-item:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-}
-
-.context-menu-separator {
-    height: 1px;
-    background-color: var(--border);
-    margin: 4px 0;
-}
-
-/* 빈 상태 표시 */
-.empty-state {
-    text-align: center;
-    padding: 20px;
-    color: var(--text-light);
-    font-size: 14px;
-}
-
-.empty-state-icon {
-    font-size: 24px;
-    margin-bottom: 8px;
-    opacity: 0.5;
-}
+.empty-state { text-align: center; padding: 20px; color: var(--text-light); font-size: 14px; }
+.empty-state-icon { font-size: 24px; margin-bottom: 8px; opacity: 0.5; }
 
 /* ============================================
-   🆕 반응형 스타일 - 🔧 스크롤바 문제 해결 포함
+   반응형 스타일
    ============================================ */
 
 @media (max-width: 992px) {
-    .content-layout {
-        flex-direction: column;
-    }
-
-    .right-panel {
-        width: 100%;
-        max-width: 100%; /* 🔧 반응형에서도 최대 너비 제한 */
-        height: 40%;
-        border-left: none;
-        border-top: 1px solid var(--border);
-    }
-
-    .editor-section {
-        height: 60%;
-    }
-
-    .sidebar {
-        width: 260px;
-    }
-
-    .main-content {
-        max-width: calc(100vw - 260px); /* 🔧 반응형 사이드바 너비에 맞춤 */
-    }
-
-    .sidebar.collapsed + .main-content {
-        max-width: 100vw; /* 🔧 사이드바 접힘 시 전체 너비 */
-    }
+    .content-layout { flex-direction: column; }
+    .right-panel { width: 100%; max-width: 100%; height: 40%; border-left: none; border-top: 1px solid var(--border); }
+    .editor-section { height: 60%; }
+    .sidebar { width: 260px; }
+    .main-content { max-width: calc(100vw - 260px); }
+    .sidebar.collapsed + .main-content { max-width: 100vw; }
 }
 
 @media (max-width: 768px) {
-    .header-right {
-        gap: 8px;
-    }
-
-    .filename-input {
-        width: 150px;
-    }
-
-    .sidebar {
-        width: 240px;
-    }
-
-    .main-content {
-        max-width: calc(100vw - 240px); /* 🔧 모바일 사이드바 너비에 맞춤 */
-    }
-
-    .sidebar.collapsed + .main-content {
-        max-width: 100vw; /* 🔧 사이드바 접힘 시 전체 너비 */
-    }
-
-    .sidebar-title {
-        font-size: 12px !important;
-    }
-
-    .section-header {
-        font-size: 11px !important;
-        height: 32px;
-        min-height: 32px;
-        padding: 6px 10px;
-    }
-
-    .section-title {
-        font-size: 11px !important;
-    }
-
-    .section-content {
-        margin-left: 24px;
-    }
-
-    .file-item {
-        height: 28px;
-        min-height: 28px;
-        padding: 4px 6px;
-    }
-
-    .file-icon {
-        width: 14px;
-        height: 14px;
-        font-size: 8px;
-    }
-
-    .file-type-badge {
-        font-size: 9px;
-        padding: 1px 4px;
-    }
-
-    .modern-sidebar-footer {
-        padding: 10px 12px;
-    }
-
-    .sidebar-stats {
-        font-size: 10px !important;
-    }
-
-    .stat-row {
-        font-size: 10px !important;
-    }
-
-    .active-file-name {
-        font-size: 10px !important;
-    }
+    .header-right { gap: 8px; }
+    .filename-input { width: 150px; }
+    .sidebar { width: 240px; }
+    .main-content { max-width: calc(100vw - 240px); }
+    .sidebar.collapsed + .main-content { max-width: 100vw; }
+    .sidebar-title { font-size: 12px !important; }
+    .section-header { font-size: 11px !important; height: 32px; min-height: 32px; padding: 6px 10px; }
+    .section-title { font-size: 11px !important; }
+    .section-content { margin-left: 24px; }
+    .file-item { height: 28px; min-height: 28px; padding: 4px 6px; }
+    .file-icon { width: 14px; height: 14px; font-size: 8px; }
+    .modern-sidebar-footer { padding: 10px 12px; }
+    .sidebar-stats, .stat-row, .active-file-name { font-size: 10px !important; }
 }
 
 @media (max-width: 576px) {
-    .main-header {
-        flex-direction: column;
-        align-items: flex-start;
-        height: auto;
-        padding: 12px;
-    }
-
-    .header-right {
-        width: 100%;
-        margin-top: 8px;
-        flex-wrap: wrap;
-    }
-
-    .filename-input {
-        width: 100%;
-    }
-
-    .sidebar {
-        width: 220px;
-    }
-
-    .main-content {
-        max-width: calc(100vw - 220px); /* 🔧 더 작은 화면 사이드바 너비에 맞춤 */
-    }
-
-    .sidebar.collapsed + .main-content {
-        max-width: 100vw; /* 🔧 사이드바 접힘 시 전체 너비 */
-    }
-
-    .modern-sidebar-header {
-        padding: 12px;
-    }
-
-    .sidebar-title {
-        font-size: 11px !important;
-    }
-
-    .new-file-button {
-        width: 28px;
-        height: 28px;
-    }
-
-    .section-header {
-        font-size: 10px !important;
-        height: 28px;
-        min-height: 28px;
-        padding: 4px 8px;
-    }
-
-    .section-title {
-        font-size: 10px !important;
-    }
-
-    .section-content {
-        margin-left: 20px;
-    }
-
-    .file-item {
-        height: 24px;
-        min-height: 24px;
-        padding: 2px 4px;
-    }
-
-    .file-icon {
-        width: 12px;
-        height: 12px;
-        font-size: 7px;
-    }
-
-    .file-type-badge {
-        font-size: 8px;
-        padding: 1px 3px;
-    }
-
-    .modern-sidebar-footer {
-        padding: 8px 10px;
-    }
-
-    .sidebar-stats {
-        font-size: 9px !important;
-    }
-
-    .stat-row {
-        font-size: 9px !important;
-    }
-
-    .active-file-name {
-        font-size: 9px !important;
-    }
-
-    .auth-content {
-        padding: 16px 12px;
-    }
-
-    .auth-message {
-        font-size: 12px !important;
-    }
-
-    .auth-button {
-        font-size: 12px !important;
-    }
-
-    .auth-title {
-        font-size: 12px !important;
-    }
+    .main-header { flex-direction: column; align-items: flex-start; height: auto; padding: 12px; }
+    .header-right { width: 100%; margin-top: 8px; flex-wrap: wrap; }
+    .filename-input { width: 100%; }
+    .sidebar { width: 220px; }
+    .main-content { max-width: calc(100vw - 220px); }
+    .sidebar.collapsed + .main-content { max-width: 100vw; }
+    .modern-sidebar-header { padding: 12px; }
+    .sidebar-title { font-size: 11px !important; }
+    .new-file-button { width: 28px; height: 28px; }
+    .section-header { font-size: 10px !important; height: 28px; min-height: 28px; padding: 4px 8px; }
+    .section-title { font-size: 10px !important; }
+    .section-content { margin-left: 20px; }
+    .file-item { height: 24px; min-height: 24px; padding: 2px 4px; }
+    .file-icon { width: 12px; height: 12px; font-size: 7px; }
+    .modern-sidebar-footer { padding: 8px 10px; }
+    .sidebar-stats, .stat-row, .active-file-name { font-size: 9px !important; }
+    .auth-content { padding: 16px 12px; }
+    .auth-message { font-size: 12px !important; }
+    .auth-button { font-size: 12px !important; }
+    .auth-title { font-size: 12px !important; }
 }
 
 /* ============================================
-   기존 스타일 유지 (게스트 모드, 기타)
+   🎨 사이드바 푸터 최종 수정
    ============================================ */
 
-.guest-controls {
-    display: flex;
-    align-items: center;
+.modern-sidebar-footer {
+    border-top: none;
+    padding: 10px 12px;
+    flex-shrink: 0;
+    background-color: var(--element);
 }
 
-.guest-mode-text {
-    font-size: 13px;
-    color: var(--text-light);
-    font-style: italic;
+body.dark-mode .modern-sidebar-footer {
+    background-color: var(--element);
 }
 
-.main-content.guest-mode {
-    /* 게스트 모드 특별 스타일 */
-}
-
-/* 추가 아이콘 버튼 스타일 */
-.icon-button {
-    background: none;
-    border: none;
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    border-radius: var(--radius);
-    transition: var(--transition);
+body.dark-mode .sidebar-stats {
     color: var(--text-light);
 }
 
-.icon-button:hover {
-    background-color: var(--element-light);
-    color: var(--text);
+body.dark-mode .active-file-name {
+    color: #60a5fa;
 }
 
-body.dark-mode .icon-button:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+/* --- 사이드바 제목 색상 강제 지정 (테마 충돌 해결) --- */
+
+/* 1. 기본 (라이트 모드) 상태에서 어두운 색으로 설정 */
+.sidebar-title {
+    color: #111827 !important;
 }
 
-.icon-button .icon-small {
-    width: 16px;
-    height: 16px;
-    font-size: 16px;
-    font-weight: normal;
-    color: inherit;
-    background: none;
-}
-
-/* 아이콘 공통 스타일 */
-.icon-small {
-    width: 16px;
-    height: 16px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-}
-
-/* 추가 유틸리티 클래스 */
-.text-truncate {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.visually-hidden {
-    position: absolute !important;
-    width: 1px !important;
-    height: 1px !important;
-    padding: 0 !important;
-    margin: -1px !important;
-    overflow: hidden !important;
-    clip: rect(0, 0, 0, 0) !important;
-    white-space: nowrap !important;
-    border: 0 !important;
-}
-
-/* 접근성 개선 */
-@media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
-}
-
-/* 고대비 모드 지원 */
-@media (prefers-contrast: high) {
-    :root {
-        --border: #000000;
-        --text: #000000;
-        --text-light: #333333;
-    }
-
-    body.dark-mode {
-        --border: #ffffff;
-        --text: #ffffff;
-        --text-light: #cccccc;
-    }
+/* 2. 다크 모드일 때만 밝은 색으로 덮어쓰기 */
+body.dark-mode .sidebar-title {
+    color: #e0e0e0 !important;
 }
