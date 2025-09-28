@@ -1,35 +1,32 @@
 import React from 'react';
 import './CodecastSidebar.css';
-import { FaCrown, FaPenFancy, FaCircle } from 'react-icons/fa';
+import { FaCrown, FaPenFancy, FaEye } from 'react-icons/fa';
 
-const getIcon = (role) => {
-    switch (role) {
-        case 'host':
-            return <FaCrown className="participant-icon gold" />;
-        case 'editing':
-            return <FaPenFancy className="participant-icon green" />;
-        default:
-            return <FaCircle className="participant-icon gray" />;
-    }
+const IconByRole = ({ role }) => {
+    if (role === 'host') return <FaCrown className="participant-icon host" />;
+    if (role === 'edit') return <FaPenFancy className="participant-icon edit" />;
+    return <FaEye className="participant-icon view" />;
 };
 
-const CodecastSidebar = ({ participants, currentUser }) => {
+export default function CodecastSidebar({ participants, currentUser }) {
     return (
-        <aside className="sidebar">
-            <h2 className="sidebar-title">참여자 ({participants.length})</h2>
+        <aside className="codecast-sidebar">
+            <h2 className="codecast-sidebar-title">
+                참여자 <span className="count">({participants.length})</span>
+            </h2>
             <ul className="participant-list">
-                {participants.map((p, idx) => (
+                {participants.map((p) => (
                     <li
-                        key={idx}
-                        className={`participant-item ${p.name === currentUser.name ? 'active-user' : ''}`}
+                        key={p.name}
+                        className={`participant-item ${
+                            p.name === currentUser.name ? 'active-user' : ''
+                        }`}
                     >
-                        {getIcon(p.role)}
-                        <span>{p.name}</span>
+                        <IconByRole role={p.role} />
+                        <span className="name">{p.name}</span>
                     </li>
                 ))}
             </ul>
         </aside>
     );
-};
-
-export default CodecastSidebar;
+}
