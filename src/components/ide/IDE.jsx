@@ -6,6 +6,7 @@ import Editor from '@monaco-editor/react';
 import VisualizationModal from './VisualizationModal';
 import './IDE.css';
 import config from '../../config';
+import { jsonExamples } from '../../generated-examples.js';
 
 // 🎨 Feather Icons CDN 로드
 if (!document.querySelector('script[src*="feather"]')) {
@@ -326,93 +327,7 @@ int main() {
 }`
         },
         // JSON 예제 파일들
-        {
-            name: "bubble_sort.json",
-            type: "json",
-            code: `{
-  "algorithm": "bubble_sort",
-  "steps": [
-    {
-      "step": 1,
-      "description": "배열 초기화",
-      "array": [64, 34, 25, 12, 22, 11, 90],
-      "comparison": null,
-      "swap": null
-    },
-    {
-      "step": 2,
-      "description": "첫 번째 패스 시작",
-      "array": [64, 34, 25, 12, 22, 11, 90],
-      "comparison": [0, 1],
-      "swap": [0, 1]
-    },
-    {
-      "step": 3,
-      "description": "64와 34 비교 후 교환",
-      "array": [34, 64, 25, 12, 22, 11, 90],
-      "comparison": [1, 2],
-      "swap": [1, 2]
-    },
-    {
-      "step": 4,
-      "description": "64와 25 비교 후 교환",
-      "array": [34, 25, 64, 12, 22, 11, 90],
-      "comparison": [2, 3],
-      "swap": [2, 3]
-    },
-    {
-      "step": 5,
-      "description": "최종 정렬된 배열",
-      "array": [11, 12, 22, 25, 34, 64, 90],
-      "comparison": null,
-      "swap": null
-    }
-  ],
-  "complexity": {
-    "time": "O(n²)",
-    "space": "O(1)"
-  }
-}`
-        },
-        {
-            name: "binary_tree.json",
-            type: "json",
-            code: `{
-  "tree": {
-    "root": {
-      "value": 1,
-      "left": {
-        "value": 2,
-        "left": {
-          "value": 4,
-          "left": null,
-          "right": null
-        },
-        "right": {
-          "value": 5,
-          "left": null,
-          "right": null
-        }
-      },
-      "right": {
-        "value": 3,
-        "left": null,
-        "right": null
-      }
-    }
-  },
-  "traversals": {
-    "inorder": [4, 2, 5, 1, 3],
-    "preorder": [1, 2, 4, 5, 3],
-    "postorder": [4, 5, 2, 3, 1]
-  },
-  "properties": {
-    "height": 3,
-    "nodes": 5,
-    "leaves": 3
-  }
-}`
-        }
+        ...jsonExamples
     ]);
 
     // 🆕 사이드바 섹션 상태 관리
