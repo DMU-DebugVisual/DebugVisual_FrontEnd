@@ -2,7 +2,7 @@ import { HashRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 import Header from "./components/header/Header";
-import Footer from "./components/footer/Footer";
+import Footer from "./components/footer/Footer"; // Footer 컴포넌트 임포트 유지
 import Main from "./components/mainpage/Main";
 import Login from "./components/login/Login";
 import SignUp from "./components/signup/SignUp";
@@ -18,8 +18,7 @@ import MyProject from "./components/mypage/MyProject";
 import MyCommunity from "./components/mypage/MyCommunity";
 import ScrollToTop from "./components/common/ScrollToTop";
 import CommunityWrite from "./components/community/CommunityWrite";
-import VisualizationModal from "./components/ide/VisualizationModal";
-import PostDetail from "./components/community/PostDetail"; // ✅ 게시글 상세 컴포넌트
+import PostDetail from "./components/community/PostDetail";
 import CodecastLive from "./components/codecast/codecastlive/CodecastLive";
 
 function AppContent() {
@@ -30,7 +29,8 @@ function AppContent() {
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
     const isSignupPage = location.pathname === "/signup";
-    const isIdePage = location.pathname.startsWith("/ide"); // ✅ IDE 페이지 판별
+    const isIdePage = location.pathname.startsWith("/ide");
+    const isMainPage = location.pathname === "/"; // 👈 추가: 메인 페이지 플래그
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -76,7 +76,7 @@ function AppContent() {
                 <Route path="/ide/:language/:filename" element={<IDE />} />
                 <Route path="/community" element={<Community />} />
                 <Route path="/community/write" element={<CommunityWrite />} />
-                <Route path="/community/post/:id" element={<PostDetail />} /> {/* ✅ 상세 페이지 */}
+                <Route path="/community/post/:id" element={<PostDetail />} />
                 <Route path="/broadcast" element={<Codecast />} />
                 <Route path="/startbroadcast" element={<StartCodecast />} />
                 <Route path="/broadcast/live" element={<CodecastLive />} />
@@ -89,8 +89,8 @@ function AppContent() {
                 </Route>
             </Routes>
 
-            {/* ✅ 푸터는 회원가입/IDE 페이지에서는 숨김 */}
-            {(!isSignupPage && !isIdePage) && <Footer />}
+            {/* 👈 푸터는 메인 페이지, 회원가입, IDE 페이지에서는 숨깁니다. */}
+            {(!isSignupPage && !isIdePage && !isMainPage) && <Footer />}
 
             {isLoginModalOpen && (
                 <Login
