@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Community.css";
-
-const API_BASE = "http://52.79.145.160:8080";
+import config from "../../config";
 
 export default function Community() {
     const navigate = useNavigate();
@@ -33,7 +32,7 @@ export default function Community() {
                     headers.Authorization = `Bearer ${token}`;
                 }
 
-                const res = await fetch(`${API_BASE}/api/posts`, {
+                const res = await fetch(`${config.API_BASE_URL}/api/posts`, {
                     method: "GET",
                     headers,
                     signal: controller.signal,

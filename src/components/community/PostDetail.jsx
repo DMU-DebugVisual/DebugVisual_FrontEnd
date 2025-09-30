@@ -2,8 +2,7 @@
 import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./PostDetail.css";
-
-const API_BASE = "http://52.79.145.160:8080";
+import config from "../../config";
 
 export default function PostDetail() {
     const { id } = useParams(); // /community/post/:id
@@ -62,7 +61,7 @@ export default function PostDetail() {
     const refreshLikeCount = async () => {
         try {
             const bust = Date.now();
-            const res = await fetch(`${API_BASE}/api/posts/${id}/like?t=${bust}`, {
+            const res = await fetch(`${config.API_BASE_URL}/api/posts/${id}/like?t=${bust}`, {
                 method: "GET",
                 headers: { Accept: "*/*", "Cache-Control": "no-cache", Pragma: "no-cache" },
                 cache: "no-store",
@@ -97,7 +96,7 @@ export default function PostDetail() {
                 }
 
                 // ✅ 게시글 상세
-                const res = await fetch(`${API_BASE}/api/posts/${id}`, {
+                const res = await fetch(`${config.API_BASE_URL}/api/posts/${id}`, {
                     method: "GET",
                     headers: { Accept: "application/json", Authorization: authHeader },
                     signal: controller.signal,
@@ -152,7 +151,7 @@ export default function PostDetail() {
                 setLoadingComments(true);
 
                 // ✅ 댓글 목록 (배열/페이지객체 모두 대응)
-                const res = await fetch(`${API_BASE}/api/comments/${id}`, {
+                const res = await fetch(`${config.API_BASE_URL}/api/comments/${id}`, {
                     method: "GET",
                     headers: { Accept: "application/json", Authorization: authHeader },
                     signal: controller.signal,
@@ -211,7 +210,7 @@ export default function PostDetail() {
             setLikeCount((c) => Math.max(0, c + (willLike ? 1 : -1)));
 
             // 2) 서버 토글 호출
-            const res = await fetch(`${API_BASE}/api/posts/${id}/like`, {
+            const res = await fetch(`${config.API_BASE_URL}/api/posts/${id}/like`, {
                 method: "POST",
                 headers: {
                     Accept: "application/json",
@@ -255,7 +254,7 @@ export default function PostDetail() {
 
         try {
             setPosting(true);
-            const res = await fetch(`${API_BASE}/api/comments`, {
+            const res = await fetch(`${config.API_BASE_URL}/api/comments`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -277,7 +276,7 @@ export default function PostDetail() {
 
             // 🔄 작성 후 최신 목록/개수 재조회
             const bust = Date.now();
-            const refresh = await fetch(`${API_BASE}/api/comments/${id}?t=${bust}`, {
+            const refresh = await fetch(`${config.API_BASE_URL}/api/comments/${id}?t=${bust}`, {
                 headers: { Accept: "application/json", Authorization: authHeader, "Cache-Control": "no-cache", Pragma: "no-cache" },
                 cache: "no-store",
             });
