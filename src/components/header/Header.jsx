@@ -3,6 +3,7 @@ import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import { FaMoon, FaSun, FaUserCircle, FaBell } from "react-icons/fa";
 import "./Header.css";
 import logoImage from '../../assets/logo3.png';
+import config from '../../config';
 
 const Header = ({ isDark, setIsDark, isLoggedIn, nickname, onLoginModalOpen }) => {
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -23,7 +24,7 @@ const Header = ({ isDark, setIsDark, isLoggedIn, nickname, onLoginModalOpen }) =
             const token = localStorage.getItem('token');
             if (!token) return;
 
-            const response = await fetch('http://52.79.145.160:8080/api/notifications', {
+            const response = await fetch(`${config.API_BASE_URL}/api/notifications`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -78,7 +79,7 @@ const Header = ({ isDark, setIsDark, isLoggedIn, nickname, onLoginModalOpen }) =
     const handleNotificationRead = async (id) => {
         try {
             const token = localStorage.getItem('token');
-            await fetch(`http://52.79.145.160:8080/api/notifications/${id}/read`, {
+            await fetch(`${config.API_BASE_URL}/api/notifications/${id}/read`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`

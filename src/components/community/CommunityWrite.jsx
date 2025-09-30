@@ -5,8 +5,7 @@ import {
     FaImage, FaHeading, FaListUl, FaListOl, FaMinus
 } from "react-icons/fa";
 import "./CommunityWrite.css";
-
-const API_BASE = "http://52.79.145.160:8080";
+import config from "../../config";
 
 // ✅ 백엔드 ENUM과 일치하는 허용 태그
 const ALLOWED_TAGS = [
@@ -102,7 +101,7 @@ export default function CommunityWrite() {
 
         try {
             setSubmitting(true);
-            const res = await fetch(`${API_BASE}/api/posts`, {
+            const res = await fetch(`${config.API_BASE_URL}/api/posts`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
