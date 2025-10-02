@@ -55,7 +55,12 @@ const CodecastLive = ({ isDark }) => {
     const wrapperRef = useRef(null);         // ✅ 전체화면 타깃
     const [isFullscreen, setIsFullscreen] = useState(false); // ✅ 전체화면 상태
 
-    const room = useMemo(() => ({ id: 'sess-001', title: '정렬 알고리즘 라이브 코딩' }), []);
+    /*const room = useMemo(() => ({ id: 'sess-001', title: '정렬 알고리즘 라이브 코딩' }), []);*/
+    // 🔸 방 정보는 수정 가능해야 하므로 useState로
+    const [room, setRoom] = useState({
+        id: 'sess-001',
+        title: '정렬 알고리즘 라이브 코딩',
+    });
 
     // 🔸 단계: 공유 전("empty") ↔ 편집 중("editing")
     const [stage, setStage] = useState('empty');
@@ -147,13 +152,32 @@ const CodecastLive = ({ isDark }) => {
         <div ref={wrapperRef} className="broadcast-wrapper">
             <Header
                 roomTitle={room.title}
+                onTitleChange={(newTitle) => setRoom((prev) => ({ ...prev, title: newTitle }))}
                 onLeave={handleLeave}
                 isFocusMode={isFullscreen}        // 버튼 상태 표시
                 onToggleFocus={toggleFullscreen}  // 전체화면 토글
             />
 
             <div className="main-section">
-                <Sidebar participants={participants} currentUser={currentUser}/>
+                {/*<Sidebar participants={participants} currentUser={currentUser}/>*/}
+                <Sidebar
+                    participants={participants}
+                    currentUser={currentUser}
+                    onChangeRole={(name, nextRole) => {
+                        setParticipants(prev =>
+                            prev.map(p => (p.name === name ? { ...p, role: nextRole } : p))
+                        );
+                    }}
+                    onKick={(name) => {
+                        // 프리뷰/현재 사용자 등 동기화
+                        setParticipants(prev => prev.filter(p => p.name !== name));
+                        if (currentUser.name === name) {
+                            // 방출된 유저가 현재 선택 상황이면 첫 사용자로 스위칭
+                            const next = participants.find(p => p.name !== name);
+                            if (next) setCurrentUser(next);
+                        }
+                    }}
+                />
 
                 <div className="editor-area">
                     {stage === 'empty' && (
@@ -174,7 +198,7 @@ const CodecastLive = ({ isDark }) => {
                 </div>
             </div>
 
-            {/* ✅ 하단 프리뷰 리스트 재추가 */}
+            {/* ✅ 하단 프리뷰 리스트 */}
             <CodePreviewList
                 participants={participants}
                 activeName={currentUser.name}

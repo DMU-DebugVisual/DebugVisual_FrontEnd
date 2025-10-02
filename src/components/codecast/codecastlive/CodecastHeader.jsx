@@ -1,28 +1,52 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { FaPen } from 'react-icons/fa';
 import './CodecastHeader.css';
 
-/**
- * Props
- * - roomTitle: string
- * - onLeave: () => void
- * - isFocusMode?: boolean          // 포커스 모드 여부
- * - onToggleFocus?: () => void     // 포커스 모드 토글
- */
 export default function CodecastHeader({
                                            roomTitle,
                                            onLeave,
                                            isFocusMode = false,
                                            onToggleFocus,
+                                           onTitleChange, // ✅ 제목 변경 핸들러 (부모에서 받음)
                                        }) {
+    const [isEditing, setIsEditing] = useState(false);
+    const [tempTitle, setTempTitle] = useState(roomTitle);
+
+    const handleSave = () => {
+        setIsEditing(false);
+        if (tempTitle.trim() && tempTitle !== roomTitle) {
+            onTitleChange?.(tempTitle);
+        }
+    };
+
     return (
         <header className="broadcastlive-header">
             <div className="header-left">
-                <h1 className="broadcast-title">{roomTitle}</h1>
-                {/* 파일명/언어/공유시작 제거 */}
+                {isEditing ? (
+                    <input
+                        type="text"
+                        value={tempTitle}
+                        onChange={(e) => setTempTitle(e.target.value)}
+                        onBlur={handleSave}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+                        autoFocus
+                        className="title-input"
+                    />
+                ) : (
+                    <>
+                        <h1 className="broadcast-title">{roomTitle}</h1>
+                        <button
+                            className="edit-title-btn"
+                            onClick={() => setIsEditing(true)}
+                            aria-label="제목 수정"
+                        >
+                            <FaPen />
+                        </button>
+                    </>
+                )}
             </div>
 
             <div className="header-right">
-                {/* 포커스 모드 버튼 */}
                 {onToggleFocus && (
                     <button
                         className={`focus-button ${isFocusMode ? 'active' : ''}`}
