@@ -46,9 +46,9 @@ function mergeSort(arr) {
 ];
 
 const initialParticipants = [
-    { name: '김코딩', role: 'host', code: '' },
-    { name: '이알고', role: 'edit', code: '' },
-    { name: '박개발', role: 'view', code: '' },
+    { name: '김코딩', role: 'host', code: '', file: null, stage: 'empty' },
+    { name: '이알고', role: 'edit', code: '', file: null, stage: 'empty' },
+    { name: '박개발', role: 'view', code: '', file: null, stage: 'empty' },
 ];
 
 const CodecastLive = ({ isDark }) => {
@@ -88,24 +88,25 @@ const CodecastLive = ({ isDark }) => {
     const handleStartShare = () => setShowPicker(true);
 
     const handlePickFile = (picked) => {
-        setFile(picked);
-        setShowPicker(false);
-        setStage('editing');
-
-        // 현재 사용자 코드에 파일 내용 복사 (프리뷰/사이드바 반영)
-        setParticipants((prev) =>
-            prev.map((p) => (p.name === currentUser.name ? { ...p, code: picked.content } : p))
+        setParticipants(prev =>
+            prev.map(p =>
+                p.name === currentUser.name
+                    ? { ...p, file: picked, code: picked.content, stage: 'editing' }
+                    : p
+            )
         );
-        setCurrentUser((prev) => ({ ...prev, code: picked.content }));
+        setCurrentUser(prev => ({ ...prev, file: picked, code: picked.content, stage: 'editing' }));
+        setShowPicker(false);
     };
 
     const handleEditorChange = (nextText) => {
-        if (file) setFile({ ...file, content: nextText });
-
-        // 현재 사용자 코드도 업데이트해서 프리뷰에 반영
-        setCurrentUser((prev) => ({ ...prev, code: nextText }));
-        setParticipants((prev) =>
-            prev.map((p) => (p.name === currentUser.name ? { ...p, code: nextText } : p))
+        setCurrentUser(prev => ({ ...prev, code: nextText, file: { ...prev.file, content: nextText } }));
+        setParticipants(prev =>
+            prev.map(p =>
+                p.name === currentUser.name
+                    ? { ...p, code: nextText, file: { ...p.file, content: nextText } }
+                    : p
+            )
         );
     };
 
@@ -181,7 +182,7 @@ const CodecastLive = ({ isDark }) => {
                     currentUser={currentUser}
                     onChangeRole={(name, nextRole) => {
                         setParticipants(prev =>
-                            prev.map(p => (p.name === name ? { ...p, role: nextRole } : p))
+                            prev.map(p => (p.name === name ? {...p, role: nextRole} : p))
                         );
                     }}
                     onKick={(name) => {
@@ -197,16 +198,16 @@ const CodecastLive = ({ isDark }) => {
                 />
 
                 <div className="editor-area">
-                    {stage === 'empty' && (
+                    {currentUser.stage === 'empty' && (
                         <div className="empty-state">
                             <button className="plus-button" onClick={handleStartShare}>＋</button>
                             <p className="empty-help">파일을 선택하세요</p>
                         </div>
                     )}
 
-                    {stage === 'editing' && (
+                    {currentUser.stage === 'editing' && (
                         <CodeEditor
-                            file={file}
+                            file={currentUser.file}
                             onChange={handleEditorChange}
                             currentUser={currentUser}
                             isDark={isDark}
