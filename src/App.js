@@ -1,10 +1,8 @@
 import { HashRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-// ✅ 1. jwt-decode 라이브러리를 import 합니다.
-import { jwtDecode } from "jwt-decode";
 
 import Header from "./components/header/Header";
-import Footer from "./components/footer/Footer";
+import Footer from "./components/footer/Footer"; // Footer 컴포넌트 임포트 유지
 import Main from "./components/mainpage/Main";
 import Login from "./components/login/Login";
 import SignUp from "./components/signup/SignUp";
@@ -20,7 +18,6 @@ import MyProject from "./components/mypage/MyProject";
 import MyCommunity from "./components/mypage/MyCommunity";
 import ScrollToTop from "./components/common/ScrollToTop";
 import CommunityWrite from "./components/community/CommunityWrite";
-import VisualizationModal from "./components/ide/VisualizationModal";
 import PostDetail from "./components/community/PostDetail";
 import CodecastLive from "./components/codecast/codecastlive/CodecastLive";
 
@@ -33,42 +30,19 @@ function AppContent() {
 
     const isSignupPage = location.pathname === "/signup";
     const isIdePage = location.pathname.startsWith("/ide");
+    const isMainPage = location.pathname === "/"; // 👈 추가: 메인 페이지 플래그
 
-    // ✅ 2. 토큰 만료를 확인하는 로직으로 교체된 useEffect
     useEffect(() => {
         const token = localStorage.getItem('token');
         const storedUsername = localStorage.getItem('username');
-
         if (token && storedUsername) {
-            try {
-                const decodedToken = jwtDecode(token);
-                // 토큰의 만료 시간(exp)이 현재 시간보다 이전이면 만료된 것
-                if (decodedToken.exp * 1000 < Date.now()) {
-                    // 토큰이 만료된 경우, 로그아웃 처리
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('username');
-                    setIsLoggedIn(false);
-                    setNickname('');
-                    console.log('만료된 토큰이 감지되어 자동 로그아웃되었습니다.');
-                } else {
-                    // 토큰이 유효한 경우, 로그인 상태로 설정
-                    setIsLoggedIn(true);
-                    setNickname(storedUsername);
-                }
-            } catch (error) {
-                // 토큰 형식이 잘못된 경우에도 로그아웃 처리
-                localStorage.removeItem('token');
-                localStorage.removeItem('username');
-                setIsLoggedIn(false);
-                setNickname('');
-                console.error('잘못된 토큰 형식으로 인해 로그아웃 처리:', error);
-            }
+            setIsLoggedIn(true);
+            setNickname(storedUsername);
         } else {
-            // 토큰이 없는 경우, 기본적으로 로그아웃 상태
             setIsLoggedIn(false);
             setNickname('');
         }
-    }, []); // 앱이 처음 로드될 때 한 번만 실행됩니다.
+    }, []);
 
     useEffect(() => {
         const savedTheme = localStorage.getItem("theme");
@@ -105,7 +79,7 @@ function AppContent() {
                 <Route path="/community/post/:id" element={<PostDetail />} />
                 <Route path="/broadcast" element={<Codecast />} />
                 <Route path="/startbroadcast" element={<StartCodecast />} />
-                <Route path="/broadcast/live" element={<CodecastLive isDark={isDark} />} />
+                <Route path="/broadcast/live" element={<CodecastLive />} />
                 <Route path="/mypage" element={<MyPageLayout nickname={nickname} />}>
                     <Route index element={<Mypage nickname={nickname} />} />
                     <Route path="project" element={<MyProject />} />
@@ -115,7 +89,8 @@ function AppContent() {
                 </Route>
             </Routes>
 
-            {(!isSignupPage && !isIdePage) && <Footer />}
+            {/* 👈 푸터는 메인 페이지, 회원가입, IDE 페이지에서는 숨깁니다. */}
+            {(!isSignupPage && !isIdePage && !isMainPage) && <Footer />}
 
             {isLoginModalOpen && (
                 <Login
