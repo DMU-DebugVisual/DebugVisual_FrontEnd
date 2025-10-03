@@ -81,8 +81,8 @@ const CodecastLive = ({ isDark }) => {
     // 🔸 채팅창 열림 상태, 채팅 내용
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [messages, setMessages] = useState([
-        { id: 1, user: '김코딩', text: '안녕하세요! 오늘은 버블 정렬부터 갈게요.' },
-        { id: 2, user: '이알고', text: '넵 준비됐습니다 🙌' },
+        { id: 1, user: '김코딩', text: '안녕하세요!' },
+        { id: 2, user: '이알고', text: '🙌🙌' },
     ]);
 
     const handleStartShare = () => setShowPicker(true);
