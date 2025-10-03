@@ -1,24 +1,51 @@
-.start-section {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+/* src/components/mainpage/startnow/StartNow.css (최종 수정) */
+
+/* ----------------------------------------------------
+   1. StartNow의 최상위 스타일 (background-color 담당)
+   ---------------------------------------------------- */
+.start-footer-integration-wrapper {
+    /* ✅ 배경색 및 텍스트 색상 복원 */
     background-color: #7a52c6;
     color: white;
-    text-align: center;
-    padding: 3rem;
-    box-sizing: border-box;
+
+    /* 콘텐츠를 중앙에 배치하기 위해 flex 사용 */
+    display: flex;
+    flex-direction: column;
+
+    /* ✅ 푸터가 맨 아래에 붙도록 content와 footer를 분리 */
+    min-height: calc(100vh - 1px); /* ⚠️ 화면 높이에서 헤더/푸터 높이를 뺀 만큼의 최소 높이 설정 (선택 사항) */
 }
 
+/* ----------------------------------------------------
+   2. 실제 StartNow 내용 컨테이너 (콘텐츠 정렬 담당)
+   ---------------------------------------------------- */
+.start-content-container {
+    flex-grow: 1; /* ✅ 남은 공간 전체를 차지하여 푸터를 맨 아래로 밀어내는 핵심 역할 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* 콘텐츠 자체를 수직 중앙 정렬 */
+
+    /* 가로 중앙 정렬 및 최대 폭 설정 */
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+
+    padding: 3rem;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+/* ----------------------------------------------------
+   3. 나머지 내용 스타일 (기존 스타일 유지)
+   ---------------------------------------------------- */
 .start-title {
-    font-size: 40px;     /* 크게 */
+    font-size: 40px;
     font-weight: bold;
     margin-bottom: 20px;
 }
 
 .start-description {
-    font-size: 20px;     /* 크게 */
+    font-size: 20px;
     max-width: 720px;
     margin: 0 auto 32px;
     line-height: 1.8;
@@ -27,28 +54,27 @@
 .start-button {
     background-color: white;
     color: #7a52c6;
-    padding: 16px 32px;  /* 더 크게 */
+    padding: 16px 32px;
     border: none;
     border-radius: 10px;
-    font-size: 18px;     /* 크게 */
+    font-size: 18px;
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.2s ease;
     text-decoration: none;
+    align-self: center; /* 버튼 자체를 중앙에 배치 */
 }
 
 .start-button:hover {
     background-color: #f2e9ff;
 }
 
-/* 🌙 다크모드 */
-.dark-mode .start-section {
+/* ----------------------------------------------------
+   4. 🌙 다크모드 (배경색 복원)
+   ---------------------------------------------------- */
+.dark-mode .start-footer-integration-wrapper {
     background-color: #4e378a;
     color: #f5f5f5;
-}
-
-.dark-mode .start-description {
-    color: #ddd;
 }
 
 .dark-mode .start-button {
