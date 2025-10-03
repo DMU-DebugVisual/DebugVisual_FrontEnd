@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './CodecastSidebar.css';
-import { FaCrown, FaPenFancy, FaEye, FaUser, FaEllipsisV, FaCheck } from 'react-icons/fa';
+import { FaCrown, FaPenFancy, FaEye, FaUser, FaEllipsisV, FaCheck, FaComments } from 'react-icons/fa';
 
 const RoleIcon = ({ role }) => {
     if (role === 'host') return <FaCrown className="role-icon host" />;
@@ -33,6 +33,7 @@ export default function CodecastSidebar({
                                             currentUser,
                                             onChangeRole,
                                             onKick,
+                                            onOpenChat,
                                         }) {
     const [menuFor, setMenuFor] = useState(null); // 메뉴가 열린 사용자명
 
@@ -41,9 +42,22 @@ export default function CodecastSidebar({
 
     return (
         <aside className="codecast-sidebar">
-            <h2 className="codecast-sidebar-title">
+            {/*<h2 className="codecast-sidebar-title">
                 참여자 <span className="count">({participants.length})</span>
-            </h2>
+            </h2>*/}
+            <div className="sidebar-headline">         {/* ✅ 타이틀 라인 구조 변경 */}
+                <h2 className="codecast-sidebar-title">
+                    참여자 <span className="count">({participants.length})</span>
+                </h2>
+                <button
+                    className="chat-open-btn"
+                    onClick={onOpenChat}
+                    aria-label="채팅 열기"
+                    title="채팅 열기"
+                >
+                    <FaComments/>
+                </button>
+            </div>
 
             <ul className="participant-list">
                 {participants.map((p) => {
@@ -57,10 +71,10 @@ export default function CodecastSidebar({
                         >
                             {/* 프로필 이미지 or 회색 원 */}
                             {p.avatar ? (
-                                <img src={p.avatar} alt={p.name} className="avatar" />
+                                <img src={p.avatar} alt={p.name} className="avatar"/>
                             ) : (
                                 <div className="avatar placeholder">
-                                    <FaUser className="default-user-icon" />
+                                    <FaUser className="default-user-icon"/>
                                 </div>
                             )}
 
@@ -68,7 +82,7 @@ export default function CodecastSidebar({
                             <span className="name">{p.name}</span>
 
                             {/* 권한 아이콘 */}
-                            <RoleIcon role={p.role} />
+                            <RoleIcon role={p.role}/>
 
                             {/* 더보기 버튼 */}
                             <button
@@ -79,7 +93,7 @@ export default function CodecastSidebar({
                                     setMenuFor(isMenuOpen ? null : p.name);
                                 }}
                             >
-                                <FaEllipsisV />
+                                <FaEllipsisV/>
                             </button>
 
                             {/* 팝오버 메뉴 */}
@@ -98,13 +112,13 @@ export default function CodecastSidebar({
                                                 disabled={p.role === role}
                                                 title={p.role === role ? '현재 권한' : '권한 변경'}
                                             >
-                                                {p.role === role && <FaCheck className="check" />}
+                                                {p.role === role && <FaCheck className="check"/>}
                                                 {role === 'host' ? '모든 권한(Host)' : role === 'edit' ? '편집(Editing)' : '보기(Read Only)'}
                                             </button>
                                         ))}
                                     </div>
 
-                                    <div className="menu-divider" />
+                                    <div className="menu-divider"/>
 
                                     <button
                                         className="menu-item danger"

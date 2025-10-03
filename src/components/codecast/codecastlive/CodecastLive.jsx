@@ -6,7 +6,8 @@ import Header from './CodecastHeader';
 import Sidebar from './CodecastSidebar';
 import CodeEditor from './CodeEditor';
 import FilePickerModal from './FilePickerModal';
-import CodePreviewList from './CodePreviewList'; // ✅ 다시 추가
+import CodePreviewList from './CodePreviewList';
+import ChatPanel from './ChatPanel';
 
 // 더미 파일 목록
 const dummyFiles = [
@@ -77,6 +78,13 @@ const CodecastLive = ({ isDark }) => {
     // 🔸 현재 중앙에 띄울 사용자
     const [currentUser, setCurrentUser] = useState(initialParticipants[0]);
 
+    // 🔸 채팅창 열림 상태, 채팅 내용
+    const [isChatOpen, setIsChatOpen] = useState(false);
+    const [messages, setMessages] = useState([
+        { id: 1, user: '김코딩', text: '안녕하세요! 오늘은 버블 정렬부터 갈게요.' },
+        { id: 2, user: '이알고', text: '넵 준비됐습니다 🙌' },
+    ]);
+
     const handleStartShare = () => setShowPicker(true);
 
     const handlePickFile = (picked) => {
@@ -128,6 +136,14 @@ const CodecastLive = ({ isDark }) => {
         }
     };
 
+    const handleSendMessage = (text) => {
+        if (!text.trim()) return;
+        setMessages((prev) => [
+            ...prev,
+            { id: Date.now(), user: currentUser.name, text },
+        ]);
+    };
+
     // ✅ 전체화면 변경 이벤트로 상태 동기화
     useEffect(() => {
         const onChange = () => {
@@ -177,6 +193,7 @@ const CodecastLive = ({ isDark }) => {
                             if (next) setCurrentUser(next);
                         }
                     }}
+                    onOpenChat={() => setIsChatOpen(true)}            // ✅ 추가: 채팅 열기
                 />
 
                 <div className="editor-area">
@@ -217,6 +234,14 @@ const CodecastLive = ({ isDark }) => {
                         );
                     }
                 }}
+            />
+
+            {/* ✅ 채팅 패널 */}
+            <ChatPanel
+                open={isChatOpen}
+                messages={messages}
+                onClose={() => setIsChatOpen(false)}
+                onSend={handleSendMessage}
             />
 
             {showPicker && (

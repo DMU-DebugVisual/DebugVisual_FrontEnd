@@ -1,0 +1,131 @@
+/* 백드롭 */
+.chat-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease;
+    z-index: 1500;
+}
+.chat-backdrop.show {
+    background: rgba(0,0,0,0.35);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* 패널 */
+.chat-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 360px;
+    max-width: calc(100% - 48px);
+    height: 100vh;
+    background: #fff;
+    border-left: 1px solid #e6e6ef;
+    box-shadow: -8px 0 24px rgba(0,0,0,0.08);
+    transform: translateX(100%);
+    transition: transform .22s ease;
+    z-index: 1600;
+
+    display: flex;
+    flex-direction: column;
+}
+.chat-panel.open {
+    transform: translateX(0);
+}
+
+.chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid #e6e6ef;
+}
+.chat-header h3 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.chat-close {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #666;
+}
+
+.chat-list {
+    flex: 1;
+    overflow: auto;
+    padding: 12px 14px;
+}
+
+.chat-item + .chat-item { margin-top: 10px; }
+.chat-user {
+    font-weight: 700;
+    font-size: 13px;
+    color: #333;
+}
+.chat-text {
+    font-size: 14px;
+    color: #222;
+}
+
+.chat-input {
+    display: flex;
+    gap: 8px;
+    padding: 10px 12px;
+    border-top: 1px solid #e6e6ef;
+}
+.chat-input input {
+    flex: 1;
+    border: 1px solid #e0e0ea;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+}
+.chat-input .send-btn {
+    border: none;
+    border-radius: 8px;
+    padding: 0 14px;
+    background: #6f42c1;
+    color: #fff;
+    cursor: pointer;
+}
+
+/* 다크 모드 */
+.dark-mode .chat-panel {
+    background: #1a1a26;
+    border-left: 1px solid rgba(255,255,255,0.08);
+    box-shadow: -10px 0 28px rgba(0,0,0,0.35);
+}
+
+.dark-mode .chat-header {
+    border-bottom-color: rgba(255,255,255,0.08);
+}
+
+.dark-mode .chat-close {
+    color: #bbb;
+}
+
+.dark-mode .chat-user {
+    color: #eaeaf2;
+}
+
+.dark-mode .chat-text {
+    color: #ddd;
+}
+
+.dark-mode .chat-input {
+    border-top-color: rgba(255,255,255,0.08);
+}
+.dark-mode .chat-input input {
+    background: #232333;
+    color: #eee;
+    border-color: #2f2f40;
+}
+.dark-mode .chat-input .send-btn {
+    background: #6a0dad;
+}
