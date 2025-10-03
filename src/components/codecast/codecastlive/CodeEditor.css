@@ -21,7 +21,7 @@
     gap: 12px;
 }
 
-/* ✅ 사용자 뱃지 (복원) */
+/* ✅ 사용자 뱃지 */
 .current-user-badge {
     background-color: #f2f2f4;
     color: #333;
@@ -33,6 +33,13 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
+}
+
+/* 오른쪽 버튼 묶음 */
+.toolbar-right {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
 /* 실행 버튼 */
@@ -50,6 +57,26 @@
     transition: background-color 0.2s ease;
 }
 .run-button:hover { background-color: #8844dd; }
+
+/* 시각화 버튼 */
+.viz-button {
+    background-color: #f2f2f4;
+    color: #333;
+    border: 1px solid #e4e4ea;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color .2s ease;
+}
+.viz-button:hover {
+    background-color: #ece9f7;
+    border-color: #d7c7ff;
+    color: #4f2aa3;
+}
 
 /* Monaco 에디터가 부모 높이를 꽉 채우도록 */
 .code-editor > div, /* @monaco-editor/react 래퍼 */
@@ -70,4 +97,15 @@
     background-color: #222;
     color: #fff;
     border-color: #3a3a48;
+}
+
+.dark-mode .viz-button {
+    background-color: #2b2b34;
+    color: #eaeaf2;
+    border: 1px solid #3a3a48;
+}
+.dark-mode .viz-button:hover {
+    background-color: #34343f;
+    border-color: #6a0dad;
+    color: #c9a7ff;
 }

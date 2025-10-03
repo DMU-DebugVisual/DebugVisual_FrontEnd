@@ -6,7 +6,8 @@ import Header from './CodecastHeader';
 import Sidebar from './CodecastSidebar';
 import CodeEditor from './CodeEditor';
 import FilePickerModal from './FilePickerModal';
-import CodePreviewList from './CodePreviewList'; // ✅ 다시 추가
+import CodePreviewList from './CodePreviewList';
+import ChatPanel from './ChatPanel';
 
 // 더미 파일 목록
 const dummyFiles = [
@@ -45,9 +46,9 @@ function mergeSort(arr) {
 ];
 
 const initialParticipants = [
-    { name: '김코딩', role: 'host', code: '' },
-    { name: '이알고', role: 'edit', code: '' },
-    { name: '박개발', role: 'view', code: '' },
+    { name: '김코딩', role: 'host', code: '', file: null, stage: 'empty' },
+    { name: '이알고', role: 'edit', code: '', file: null, stage: 'empty' },
+    { name: '박개발', role: 'view', code: '', file: null, stage: 'empty' },
 ];
 
 const CodecastLive = ({ isDark }) => {
@@ -55,7 +56,12 @@ const CodecastLive = ({ isDark }) => {
     const wrapperRef = useRef(null);         // ✅ 전체화면 타깃
     const [isFullscreen, setIsFullscreen] = useState(false); // ✅ 전체화면 상태
 
-    const room = useMemo(() => ({ id: 'sess-001', title: '정렬 알고리즘 라이브 코딩' }), []);
+    /*const room = useMemo(() => ({ id: 'sess-001', title: '정렬 알고리즘 라이브 코딩' }), []);*/
+    // 🔸 방 정보는 수정 가능해야 하므로 useState로
+    const [room, setRoom] = useState({
+        id: 'sess-001',
+        title: '정렬 알고리즘 라이브 코딩',
+    });
 
     // 🔸 단계: 공유 전("empty") ↔ 편집 중("editing")
     const [stage, setStage] = useState('empty');
@@ -72,27 +78,35 @@ const CodecastLive = ({ isDark }) => {
     // 🔸 현재 중앙에 띄울 사용자
     const [currentUser, setCurrentUser] = useState(initialParticipants[0]);
 
+    // 🔸 채팅창 열림 상태, 채팅 내용
+    const [isChatOpen, setIsChatOpen] = useState(false);
+    const [messages, setMessages] = useState([
+        { id: 1, user: '김코딩', text: '안녕하세요!' },
+        { id: 2, user: '이알고', text: '🙌🙌' },
+    ]);
+
     const handleStartShare = () => setShowPicker(true);
 
     const handlePickFile = (picked) => {
-        setFile(picked);
-        setShowPicker(false);
-        setStage('editing');
-
-        // 현재 사용자 코드에 파일 내용 복사 (프리뷰/사이드바 반영)
-        setParticipants((prev) =>
-            prev.map((p) => (p.name === currentUser.name ? { ...p, code: picked.content } : p))
+        setParticipants(prev =>
+            prev.map(p =>
+                p.name === currentUser.name
+                    ? { ...p, file: picked, code: picked.content, stage: 'editing' }
+                    : p
+            )
         );
-        setCurrentUser((prev) => ({ ...prev, code: picked.content }));
+        setCurrentUser(prev => ({ ...prev, file: picked, code: picked.content, stage: 'editing' }));
+        setShowPicker(false);
     };
 
     const handleEditorChange = (nextText) => {
-        if (file) setFile({ ...file, content: nextText });
-
-        // 현재 사용자 코드도 업데이트해서 프리뷰에 반영
-        setCurrentUser((prev) => ({ ...prev, code: nextText }));
-        setParticipants((prev) =>
-            prev.map((p) => (p.name === currentUser.name ? { ...p, code: nextText } : p))
+        setCurrentUser(prev => ({ ...prev, code: nextText, file: { ...prev.file, content: nextText } }));
+        setParticipants(prev =>
+            prev.map(p =>
+                p.name === currentUser.name
+                    ? { ...p, code: nextText, file: { ...p.file, content: nextText } }
+                    : p
+            )
         );
     };
 
@@ -123,6 +137,14 @@ const CodecastLive = ({ isDark }) => {
         }
     };
 
+    const handleSendMessage = (text) => {
+        if (!text.trim()) return;
+        setMessages((prev) => [
+            ...prev,
+            { id: Date.now(), user: currentUser.name, text },
+        ]);
+    };
+
     // ✅ 전체화면 변경 이벤트로 상태 동기화
     useEffect(() => {
         const onChange = () => {
@@ -147,25 +169,45 @@ const CodecastLive = ({ isDark }) => {
         <div ref={wrapperRef} className="broadcast-wrapper">
             <Header
                 roomTitle={room.title}
+                onTitleChange={(newTitle) => setRoom((prev) => ({ ...prev, title: newTitle }))}
                 onLeave={handleLeave}
                 isFocusMode={isFullscreen}        // 버튼 상태 표시
                 onToggleFocus={toggleFullscreen}  // 전체화면 토글
             />
 
             <div className="main-section">
-                <Sidebar participants={participants} currentUser={currentUser}/>
+                {/*<Sidebar participants={participants} currentUser={currentUser}/>*/}
+                <Sidebar
+                    participants={participants}
+                    currentUser={currentUser}
+                    onChangeRole={(name, nextRole) => {
+                        setParticipants(prev =>
+                            prev.map(p => (p.name === name ? {...p, role: nextRole} : p))
+                        );
+                    }}
+                    onKick={(name) => {
+                        // 프리뷰/현재 사용자 등 동기화
+                        setParticipants(prev => prev.filter(p => p.name !== name));
+                        if (currentUser.name === name) {
+                            // 방출된 유저가 현재 선택 상황이면 첫 사용자로 스위칭
+                            const next = participants.find(p => p.name !== name);
+                            if (next) setCurrentUser(next);
+                        }
+                    }}
+                    onOpenChat={() => setIsChatOpen(true)}            // ✅ 추가: 채팅 열기
+                />
 
                 <div className="editor-area">
-                    {stage === 'empty' && (
+                    {currentUser.stage === 'empty' && (
                         <div className="empty-state">
                             <button className="plus-button" onClick={handleStartShare}>＋</button>
                             <p className="empty-help">파일을 선택하세요</p>
                         </div>
                     )}
 
-                    {stage === 'editing' && (
+                    {currentUser.stage === 'editing' && (
                         <CodeEditor
-                            file={file}
+                            file={currentUser.file}
                             onChange={handleEditorChange}
                             currentUser={currentUser}
                             isDark={isDark}
@@ -174,7 +216,7 @@ const CodecastLive = ({ isDark }) => {
                 </div>
             </div>
 
-            {/* ✅ 하단 프리뷰 리스트 재추가 */}
+            {/* ✅ 하단 프리뷰 리스트 */}
             <CodePreviewList
                 participants={participants}
                 activeName={currentUser.name}
@@ -193,6 +235,14 @@ const CodecastLive = ({ isDark }) => {
                         );
                     }
                 }}
+            />
+
+            {/* ✅ 채팅 패널 */}
+            <ChatPanel
+                open={isChatOpen}
+                messages={messages}
+                onClose={() => setIsChatOpen(false)}
+                onSend={handleSendMessage}
             />
 
             {showPicker && (
