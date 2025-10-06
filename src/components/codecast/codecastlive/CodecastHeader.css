@@ -24,6 +24,36 @@
     color: #222;
 }
 
+/* 제목 수정 input */
+.title-input {
+    font-size: 20px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    outline: none;
+}
+
+.title-input:focus {
+    border-color: #6f42c1;
+    box-shadow: 0 0 0 2px rgba(111, 66, 193, 0.2);
+}
+
+/* 수정 버튼 */
+.edit-title-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #666;
+    font-size: 14px;
+    margin-left: 6px;
+    transition: color 0.2s ease;
+}
+
+.edit-title-btn:hover {
+    color: #6f42c1;
+}
+
 .header-right {
     display: flex;
     align-items: center;

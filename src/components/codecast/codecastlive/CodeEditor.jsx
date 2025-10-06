@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Editor from '@monaco-editor/react';
-import { FaPlay } from 'react-icons/fa';
+import { FaPlay, FaCrown, FaPenFancy, FaEye, FaChartBar } from 'react-icons/fa';
 import './CodeEditor.css';
 
 /**
@@ -19,16 +19,17 @@ export default function CodeEditor({ file, readOnly = false, onChange, currentUs
     const language = useMemo(() => file?.language || 'python', [file?.language]);
 
     const handleRun = () => alert('코드 실행 기능은 아직 미구현입니다.');
+    const handleVisualize = () => alert('코드 시각화 기능은 아직 미구현입니다.');
 
     const roleIcon = (role) => {
-        if (role === 'host') return '👑';
-        if (role === 'edit') return '✏️';
-        if (role === 'view') return '👁️';
+        if (role === 'host') return <FaCrown className="role-icon host" />;
+        if (role === 'edit') return <FaPenFancy className="role-icon edit" />;
+        if (role === 'view') return <FaEye className="role-icon view" />;
         return '';
     };
 
-    // const theme = document.body.classList.contains('dark-mode') ? 'vs-light' : 'vs-dark';
     const theme = isDark ? 'vs-dark' : 'vs-light';   // ✅ props 우선
+
     return (
         <section className="code-editor">
             <div className="editor-header">
@@ -39,9 +40,18 @@ export default function CodeEditor({ file, readOnly = false, onChange, currentUs
                     </div>
                 )}
 
-                <button className="run-button" onClick={handleRun}>
+                {/*<button className="run-button" onClick={handleRun}>
                     <FaPlay /> 실행
-                </button>
+                </button>*/}
+                {/* ✅ 오른쪽 툴바: 실행 + 시각화 */}
+                <div className="toolbar-right">
+                    <button className="run-button" onClick={handleRun}>
+                        <FaPlay/> 실행
+                    </button>
+                    <button className="viz-button" onClick={handleVisualize}>
+                        <FaChartBar/> 시각화
+                    </button>
+                </div>
             </div>
 
             {/* 필요 시 height=100%로 바꿔도 됩니다 (부모 컨테이너가 flex:1이면) */}

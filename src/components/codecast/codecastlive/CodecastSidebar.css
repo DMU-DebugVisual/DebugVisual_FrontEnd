@@ -8,6 +8,14 @@
     color: #222;
 }
 
+/* 타이틀 + 채팅 버튼 라인 */
+.sidebar-headline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
 .codecast-sidebar-title {
     font-size: 16px;
     margin-bottom: 14px;
@@ -23,6 +31,21 @@
     font-size: 14px;
     font-weight: normal;
 }
+
+.chat-open-btn {
+    background: #f2f2f4;
+    color: #333;
+    border: 1px solid #e4e4ea;
+    padding: 6px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color .15s ease, border-color .15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.chat-open-btn:hover { background-color: #e9e9ef; }
 
 .participant-list {
     list-style: none;
@@ -40,19 +63,48 @@
     margin-bottom: 6px;
     transition: background-color 0.2s ease;
     cursor: default;
+    position: relative; /* 팝오버 기준 */
 }
 .participant-item:hover {
     background-color: #ececf5;
 }
 
-.participant-icon {
+/* 프로필 아바타 */
+.avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar.placeholder {
+    background: #bbb;
+}
+
+.default-user-icon {
+    font-size: 14px;
+    color: #fff;
+}
+
+/* 이름 */
+.participant-item .name {
+    flex: 1;
+    min-width: 0;
+}
+
+/* 역할 아이콘 */
+.role-icon {
     font-size: 15px;
 }
 
-/* 역할별 아이콘 색 (Light) */
-.participant-icon.host { color: #ffbf00; }
-.participant-icon.edit { color: #00a152; }
-.participant-icon.view { color: #999; }
+/* 역할별 색상 */
+.role-icon.host { color: #ffbf00; }
+.role-icon.edit { color: #00a152; }
+.role-icon.view { color: #999; }
 
 /* 현재 사용자 강조 (Light) */
 .participant-item.active-user {
@@ -60,6 +112,70 @@
     font-weight: 600;
     border-left: 3px solid #6a0dad;
 }
+
+/* 더보기 버튼 */
+.more-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    color: #666;
+    transition: background-color .12s ease, color .12s ease;
+}
+.more-btn:hover { background-color: rgba(0,0,0,0.05); }
+.dark-mode .more-btn:hover { background-color: rgba(255,255,255,0.08); }
+.dark-mode .more-btn { color: #bbb; }
+
+/* 팝오버 메뉴 */
+.more-menu {
+    position: absolute;
+    top: 36px;
+    right: 6px;
+    min-width: 160px;
+    background: #fff;
+    border: 1px solid #e6e6ef;
+    border-radius: 10px;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+    padding: 8px;
+    z-index: 10;
+}
+
+.menu-group { display: flex; flex-direction: column; gap: 4px; }
+
+.menu-label {
+    font-size: 12px;
+    color: #888;
+    padding: 4px 6px 6px;
+}
+
+.menu-item {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 10px;
+    cursor: pointer;
+    color: #222;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.menu-item:hover { background: #f4f3fb; }
+.menu-item:disabled {
+    opacity: .55;
+    cursor: default;
+}
+.menu-item.danger {
+    color: #c62828;
+}
+.menu-divider {
+    height: 1px;
+    background: #eee;
+    margin: 6px 0;
+}
+.check { font-size: 12px; color: #6f42c1; }
 
 /* ========== Dark Mode Overrides ========== */
 
@@ -72,6 +188,15 @@
 .dark-mode .codecast-sidebar-title { color: white; }
 .dark-mode .codecast-sidebar-title .count { color: #aaa; }
 
+.dark-mode .chat-open-btn {
+    background: #2b2b34;
+    color: #eaeaf2;
+    border: 1px solid #3a3a48;
+}
+.dark-mode .chat-open-btn:hover {
+    background: #34343f;
+}
+
 .dark-mode .participant-item:hover {
     background-color: rgba(255, 255, 255, 0.05);
 }
@@ -81,7 +206,27 @@
     border-left: 3px solid #6a0dad;
 }
 
+.dark-mode .avatar.placeholder {
+    background: #555;
+}
+
+.dark-mode .default-user-icon {
+    color: #ccc;
+}
+
 /* 아이콘 색상 (Dark) */
-.dark-mode .participant-icon.host { color: gold; }
-.dark-mode .participant-icon.edit { color: #00c853; }
-.dark-mode .participant-icon.view { color: #888; }
+.dark-mode .role-icon.host { color: gold; }
+.dark-mode .role-icon.edit { color: #00c853; }
+.dark-mode .role-icon.view { color: #888; }
+
+/* 다크 모드 팝오버 */
+.dark-mode .more-menu {
+    background: #1a1a26;
+    border-color: rgba(255,255,255,0.08);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+}
+.dark-mode .menu-item { color: #eee; }
+.dark-mode .menu-item:hover { background: #232333; }
+.dark-mode .menu-label { color: #aaa; }
+.dark-mode .menu-divider { background: #2a2a36; }
+.dark-mode .menu-item.danger { color: #ff6b6b; }
