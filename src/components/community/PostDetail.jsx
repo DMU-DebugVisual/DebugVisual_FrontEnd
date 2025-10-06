@@ -16,17 +16,22 @@ export default function PostDetail() {
 
     // 좋아요 상태
     const [likeCount, setLikeCount] = useState(0);
-    const [likedByMe, setLikedByMe] = useState(false); // 서버가 안 주므로 증감으로 추정
+    const [likedByMe, setLikedByMe] = useState(false); // ✅ 추가: 내가 좋아요를 눌렀는지 여부
     const [liking, setLiking] = useState(false);
     const prevLikeRef = useRef(0);
 
-    // 🆕 댓글 수 상태
+    // 댓글 수 상태
     const [commentCount, setCommentCount] = useState(0);
 
     // 댓글 작성 상태
     const [newComment, setNewComment] = useState("");
     const [posting, setPosting] = useState(false);
 
+    // 대댓글 작성 상태
+    const [replyTarget, setReplyTarget] = useState(null); // 대댓글을 달 댓글 ID
+    const [replyContent, setReplyContent] = useState("");
+
+    // 토큰 및 인증 헤더 (백틱 사용 수정 반영)
     const tokenRaw = useMemo(() => localStorage.getItem("token"), []);
     const authHeader = tokenRaw
         ? tokenRaw.startsWith("Bearer ") ? tokenRaw : `Bearer ${tokenRaw}`
@@ -38,16 +43,13 @@ export default function PostDetail() {
         return Number.isFinite(n) ? n : null;
     };
 
-    // 댓글 응답으로부터 안전하게 총 개수 계산 (배열/페이지객체/헤더 지원)
     const deriveCommentCount = (resp, data) => {
-        // 1) 헤더 우선
         try {
             const fromHeader = resp?.headers?.get?.("X-Total-Count");
             const n = parseIntSafe(fromHeader);
             if (n !== null) return n;
         } catch (_) {}
 
-        // 2) JSON 본문
         if (Array.isArray(data)) return data.length;
         if (data && typeof data === "object") {
             if (typeof data.totalElements === "number") return data.totalElements;
@@ -57,23 +59,26 @@ export default function PostDetail() {
         return 0;
     };
 
-    // 서버 기준 좋아요 수 재조회 (캐시 무력화)
-    const refreshLikeCount = async () => {
+    // 좋아요 수 및 내 상태 재조회
+    const refreshLikeStatus = async () => {
         try {
             const bust = Date.now();
-            const res = await fetch(`${config.API_BASE_URL}/api/posts/${id}/like?t=${bust}`, {
+            // ✅ config.API_BASE_URL 적용, like/status 경로 유지
+            const res = await fetch(`${config.API_BASE_URL}/api/posts/${id}/like/status?t=${bust}`, {
                 method: "GET",
-                headers: { Accept: "*/*", "Cache-Control": "no-cache", Pragma: "no-cache" },
+                headers: { Accept: "application/json", Authorization: authHeader, "Cache-Control": "no-cache" },
                 cache: "no-store",
             });
             if (!res.ok) return null;
-            const text = await res.text();
-            const n = parseIntSafe(text);
-            if (n !== null) {
-                setLikeCount(n);
-                return n;
-            }
-            return null;
+            const data = await res.json();
+
+            const count = data.likeCount ?? 0;
+            const liked = data.likedByMe ?? false;
+
+            setLikeCount(count);
+            setLikedByMe(liked);
+            prevLikeRef.current = count;
+            return { count, liked };
         } catch {
             return null;
         }
@@ -89,13 +94,7 @@ export default function PostDetail() {
                 setLoadingPost(true);
                 setError("");
 
-                if (!authHeader) {
-                    alert("로그인이 필요합니다.");
-                    navigate("/");
-                    return;
-                }
-
-                // ✅ 게시글 상세
+                // ✅ config.API_BASE_URL 적용
                 const res = await fetch(`${config.API_BASE_URL}/api/posts/${id}`, {
                     method: "GET",
                     headers: { Accept: "application/json", Authorization: authHeader },
@@ -119,12 +118,12 @@ export default function PostDetail() {
                     tags: Array.isArray(data.tags) ? data.tags : [],
                 });
 
-                // 좋아요 초기화
                 const initialLike = data.likeCount ?? 0;
                 setLikeCount(initialLike);
                 prevLikeRef.current = initialLike;
+                // ✅ 서버 응답에 likedByMe 필드가 있다면 사용, 없다면 기본값 false
+                setLikedByMe(data.likedByMe ?? false);
 
-                // 만약 상세 응답에 commentCount가 있다면 바로 사용 (없으면 댓글 로딩에서 계산)
                 if (typeof data.commentCount === "number") {
                     setCommentCount(data.commentCount);
                 }
@@ -139,33 +138,21 @@ export default function PostDetail() {
             ignore = true;
             controller.abort();
         };
-    }, [id, authHeader, navigate]);
+    }, [id, authHeader]); // ✅ navigate 제거
 
-    useEffect(() => {
-        if (!authHeader) return;
-        let ignore = false;
-        const controller = new AbortController();
+    // 공통: 댓글 목록 다시 불러오기
+    const fetchComments = async () => {
+        try {
+            setLoadingComments(true);
+            const bust = Date.now();
+            // ✅ config.API_BASE_URL 적용
+            const res = await fetch(`${config.API_BASE_URL}/api/comments/${id}?t=${bust}`, {
+                headers: { Accept: "application/json", Authorization: authHeader },
+                cache: "no-store",
+            });
 
-        (async () => {
-            try {
-                setLoadingComments(true);
-
-                // ✅ 댓글 목록 (배열/페이지객체 모두 대응)
-                const res = await fetch(`${config.API_BASE_URL}/api/comments/${id}`, {
-                    method: "GET",
-                    headers: { Accept: "application/json", Authorization: authHeader },
-                    signal: controller.signal,
-                });
-
-                if (!res.ok) {
-                    const text = await res.text();
-                    throw new Error(text || `댓글 조회 실패 (${res.status})`);
-                }
-
+            if (res.ok) {
                 const data = await res.json();
-                if (ignore) return;
-
-                // 본문 형태별로 comments 상태 세팅
                 if (Array.isArray(data)) {
                     setComments(data);
                 } else if (data && typeof data === "object" && Array.isArray(data.content)) {
@@ -173,43 +160,44 @@ export default function PostDetail() {
                 } else {
                     setComments([]);
                 }
-
-                // 🆕 총 개수 계산
                 const total = deriveCommentCount(res, data);
                 setCommentCount(total);
-            } catch (e) {
-                if (!ignore) console.error(e);
-            } finally {
-                if (!ignore) setLoadingComments(false);
             }
-        })();
+        } catch (e) {
+            console.error("댓글 새로고침 실패:", e);
+        } finally {
+            setLoadingComments(false);
+        }
+    };
 
-        return () => {
-            ignore = true;
-            controller.abort();
-        };
+    useEffect(() => {
+        // authHeader가 있거나 없더라도 댓글은 로드 시도
+        if (!id) return;
+        fetchComments();
     }, [id, authHeader]);
 
-    // 좋아요 토글 (낙관적 업데이트 + 서버 동기화 + 캐시 무력화)
+
+    // 좋아요 토글
     const handleToggleLike = async () => {
         if (!authHeader) {
             alert("로그인이 필요합니다.");
-            navigate("/");
+            navigate("/login"); // 로그인 페이지로 리다이렉트 (경로 가정)
             return;
         }
         if (liking) return;
 
         const before = likeCount;
-        const willLike = !likedByMe;
+        const wasLiked = likedByMe;
+        const willLike = !wasLiked;
 
         try {
             setLiking(true);
-
-            // 1) 낙관적 업데이트
+            // 낙관적 업데이트
             setLikedByMe(willLike);
             setLikeCount((c) => Math.max(0, c + (willLike ? 1 : -1)));
 
             // 2) 서버 토글 호출
+            // ✅ config.API_BASE_URL 적용
             const res = await fetch(`${config.API_BASE_URL}/api/posts/${id}/like`, {
                 method: "POST",
                 headers: {
@@ -222,20 +210,20 @@ export default function PostDetail() {
             });
 
             if (!res.ok) {
-                // 실패하면 롤백
-                setLikedByMe(!willLike);
+                // 실패 시 롤백
+                setLikedByMe(wasLiked);
                 setLikeCount(before);
                 const text = await res.text();
                 throw new Error(text || `좋아요 처리 실패 (${res.status})`);
             }
 
-            // 3) 최종 서버값으로 재동기화
-            const after = await refreshLikeCount();
-            if (after != null) {
-                if (after > before) setLikedByMe(true);
-                else if (after < before) setLikedByMe(false);
-                prevLikeRef.current = after;
+            // 성공 시 상태 업데이트 확인
+            const afterStatus = await refreshLikeStatus();
+            if (afterStatus != null) {
+                // 서버로부터 받은 정확한 값으로 최종 업데이트
+                prevLikeRef.current = afterStatus.count;
             }
+
         } catch (e) {
             alert(e.message || "좋아요 처리 실패");
         } finally {
@@ -248,7 +236,7 @@ export default function PostDetail() {
         if (!newComment.trim()) return;
         if (!authHeader) {
             alert("로그인이 필요합니다.");
-            navigate("/");
+            navigate("/login");
             return;
         }
 
@@ -273,26 +261,7 @@ export default function PostDetail() {
             }
 
             setNewComment("");
-
-            // 🔄 작성 후 최신 목록/개수 재조회
-            const bust = Date.now();
-            const refresh = await fetch(`${config.API_BASE_URL}/api/comments/${id}?t=${bust}`, {
-                headers: { Accept: "application/json", Authorization: authHeader, "Cache-Control": "no-cache", Pragma: "no-cache" },
-                cache: "no-store",
-            });
-
-            if (refresh.ok) {
-                const data = await refresh.json();
-                if (Array.isArray(data)) {
-                    setComments(data);
-                } else if (data && typeof data === "object" && Array.isArray(data.content)) {
-                    setComments(data.content);
-                } else {
-                    setComments([]);
-                }
-                const total = deriveCommentCount(refresh, data);
-                setCommentCount(total);
-            }
+            await fetchComments(); // 성공 후 목록 새로고침
         } catch (e) {
             alert(e.message || "댓글 작성에 실패했습니다.");
         } finally {
@@ -300,26 +269,53 @@ export default function PostDetail() {
         }
     };
 
+    // 대댓글 작성
+    const handleCreateReply = async (parentId) => {
+        if (!replyContent.trim()) return;
+        if (!authHeader) {
+            alert("로그인이 필요합니다.");
+            navigate("/login");
+            return;
+        }
+
+        try {
+            // 별도의 로딩 상태 없이 바로 처리
+            // ✅ config.API_BASE_URL 적용
+            const res = await fetch(`${config.API_BASE_URL}/api/comments`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: authHeader,
+                },
+                body: JSON.stringify({
+                    postId: Number(id),
+                    parentId,
+                    content: replyContent,
+                }),
+            });
+
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error(text || `대댓글 작성 실패 (${res.status})`);
+            }
+
+            setReplyContent("");
+            setReplyTarget(null); // 입력창 닫기
+            await fetchComments(); // 성공 후 목록 새로고침
+        } catch (e) {
+            alert(e.message || "대댓글 작성에 실패했습니다.");
+        }
+    };
+
+
     if (loadingPost) {
-        return (
-            <div className="post-detail-container">
-                <div className="post-detail-left"><p>불러오는 중…</p></div>
-            </div>
-        );
+        return <div className="post-detail-container"><div className="post-detail-left"><p>게시글을 불러오는 중입니다…</p></div></div>;
     }
     if (error) {
-        return (
-            <div className="post-detail-container">
-                <div className="post-detail-left"><p className="error">{error}</p></div>
-            </div>
-        );
+        return <div className="post-detail-container"><div className="post-detail-left"><p className="error">{error}</p></div></div>;
     }
     if (!post) {
-        return (
-            <div className="post-detail-container">
-                <div className="post-detail-left"><p>게시글이 없습니다.</p></div>
-            </div>
-        );
+        return <div className="post-detail-container"><div className="post-detail-left"><p>게시글이 없습니다.</p></div></div>;
     }
 
     return (
@@ -332,11 +328,11 @@ export default function PostDetail() {
                     <span>{post.date} 작성</span>
                     <span>작성자 {post.author}</span>
                     <span>👍 {likeCount}</span>
-                    <span>💬 {commentCount}</span> {/* 🆕 댓글 수 표시 */}
+                    <span>💬 {commentCount}</span>
                 </div>
 
                 <div className="post-content">
-                    {/* 서버가 HTML을 줄 수도 있으니 둘 다 대응 */}
+                    {/* XSS 방지를 위해 DOMPurify 등의 라이브러리를 사용하는 것이 좋습니다 */}
                     {/<[a-z][\s\S]*>/i.test(post.content) ? (
                         <div dangerouslySetInnerHTML={{ __html: post.content }} />
                     ) : (
@@ -345,11 +341,10 @@ export default function PostDetail() {
                 </div>
 
                 <div className="post-actions">
-                    {/* 좋아요 토글 */}
                     <button title="좋아요" onClick={handleToggleLike} disabled={liking}>
-                        {likedByMe ? "👍 " : "👍 "} {likeCount}
+                        {likedByMe ? "❤️ " : "👍 "} {likeCount}
                     </button>
-                    <button title="싫어요" disabled>👎 0</button>
+                    {/* <button title="싫어요" disabled>👎 0</button> */}
                 </div>
 
                 <div className="post-tags">
@@ -385,32 +380,17 @@ export default function PostDetail() {
                             onChange={(e) => setNewComment(e.target.value)}
                             onKeyDown={(e) => { if (e.key === "Enter") handleCreateComment(); }}
                         />
-                        <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
+                        <div className="answer-form-buttons"> {/* ✅ 클래스 적용 */}
                             <button
-                                className="post-util-button"
+                                className="comment-submit-btn" // ✅ 클래스 적용
                                 onClick={handleCreateComment}
-                                disabled={posting}
-                                style={{
-                                    background: "#6a1b9a",
-                                    color: "#fff",
-                                    border: "none",
-                                    borderRadius: 6,
-                                    padding: "8px 12px",
-                                    cursor: posting ? "not-allowed" : "pointer",
-                                }}
+                                disabled={posting || !newComment.trim()} // ✅ 내용이 없을 때 비활성화 추가
                             >
                                 {posting ? "작성 중…" : "등록"}
                             </button>
                             <button
-                                className="post-util-button"
+                                className="comment-cancel-btn" // ✅ 클래스 적용
                                 onClick={() => setNewComment("")}
-                                style={{
-                                    background: "#fff",
-                                    border: "1px solid #ccc",
-                                    borderRadius: 6,
-                                    padding: "8px 12px",
-                                    cursor: "pointer",
-                                }}
                             >
                                 취소
                             </button>
@@ -418,6 +398,10 @@ export default function PostDetail() {
                     </div>
 
                     {/* 댓글 리스트 */}
+                    {loadingComments && comments.length === 0 && (
+                        <div className="empty-comment"><p>댓글을 불러오는 중…</p></div>
+                    )}
+
                     {!loadingComments && comments.length === 0 && (
                         <div className="empty-comment">
                             <img src="/empty-comment.png" alt="답변 없음" />
@@ -427,22 +411,60 @@ export default function PostDetail() {
                     )}
 
                     {!loadingComments && comments.length > 0 && (
-                        <ul style={{ listStyle: "none", padding: 0, marginTop: 20 }}>
+                        <ul className="comment-list"> {/* ✅ 클래스 적용 */}
                             {comments.map((c) => (
-                                <li key={c.id} style={{ padding: "14px 0", borderBottom: "1px solid #eee" }}>
-                                    <div style={{ fontSize: 13, color: "#888", marginBottom: 6 }}>
-                                        <b style={{ color: "#333" }}>{c.writer || "익명"}</b>{" "}
+                                <li key={c.id} className="comment-item"> {/* ✅ 클래스 적용 */}
+                                    <div className="comment-meta"> {/* ✅ 클래스 적용 */}
+                                        <b className="comment-writer">{c.writer || "익명"}</b>{" "}
                                         · {c.createdAt ? new Date(c.createdAt).toLocaleString() : ""}
                                     </div>
-                                    <div style={{ fontSize: 15, color: "#333", whiteSpace: "pre-wrap" }}>
+                                    <div className="comment-content"> {/* ✅ 클래스 적용 */}
                                         {c.content}
                                     </div>
 
+                                    {/* 답글 버튼 */}
+                                    <button
+                                        className="reply-toggle-btn" // ✅ 클래스 적용
+                                        onClick={() => setReplyTarget(c.id === replyTarget ? null : c.id)}
+                                    >
+                                        답글
+                                    </button>
+
+                                    {/* 대댓글 입력창 */}
+                                    {replyTarget === c.id && (
+                                        <div className="reply-form"> {/* ✅ 클래스 적용 */}
+                                            <input
+                                                type="text"
+                                                value={replyContent}
+                                                onChange={(e) => setReplyContent(e.target.value)}
+                                                onKeyDown={(e) => { if (e.key === "Enter") handleCreateReply(c.id); }}
+                                                placeholder={`@${c.writer || "익명"}에게 답글을 입력하세요`}
+                                            />
+                                            <div className="reply-form-buttons"> {/* ✅ 클래스 적용 */}
+                                                <button
+                                                    className="reply-submit-btn" // ✅ 클래스 적용
+                                                    onClick={() => handleCreateReply(c.id)}
+                                                    disabled={!replyContent.trim()}
+                                                >
+                                                    등록
+                                                </button>
+                                                <button
+                                                    className="reply-cancel-btn" // ✅ 클래스 적용
+                                                    onClick={() => { setReplyTarget(null); setReplyContent(""); }}
+                                                >
+                                                    취소
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* 대댓글 리스트 */}
                                     {Array.isArray(c.replies) && c.replies.length > 0 && (
-                                        <ul style={{ listStyle: "disc", margin: "10px 0 0 18px", color: "#555" }}>
-                                            {c.replies.map((r, i) => (
-                                                <li key={i} style={{ marginTop: 4, whiteSpace: "pre-wrap" }}>
-                                                    {r}
+                                        <ul className="reply-list"> {/* ✅ 클래스 적용 */}
+                                            {c.replies.map((r) => (
+                                                <li key={r.id} className="reply-item"> {/* ✅ 클래스 적용 */}
+                                                    <b>{r.writer || "익명"}</b> · {r.createdAt ? new Date(r.createdAt).toLocaleString() : ""}
+                                                    <div>{r.content}</div>
                                                 </li>
                                             ))}
                                         </ul>
@@ -498,19 +520,7 @@ export default function PostDetail() {
                             </div>
                         </li>
                     </ul>
-
-                    <div className="related-pagination">
-                        <button className="page-btn nav-btn">‹</button>
-                        <button className="page-btn active">1</button>
-                        <button className="page-btn">2</button>
-                        <button className="page-btn">3</button>
-                        <button className="page-btn nav-btn">›</button>
-                    </div>
                 </div>
-
-                <button className="ask-btn" onClick={() => navigate("/community/write")}>
-                    질문하기
-                </button>
             </aside>
         </div>
     );
