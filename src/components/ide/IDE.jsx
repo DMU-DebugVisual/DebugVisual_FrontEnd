@@ -6,7 +6,7 @@ import Editor from '@monaco-editor/react';
 import VisualizationModal from './VisualizationModal';
 import './IDE.css';
 import config from '../../config';
-import { jsonExamples } from '../../generated-examples.js';
+import { jsonExamples } from './mockData/index.js';
 
 // 🎨 Feather Icons CDN 로드
 if (!document.querySelector('script[src*="feather"]')) {

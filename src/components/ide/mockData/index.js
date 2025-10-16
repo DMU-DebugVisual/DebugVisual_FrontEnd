@@ -6,12 +6,68 @@
  * 🗂️ JSON 기반 Mock 데이터 매니저
  */
 
-// JSON 파일들을 동적으로 import하는 함수
+// JSON 파일들 직접 import
+import binaryTreeJson from './binaryTree.json';
+import bubbleSortJson from './bubbleSort.json';
+import fibonacciJson from './fibonacci.json';
+import graphJson from './graph.json';
+import heapJson from './heap.json';
+import linkedListJson from './linkedList.json';
+
+// JSON 예제 파일들을 객체 형태로 export
+export const jsonExamples = [
+    {
+        name: 'binaryTree.json',
+        type: 'json',
+        code: JSON.stringify(binaryTreeJson, null, 2)
+    },
+    {
+        name: 'bubbleSort.json',
+        type: 'json',
+        code: JSON.stringify(bubbleSortJson, null, 2)
+    },
+    {
+        name: 'fibonacci.json',
+        type: 'json',
+        code: JSON.stringify(fibonacciJson, null, 2)
+    },
+    {
+        name: 'graph.json',
+        type: 'json',
+        code: JSON.stringify(graphJson, null, 2)
+    },
+    {
+        name: 'heap.json',
+        type: 'json',
+        code: JSON.stringify(heapJson, null, 2)
+    },
+    {
+        name: 'linkedList.json',
+        type: 'json',
+        code: JSON.stringify(linkedListJson, null, 2)
+    }
+];
+
+// JSON 데이터 객체 매핑 (파일명 -> 원본 JSON 데이터)
+const jsonDataMap = {
+    'binaryTree': binaryTreeJson,
+    'bubbleSort': bubbleSortJson,
+    'fibonacci': fibonacciJson,
+    'graph': graphJson,
+    'heap': heapJson,
+    'linkedList': linkedListJson
+};
+
+// JSON 파일들을 동적으로 import하는 함수 (호환성 유지)
 const importJsonFile = async (filename) => {
     try {
-        // 동적 import로 JSON 파일 로드
-        const module = await import(`./${filename}.json`);
-        return module.default;
+        // 캐시된 데이터에서 찾기
+        const jsonData = jsonDataMap[filename];
+        if (jsonData) {
+            return jsonData;
+        }
+        console.warn(`⚠️ JSON 파일을 찾을 수 없습니다: ${filename}.json`);
+        return null;
     } catch (error) {
         console.warn(`⚠️ JSON 파일 로드 실패: ${filename}.json`, error);
         return null;
