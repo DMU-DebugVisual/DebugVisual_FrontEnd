@@ -110,8 +110,8 @@ export class ApiService {
 
         console.log('✅ JSON Mock 데이터 반환:', {
             algorithm: jsonData.algorithm,
-            stepsCount: jsonData.steps?.length,
-            variablesCount: jsonData.variables?.length
+            eventsCount: jsonData.events?.length,
+            dataSource: jsonData._dataSource || 'mock-json'
         });
 
         return jsonData;
@@ -121,13 +121,13 @@ export class ApiService {
      * 🔧 API 응답이 완전한 시각화 데이터인지 확인
      */
     static isCompleteVisualizationData(apiResponse) {
-        return !!(
-            apiResponse &&
-            apiResponse.variables &&
-            apiResponse.steps &&
-            Array.isArray(apiResponse.steps) &&
-            apiResponse.steps.length > 0
-        );
+        if (!apiResponse) return false;
+
+        if (Array.isArray(apiResponse.events) && apiResponse.events.length > 0) {
+            return true;
+        }
+
+        return Array.isArray(apiResponse.steps) && apiResponse.steps.length > 0;
     }
 
     /**
@@ -159,7 +159,7 @@ export class ApiService {
 
             console.log('🔗 API + JSON 병합 완료:', {
                 hasApiOutput: !!apiResponse.stdout,
-                hasJsonSteps: !!jsonData.steps?.length,
+                jsonEvents: jsonData.events?.length || 0,
                 dataSource: 'hybrid'
             });
 
@@ -177,31 +177,32 @@ export class ApiService {
     static convertSimpleApiResponse(apiResponse, code, language, input) {
         const algorithmType = this.detectAlgorithmType(code);
 
+        const fallbackEvents = [
+            {
+                t: 1,
+                kind: 'note',
+                text: '프로그램 시작'
+            },
+            {
+                t: 2,
+                kind: 'io',
+                dir: 'out',
+                channel: 'stdout',
+                data: apiResponse.stdout || '출력 없음\n'
+            },
+            {
+                t: 3,
+                kind: 'note',
+                text: '프로그램 종료'
+            }
+        ];
+
         return {
             algorithm: algorithmType,
             lang: language || 'unknown',
             input: input || '',
             code: code,
-            variables: [],
-            functions: [],
-            steps: [
-                {
-                    line: 1,
-                    description: "프로그램 시작",
-                    changes: []
-                },
-                {
-                    line: 2,
-                    description: `프로그램 실행 완료`,
-                    changes: [],
-                    output: apiResponse.stdout || '출력 없음'
-                },
-                {
-                    line: 3,
-                    description: "프로그램 종료",
-                    changes: []
-                }
-            ],
+            events: fallbackEvents,
             // API 응답 정보
             stdout: apiResponse.stdout,
             stderr: apiResponse.stderr,

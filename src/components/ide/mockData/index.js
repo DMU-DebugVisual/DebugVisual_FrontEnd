@@ -6,56 +6,28 @@
  * 🗂️ JSON 기반 Mock 데이터 매니저
  */
 
-// JSON 파일들 직접 import
-import binaryTreeJson from './binaryTree.json';
+// JSON 파일들 직접 import (DV-Flow v1.3 스키마)
 import bubbleSortJson from './bubbleSort.json';
-import fibonacciJson from './fibonacci.json';
 import graphJson from './graph.json';
-import heapJson from './heap.json';
-import linkedListJson from './linkedList.json';
 
 // JSON 예제 파일들을 객체 형태로 export
 export const jsonExamples = [
-    {
-        name: 'binaryTree.json',
-        type: 'json',
-        code: JSON.stringify(binaryTreeJson, null, 2)
-    },
     {
         name: 'bubbleSort.json',
         type: 'json',
         code: JSON.stringify(bubbleSortJson, null, 2)
     },
     {
-        name: 'fibonacci.json',
-        type: 'json',
-        code: JSON.stringify(fibonacciJson, null, 2)
-    },
-    {
         name: 'graph.json',
         type: 'json',
         code: JSON.stringify(graphJson, null, 2)
-    },
-    {
-        name: 'heap.json',
-        type: 'json',
-        code: JSON.stringify(heapJson, null, 2)
-    },
-    {
-        name: 'linkedList.json',
-        type: 'json',
-        code: JSON.stringify(linkedListJson, null, 2)
     }
 ];
 
 // JSON 데이터 객체 매핑 (파일명 -> 원본 JSON 데이터)
 const jsonDataMap = {
-    'binaryTree': binaryTreeJson,
-    'bubbleSort': bubbleSortJson,
-    'fibonacci': fibonacciJson,
-    'graph': graphJson,
-    'heap': heapJson,
-    'linkedList': linkedListJson
+    bubbleSort: bubbleSortJson,
+    graph: graphJson
 };
 
 // JSON 파일들을 동적으로 import하는 함수 (호환성 유지)
@@ -76,14 +48,7 @@ const importJsonFile = async (filename) => {
 
 export class JsonVisualizationManager {
     // 📋 현재 사용 가능한 JSON 파일들 (확장자 제외)
-    static availableJsonFiles = [
-        'bubbleSort',
-        'fibonacci',
-        'linkedList',
-        'binaryTree',
-        'heap',
-        'graph'
-    ];
+    static availableJsonFiles = ['bubbleSort', 'graph'];
 
     // 🗄️ 로드된 JSON 데이터 캐시
     static jsonCache = new Map();
@@ -105,12 +70,8 @@ export class JsonVisualizationManager {
 
         // 🔍 패턴 매칭으로 적절한 JSON 파일 찾기
         const patterns = {
-            'bubbleSort': ['bubble', '버블', 'sort'],
-            'fibonacci': ['fibo', '피보나치', 'recursion'],
-            'linkedList': ['linked', 'list', '연결', '노드', 'node'],
-            'binaryTree': ['binary', 'tree', '이진', '트리', 'bst'],
-            'heap': ['heap', '힙', 'priority'],
-            'graph': ['graph', '그래프', 'adj', 'adjacency']
+            bubbleSort: ['bubble', '버블', 'sort'],
+            graph: ['graph', '그래프', 'adj', 'adjacency']
         };
 
         // 패턴 매칭 시도
@@ -157,9 +118,8 @@ export class JsonVisualizationManager {
             this.jsonCache.set(jsonFileName, jsonData);
 
             console.log(`✅ JSON 로드 완료: ${jsonFileName}`, {
-                algorithm: jsonData.algorithm,
-                stepsCount: jsonData.steps?.length,
-                variablesCount: jsonData.variables?.length
+                eventsCount: jsonData.events?.length,
+                lang: jsonData.lang
             });
 
             // 입력값으로 데이터 업데이트
@@ -183,18 +143,8 @@ export class JsonVisualizationManager {
         // 깊은 복사로 원본 데이터 보호
         const updatedData = JSON.parse(JSON.stringify(jsonData));
 
-        // 입력값 업데이트
+        // DV-Flow 스키마에서는 input 문자열만 갱신
         updatedData.input = input;
-
-        // 입력값에 따른 변수 업데이트 (기본적인 처리)
-        const inputNumber = parseInt(input);
-        if (!isNaN(inputNumber)) {
-            updatedData.variables?.forEach(variable => {
-                if (variable.name === 'n' && variable.type === 'int') {
-                    variable.currentValue = inputNumber;
-                }
-            });
-        }
 
         return updatedData;
     }
@@ -203,22 +153,35 @@ export class JsonVisualizationManager {
      * 📝 기본 데이터 생성 (패턴 매칭 실패 시)
      */
     static createDefaultData(code, language, input) {
+        // DV-Flow 스키마에 맞춘 최소 예제
         return {
-            algorithm: 'variables',
             lang: language || 'c',
             input: input || '',
-            variables: [
-                { name: "n", type: "int", initialValue: null, currentValue: parseInt(input) || 5 },
-                { name: "i", type: "int", initialValue: null, currentValue: 1 },
-                { name: "result", type: "int", initialValue: null, currentValue: 0 }
-            ],
-            functions: [],
-            steps: [
-                { line: 1, description: "프로그램 시작" },
-                { line: 2, description: "변수 선언 및 초기화" },
-                { line: 3, description: "계산 수행" },
-                { line: 4, description: "결과 출력" },
-                { line: 5, description: "프로그램 종료" }
+            analysis: {
+                timeComplexity: 'O(1)',
+                spaceComplexity: 'O(1)'
+            },
+            events: [
+                {
+                    t: 1,
+                    kind: 'note',
+                    loc: { line: 1 },
+                    text: '프로그램 시작'
+                },
+                {
+                    t: 2,
+                    kind: 'io',
+                    loc: { line: 2 },
+                    dir: 'out',
+                    channel: 'stdout',
+                    data: input ? `입력: ${input}\n` : '입력 없음\n'
+                },
+                {
+                    t: 3,
+                    kind: 'note',
+                    loc: { line: 3 },
+                    text: '프로그램 종료'
+                }
             ]
         };
     }

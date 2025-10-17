@@ -1,136 +1,90 @@
 {
-  "algorithm": "graph",
   "lang": "c",
   "input": "",
-  "variables": [
-    { "name": "g", "type": "graph", "initialValue": "empty", "currentValue": "adjacency matrix filled" }
-  ],
-  "functions": [
-    { "name": "init", "params": ["g"], "called": 1 },
-    { "name": "insert_vertex", "params": ["g", "v"], "called": 4 },
-    { "name": "insert_edge", "params": ["g", "start", "end"], "called": 5 },
-    { "name": "print_adj_mat", "params": ["g"], "called": 1 }
-  ],
-  "steps": [
-    {
-      "line": 41,
-      "description": "그래프 생성 및 초기화",
-      "changes": [
-        { "variable": "g", "before": "empty", "after": "n=0, adj_mat 초기화됨" }
-      ],
-      "dataStructure": {
-        "type": "graph",
-        "nodes": []
-      }
-    },
-    {
-      "line": 43,
-      "description": "정점 0 삽입 (n=1)",
-      "changes": [
-        { "variable": "g", "before": "n=0", "after": "n=1" }
-      ],
-      "dataStructure": {
-        "type": "graph",
-        "nodes": ["0"]
-      }
-    },
-    {
-      "line": 43,
-      "description": "정점 1 삽입 (n=2)",
-      "changes": [
-        { "variable": "g", "before": "n=1", "after": "n=2" }
-      ],
-      "dataStructure": {
-        "type": "graph",
-        "nodes": ["0", "1"]
-      }
-    },
-    {
-      "line": 43,
-      "description": "정점 2 삽입 (n=3)",
-      "changes": [
-        { "variable": "g", "before": "n=2", "after": "n=3" }
-      ],
-      "dataStructure": {
-        "type": "graph",
-        "nodes": ["0", "1", "2"]
-      }
-    },
-    {
-      "line": 43,
-      "description": "정점 3 삽입 (n=4)",
-      "changes": [
-        { "variable": "g", "before": "n=3", "after": "n=4" }
-      ],
-      "dataStructure": {
-        "type": "graph",
-        "nodes": ["0", "1", "2", "3"]
-      }
-    },
-    {
-      "line": 44,
-      "description": "간선 (0,1) 추가",
-      "changes": [],
-      "dataStructure": {
-        "type": "graph",
-        "nodes": ["0", "1", "2", "3"],
-        "edges": [["0", "1"]]
-      }
-    },
-    {
-      "line": 45,
-      "description": "간선 (0,2) 추가",
-      "changes": [],
-      "dataStructure": {
-        "type": "graph",
-        "nodes": ["0", "1", "2", "3"],
-        "edges": [["0", "1"], ["0", "2"]]
-      }
-    },
-    {
-      "line": 46,
-      "description": "간선 (0,3) 추가",
-      "changes": [],
-      "dataStructure": {
-        "type": "graph",
-        "nodes": ["0", "1", "2", "3"],
-        "edges": [["0", "1"], ["0", "2"], ["0", "3"]]
-      }
-    },
-    {
-      "line": 47,
-      "description": "간선 (1,2) 추가",
-      "changes": [],
-      "dataStructure": {
-        "type": "graph",
-        "nodes": ["0", "1", "2", "3"],
-        "edges": [["0", "1"], ["0", "2"], ["0", "3"], ["1", "2"]]
-      }
-    },
-    {
-      "line": 48,
-      "description": "간선 (2,3) 추가",
-      "changes": [],
-      "dataStructure": {
-        "type": "graph",
-        "nodes": ["0", "1", "2", "3"],
-        "edges": [["0", "1"], ["0", "2"], ["0", "3"], ["1", "2"], ["2", "3"]]
-      }
-    },
-    {
-      "line": 49,
-      "description": "인접 행렬 출력",
-      "changes": [],
-      "dataStructure": {
-        "type": "graph",
-        "nodes": ["0", "1", "2", "3"],
-        "adjacencyMatrix": [
-          [0, 1, 1, 1],
-          [1, 0, 1, 0],
-          [1, 1, 0, 1],
-          [1, 0, 1, 0]
-        ]
-      }
+  "analysis": {
+    "timeComplexity": "O(V^2 + E)",
+    "spaceComplexity": "O(V^2)",
+    "opCounts": {
+      "call": 13,
+      "return": 13,
+      "assign": 6,
+      "compare": 6,
+      "branch": 6,
+      "ds_op": 10,
+      "loopIter": 8,
+      "io": 4,
+      "note": 1,
+      "swap": 0,
+      "exception": 0
     }
+  },
+  "events": [
+    { "t": 1, "kind": "call", "loc": { "file": "main.c", "line": 54 }, "fn": "malloc", "args": [ { "name": "size", "value": 408 } ] },
+    { "t": 2, "kind": "return", "loc": { "file": "main.c", "line": 54 }, "fn": "malloc", "value": "ptr0" },
+    { "t": 3, "kind": "assign", "loc": { "file": "main.c", "line": 54 }, "var": "g", "before": null, "after": "ptr0" },
+    { "t": 4, "kind": "call", "loc": { "file": "main.c", "line": 55 }, "fn": "init", "args": [ { "name": "g", "value": "ptr0" } ] },
+    { "t": 5, "kind": "assign", "loc": { "file": "main.c", "line": 15 }, "var": "g->n", "before": null, "after": 0 },
+    { "t": 6, "kind": "note", "loc": { "file": "main.c", "line": 16 }, "text": "Initialize g->adj_mat[0..49][0..49] = 0 (2500 cells via nested for-loops)." },
+    { "t": 7, "kind": "return", "loc": { "file": "main.c", "line": 19 }, "fn": "init", "value": null },
+    { "t": 8, "kind": "loopIter", "loc": { "file": "main.c", "line": 56 }, "loop": { "type": "for", "iter": 0, "total": 4 } },
+    { "t": 9, "kind": "call", "loc": { "file": "main.c", "line": 57 }, "fn": "insert_vertex", "args": [ { "name": "g", "value": "ptr0" }, { "name": "v", "value": 0 } ] },
+    { "t": 10, "kind": "compare", "loc": { "file": "main.c", "line": 24 }, "expr": "(g->n + 1) > MAX_VERTICES", "read": [ { "ref": "g->n", "value": 0 }, { "ref": "MAX_VERTICES", "value": 50 } ], "result": false },
+    { "t": 11, "kind": "branch", "loc": { "file": "main.c", "line": 24 }, "expr": "if (((g->n)+1)>MAX_VERTICES)", "result": false },
+    { "t": 12, "kind": "assign", "loc": { "file": "main.c", "line": 28 }, "var": "g->n", "before": 0, "after": 1 },
+    { "t": 13, "kind": "return", "loc": { "file": "main.c", "line": 29 }, "fn": "insert_vertex", "value": null },
+    { "t": 14, "kind": "loopIter", "loc": { "file": "main.c", "line": 56 }, "loop": { "type": "for", "iter": 1, "total": 4 } },
+    { "t": 15, "kind": "call", "loc": { "file": "main.c", "line": 57 }, "fn": "insert_vertex", "args": [ { "name": "g", "value": "ptr0" }, { "name": "v", "value": 1 } ] },
+    { "t": 16, "kind": "assign", "loc": { "file": "main.c", "line": 28 }, "var": "g->n", "before": 1, "after": 2 },
+    { "t": 17, "kind": "return", "loc": { "file": "main.c", "line": 29 }, "fn": "insert_vertex", "value": null },
+    { "t": 18, "kind": "loopIter", "loc": { "file": "main.c", "line": 56 }, "loop": { "type": "for", "iter": 2, "total": 4 } },
+    { "t": 19, "kind": "call", "loc": { "file": "main.c", "line": 57 }, "fn": "insert_vertex", "args": [ { "name": "g", "value": "ptr0" }, { "name": "v", "value": 2 } ] },
+    { "t": 20, "kind": "assign", "loc": { "file": "main.c", "line": 28 }, "var": "g->n", "before": 2, "after": 3 },
+    { "t": 21, "kind": "return", "loc": { "file": "main.c", "line": 29 }, "fn": "insert_vertex", "value": null },
+    { "t": 22, "kind": "loopIter", "loc": { "file": "main.c", "line": 56 }, "loop": { "type": "for", "iter": 3, "total": 4 } },
+    { "t": 23, "kind": "call", "loc": { "file": "main.c", "line": 57 }, "fn": "insert_vertex", "args": [ { "name": "g", "value": "ptr0" }, { "name": "v", "value": 3 } ] },
+    { "t": 24, "kind": "assign", "loc": { "file": "main.c", "line": 28 }, "var": "g->n", "before": 3, "after": 4 },
+    { "t": 25, "kind": "return", "loc": { "file": "main.c", "line": 29 }, "fn": "insert_vertex", "value": null },
+    { "t": 26, "kind": "call", "loc": { "file": "main.c", "line": 58 }, "fn": "insert_edge", "args": [ { "name": "g", "value": "ptr0" }, { "name": "start", "value": 0 }, { "name": "end", "value": 1 } ] },
+    { "t": 27, "kind": "compare", "loc": { "file": "main.c", "line": 33 }, "expr": "(start>=g->n) || (end>=g->n)", "read": [ { "ref": "start", "value": 0 }, { "ref": "end", "value": 1 }, { "ref": "g->n", "value": 4 } ], "result": false },
+    { "t": 28, "kind": "branch", "loc": { "file": "main.c", "line": 33 }, "expr": "if(start>=g->n||end>=g->n)", "result": false },
+    { "t": 29, "kind": "ds_op", "loc": { "file": "main.c", "line": 37 }, "target": "g->adj_mat", "op": "set", "args": [ 0, 1, 1 ] },
+    { "t": 30, "kind": "ds_op", "loc": { "file": "main.c", "line": 38 }, "target": "g->adj_mat", "op": "set", "args": [ 1, 0, 1 ] },
+    { "t": 31, "kind": "return", "loc": { "file": "main.c", "line": 39 }, "fn": "insert_edge", "value": null },
+    { "t": 32, "kind": "call", "loc": { "file": "main.c", "line": 59 }, "fn": "insert_edge", "args": [ { "name": "g", "value": "ptr0" }, { "name": "start", "value": 0 }, { "name": "end", "value": 2 } ] },
+    { "t": 33, "kind": "compare", "loc": { "file": "main.c", "line": 33 }, "expr": "(start>=g->n) || (end>=g->n)", "read": [ { "ref": "start", "value": 0 }, { "ref": "end", "value": 2 }, { "ref": "g->n", "value": 4 } ], "result": false },
+    { "t": 34, "kind": "branch", "loc": { "file": "main.c", "line": 33 }, "expr": "if(start>=g->n||end>=g->n)", "result": false },
+    { "t": 35, "kind": "ds_op", "loc": { "file": "main.c", "line": 37 }, "target": "g->adj_mat", "op": "set", "args": [ 0, 2, 1 ] },
+    { "t": 36, "kind": "ds_op", "loc": { "file": "main.c", "line": 38 }, "target": "g->adj_mat", "op": "set", "args": [ 2, 0, 1 ] },
+    { "t": 37, "kind": "return", "loc": { "file": "main.c", "line": 39 }, "fn": "insert_edge", "value": null },
+    { "t": 38, "kind": "call", "loc": { "file": "main.c", "line": 60 }, "fn": "insert_edge", "args": [ { "name": "g", "value": "ptr0" }, { "name": "start", "value": 0 }, { "name": "end", "value": 3 } ] },
+    { "t": 39, "kind": "compare", "loc": { "file": "main.c", "line": 33 }, "expr": "(start>=g->n) || (end>=g->n)", "read": [ { "ref": "start", "value": 0 }, { "ref": "end", "value": 3 }, { "ref": "g->n", "value": 4 } ], "result": false },
+    { "t": 40, "kind": "branch", "loc": { "file": "main.c", "line": 33 }, "expr": "if(start>=g->n||end>=g->n)", "result": false },
+    { "t": 41, "kind": "ds_op", "loc": { "file": "main.c", "line": 37 }, "target": "g->adj_mat", "op": "set", "args": [ 0, 3, 1 ] },
+    { "t": 42, "kind": "ds_op", "loc": { "file": "main.c", "line": 38 }, "target": "g->adj_mat", "op": "set", "args": [ 3, 0, 1 ] },
+    { "t": 43, "kind": "return", "loc": { "file": "main.c", "line": 39 }, "fn": "insert_edge", "value": null },
+    { "t": 44, "kind": "call", "loc": { "file": "main.c", "line": 61 }, "fn": "insert_edge", "args": [ { "name": "g", "value": "ptr0" }, { "name": "start", "value": 1 }, { "name": "end", "value": 2 } ] },
+    { "t": 45, "kind": "compare", "loc": { "file": "main.c", "line": 33 }, "expr": "(start>=g->n) || (end>=g->n)", "read": [ { "ref": "start", "value": 1 }, { "ref": "end", "value": 2 }, { "ref": "g->n", "value": 4 } ], "result": false },
+    { "t": 46, "kind": "branch", "loc": { "file": "main.c", "line": 33 }, "expr": "if(start>=g->n||end>=g->n)", "result": false },
+    { "t": 47, "kind": "ds_op", "loc": { "file": "main.c", "line": 37 }, "target": "g->adj_mat", "op": "set", "args": [ 1, 2, 1 ] },
+    { "t": 48, "kind": "ds_op", "loc": { "file": "main.c", "line": 38 }, "target": "g->adj_mat", "op": "set", "args": [ 2, 1, 1 ] },
+    { "t": 49, "kind": "return", "loc": { "file": "main.c", "line": 39 }, "fn": "insert_edge", "value": null },
+    { "t": 50, "kind": "call", "loc": { "file": "main.c", "line": 62 }, "fn": "insert_edge", "args": [ { "name": "g", "value": "ptr0" }, { "name": "start", "value": 2 }, { "name": "end", "value": 3 } ] },
+    { "t": 51, "kind": "compare", "loc": { "file": "main.c", "line": 33 }, "expr": "(start>=g->n) || (end>=g->n)", "read": [ { "ref": "start", "value": 2 }, { "ref": "end", "value": 3 }, { "ref": "g->n", "value": 4 } ], "result": false },
+    { "t": 52, "kind": "branch", "loc": { "file": "main.c", "line": 33 }, "expr": "if(start>=g->n||end>=g->n)", "result": false },
+    { "t": 53, "kind": "ds_op", "loc": { "file": "main.c", "line": 37 }, "target": "g->adj_mat", "op": "set", "args": [ 2, 3, 1 ] },
+    { "t": 54, "kind": "ds_op", "loc": { "file": "main.c", "line": 38 }, "target": "g->adj_mat", "op": "set", "args": [ 3, 2, 1 ] },
+    { "t": 55, "kind": "return", "loc": { "file": "main.c", "line": 39 }, "fn": "insert_edge", "value": null },
+    { "t": 56, "kind": "call", "loc": { "file": "main.c", "line": 63 }, "fn": "print_adj_mat", "args": [ { "name": "g", "value": "ptr0" } ] },
+    { "t": 57, "kind": "loopIter", "loc": { "file": "main.c", "line": 43 }, "loop": { "type": "for", "iter": 0, "total": 4 } },
+    { "t": 58, "kind": "io", "loc": { "file": "main.c", "line": 47 }, "dir": "out", "channel": "stdout", "data": " 0 1 1 1\n" },
+    { "t": 59, "kind": "loopIter", "loc": { "file": "main.c", "line": 43 }, "loop": { "type": "for", "iter": 1, "total": 4 } },
+    { "t": 60, "kind": "io", "loc": { "file": "main.c", "line": 47 }, "dir": "out", "channel": "stdout", "data": " 1 0 1 0\n" },
+    { "t": 61, "kind": "loopIter", "loc": { "file": "main.c", "line": 43 }, "loop": { "type": "for", "iter": 2, "total": 4 } },
+    { "t": 62, "kind": "io", "loc": { "file": "main.c", "line": 47 }, "dir": "out", "channel": "stdout", "data": " 1 1 0 1\n" },
+    { "t": 63, "kind": "loopIter", "loc": { "file": "main.c", "line": 43 }, "loop": { "type": "for", "iter": 3, "total": 4 } },
+    { "t": 64, "kind": "io", "loc": { "file": "main.c", "line": 47 }, "dir": "out", "channel": "stdout", "data": " 1 0 1 0\n" },
+    { "t": 65, "kind": "return", "loc": { "file": "main.c", "line": 49 }, "fn": "print_adj_mat", "value": null },
+    { "t": 66, "kind": "call", "loc": { "file": "main.c", "line": 65 }, "fn": "free", "args": [ { "name": "ptr", "value": "ptr0" } ] },
+    { "t": 67, "kind": "return", "loc": { "file": "main.c", "line": 65 }, "fn": "free", "value": null }
   ]
 }
