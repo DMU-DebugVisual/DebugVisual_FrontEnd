@@ -914,7 +914,7 @@ const VisualizationModal = ({
     const theme = getTheme(isDark);
 
     // 🆕 시각화 데이터 가져오기 함수 - JSON 직접 지원
-    const fetchVisualizationData = async () => {
+    const fetchVisualizationData = useCallback(async () => {
         if (!code?.trim()) {
             setError('코드가 비어있습니다.');
             return;
@@ -1034,7 +1034,7 @@ const VisualizationModal = ({
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [code, language, input, preloadedJsonData, isJsonFile, animationControls]);
 
     const toggleApiMode = () => {
         // JSON 데이터가 미리 로드된 경우 API 모드 변경 불가
@@ -1069,26 +1069,26 @@ const VisualizationModal = ({
     };
 
     // 모달 초기화
-    const resetModal = () => {
+    const resetModal = useCallback(() => {
         setData(null);
         setError(null);
         setTotalSteps(0);
         animationControls.reset();
-    };
+    }, [animationControls]);
 
     // 모달이 열릴 때 자동으로 시각화 생성
     useEffect(() => {
         if (isOpen && !data && !isLoading) {
             fetchVisualizationData();
         }
-    }, [isOpen, preloadedJsonData]); // preloadedJsonData 의존성 추가
+    }, [isOpen, data, isLoading, fetchVisualizationData]);
 
     // 모달이 닫힐 때 상태 초기화
     useEffect(() => {
         if (!isOpen) {
             resetModal();
         }
-    }, [isOpen]);
+    }, [isOpen, resetModal]);
 
     // ESC 키로 모달 닫기
     useEffect(() => {
