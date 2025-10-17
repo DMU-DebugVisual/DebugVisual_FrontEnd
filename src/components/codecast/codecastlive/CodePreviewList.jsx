@@ -1,3 +1,4 @@
+// CodePreviewList.jsx
 import React from 'react';
 import './CodePreviewList.css';
 import { FaCrown, FaPenFancy, FaEye } from 'react-icons/fa';
@@ -13,9 +14,9 @@ export default function CodePreviewList({ participants, activeName, onSelect }) 
         <div className="preview-bar">
             <div className="preview-track">
                 {participants.map((p) => {
-                    const hasFile = !!p.file; // 파일 선택 여부
-                    const content = p.file?.content ?? '';
-                    const hasContent = content.trim().length > 0;
+                    const isEditing = p.stage === 'editing';        // ✅ 세션(파일) 선택 여부의 신뢰 가능한 기준
+                    const code = (p.code ?? '');                    // ✅ 코드의 최신 소스는 p.code로
+                    const previewText = isEditing ? code.slice(0, 120) : '파일 미선택 / 코드 없음';
 
                     return (
                         <button
@@ -29,11 +30,7 @@ export default function CodePreviewList({ participants, activeName, onSelect }) 
                                 <span className="p-name">{p.name}</span>
                             </div>
 
-                            <pre className="snippet">
-                {hasFile
-                    ? (hasContent ? content.slice(0, 120) : '') // ✅ 새 파일(빈 내용) → 비워두기
-                    : '파일 미선택 / 코드 없음'}                  {/* ✅ 파일 없을 때만 플레이스홀더 */}
-              </pre>
+                            <pre className="snippet">{previewText}</pre>
                         </button>
                     );
                 })}

@@ -1,39 +1,11 @@
-/* 백드롭 */
-.chat-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .2s ease;
-    z-index: 1500;
-}
-.chat-backdrop.show {
-    background: rgba(0,0,0,0.35);
-    opacity: 1;
-    pointer-events: auto;
-}
-
-/* 패널 */
-.chat-panel {
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: 360px;
-    max-width: calc(100% - 48px);
-    height: 100vh;
-    background: #fff;
-    border-left: 1px solid #e6e6ef;
-    box-shadow: -8px 0 24px rgba(0,0,0,0.08);
-    transform: translateX(100%);
-    transition: transform .22s ease;
-    z-index: 1600;
-
+/* 도킹 모드 공통 */
+.chat-panel.docked {
+    position: sticky;          /* 헤더 아래에 고정 */
     display: flex;
     flex-direction: column;
-}
-.chat-panel.open {
-    transform: translateX(0);
+    background: #fff;
+    border-left: 1px solid #eee;
+    /* 우측 고정 폭은 부모(grid)에서 제어 (340px) */
 }
 
 .chat-header {
@@ -96,7 +68,7 @@
 }
 
 /* 다크 모드 */
-.dark-mode .chat-panel {
+.dark-mode .chat-panel.docked {
     background: #1a1a26;
     border-left: 1px solid rgba(255,255,255,0.08);
     box-shadow: -10px 0 28px rgba(0,0,0,0.35);
