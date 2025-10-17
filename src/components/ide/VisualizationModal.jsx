@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import AnimationFactory from './AnimationFactory';
 // 🆕 API 서비스 import
 import { ApiService } from './services/ApiService';
+import normalizeDVFlowData from './utils/dvflowParser';
 
 // 애니메이션 컨트롤 훅
 const useAnimationControls = (totalSteps) => {
@@ -580,7 +581,29 @@ const InfoPanel = ({ data, currentStep, totalSteps, animationType, theme }) => {
         </div>
     );
 
-    const currentStepData = data?.steps?.[currentStep];
+    const frames = data?.frames || [];
+    const currentFrame = frames[currentStep] || null;
+    const event = currentFrame?.event || null;
+    const outputs = data?.outputs || [];
+    const analysis = data?.analysis || {};
+    const opCounts = analysis.opCounts || null;
+
+    const renderArrayChip = (label, arr) => (
+        <div style={{
+            padding: '6px 8px',
+            background: theme.colors.cardSecondary,
+            borderRadius: '6px',
+            fontSize: '12px',
+            color: theme.colors.text,
+            border: `1px solid ${theme.colors.border}`,
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: '8px'
+        }}>
+            <span style={{ color: theme.colors.textLight }}>{label}</span>
+            <span style={{ fontFamily: 'monospace' }}>[{arr.join(', ')}]</span>
+        </div>
+    );
 
     return (
         <div style={{
@@ -593,7 +616,6 @@ const InfoPanel = ({ data, currentStep, totalSteps, animationType, theme }) => {
             maxHeight: 'calc(100vh - 160px)',
             paddingRight: '8px'
         }}>
-            {/* 현재 단계 정보 */}
             <InfoCard title="현재 단계" icon="🎯">
                 <div style={{
                     display: 'flex',
@@ -606,205 +628,259 @@ const InfoPanel = ({ data, currentStep, totalSteps, animationType, theme }) => {
                         fontWeight: '700',
                         color: theme.colors.primary
                     }}>
-                        {currentStep + 1}
+                        {totalSteps === 0 ? 0 : currentStep + 1}
                     </span>
                     <span style={{ color: theme.colors.textLight }}>/ {totalSteps}</span>
                 </div>
 
-                {currentStepData?.description && (
+                {currentFrame ? (
+                    <>
+                        {currentFrame.description && (
+                            <div style={{
+                                padding: '12px',
+                                background: theme.colors.cardSecondary,
+                                borderRadius: '8px',
+                                borderLeft: `4px solid ${theme.colors.primary}`,
+                                fontSize: '13px',
+                                color: theme.colors.textLight,
+                                marginBottom: '8px',
+                                lineHeight: '1.4'
+                            }}>
+                                {currentFrame.description}
+                            </div>
+                        )}
+
+                        <div style={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: '8px',
+                            fontSize: '11px'
+                        }}>
+                            {event?.kind && (
+                                <span style={{
+                                    padding: '4px 8px',
+                                    borderRadius: '999px',
+                                    background: `${theme.colors.primary}20`,
+                                    color: theme.colors.primary,
+                                    fontWeight: '600'
+                                }}>
+                                    이벤트: {event.kind}
+                                </span>
+                            )}
+                            {event?.loc?.line && (
+                                <span style={{
+                                    padding: '4px 8px',
+                                    borderRadius: '999px',
+                                    background: `${theme.colors.info}20`,
+                                    color: theme.colors.info,
+                                    fontWeight: '600'
+                                }}>
+                                    � 라인 {event.loc.line}
+                                </span>
+                            )}
+                        </div>
+
+                        {currentFrame.list && currentFrame.list.length > 0 && (
+                            <div style={{ marginTop: '12px' }}>
+                                {renderArrayChip('배열 상태', currentFrame.list)}
+                            </div>
+                        )}
+
+                        {currentFrame.pointers && Object.keys(currentFrame.pointers).length > 0 && (
+                            <div style={{
+                                marginTop: '12px',
+                                display: 'flex',
+                                gap: '8px',
+                                flexWrap: 'wrap'
+                            }}>
+                                {Object.entries(currentFrame.pointers)
+                                    .filter(([, value]) => value !== null && value !== undefined)
+                                    .map(([name, value]) => (
+                                        <div key={name} style={{
+                                            padding: '6px 10px',
+                                            background: `${theme.colors.warning}20`,
+                                            borderRadius: '6px',
+                                            fontSize: '12px',
+                                            color: theme.colors.warning,
+                                            fontWeight: '600'
+                                        }}>
+                                            {name.toUpperCase()}: {value}
+                                        </div>
+                                    ))}
+                            </div>
+                        )}
+
+                        {currentFrame.highlight?.compare && currentFrame.highlight.compare.length > 0 && (
+                            <div style={{
+                                marginTop: '12px',
+                                padding: '6px 8px',
+                                background: `${theme.colors.info}20`,
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                color: theme.colors.info
+                            }}>
+                                비교 인덱스: {currentFrame.highlight.compare.join(', ')}
+                            </div>
+                        )}
+
+                        {currentFrame.highlight?.swap && currentFrame.highlight.swap.length > 0 && (
+                            <div style={{
+                                marginTop: '6px',
+                                padding: '6px 8px',
+                                background: `${theme.colors.success}20`,
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                color: theme.colors.success
+                            }}>
+                                교환: {currentFrame.highlight.swap.join(' ↔ ')}
+                            </div>
+                        )}
+
+                        {currentFrame.details?.output && (
+                            <div style={{
+                                marginTop: '12px',
+                                padding: '8px 10px',
+                                background: `${theme.colors.info}15`,
+                                borderRadius: '6px',
+                                border: `1px solid ${theme.colors.info}30`,
+                                fontSize: '12px',
+                                color: theme.colors.info,
+                                whiteSpace: 'pre-wrap'
+                            }}>
+                                출력: {currentFrame.details.output}
+                            </div>
+                        )}
+                    </>
+                ) : (
                     <div style={{
                         padding: '12px',
-                        background: theme.colors.cardSecondary,
+                        background: `${theme.colors.cardSecondary}`,
                         borderRadius: '8px',
-                        borderLeft: `4px solid ${theme.colors.primary}`,
-                        fontSize: '13px',
                         color: theme.colors.textLight,
-                        marginBottom: '8px',
-                        lineHeight: '1.4'
+                        fontSize: '13px'
                     }}>
-                        {currentStepData.description}
-                    </div>
-                )}
-
-                {currentStepData?.line && (
-                    <div style={{
-                        fontSize: '12px',
-                        color: theme.colors.primary,
-                        background: `${theme.colors.primary}20`,
-                        padding: '6px 10px',
-                        borderRadius: '6px',
-                        fontWeight: '500'
-                    }}>
-                        📍 라인 {currentStepData.line}
+                        표시할 단계가 없습니다.
                     </div>
                 )}
             </InfoCard>
 
-            {/* 데이터 정보 */}
-            <InfoCard title="시각화 데이터 정보" icon="📊">
+            <InfoCard title="시각화 데이터" icon="📊">
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {[
-                        { label: '알고리즘', value: data?.algorithm || 'Unknown' },
+                        { label: '알고리즘', value: data?.meta?.algorithmName || 'Unknown' },
+                        { label: '애니메이션 타입', value: animationType },
                         { label: '언어', value: data?.lang || 'Unknown' },
-                        { label: '⏰ 시간복잡도', value: data?.TimeComplexity || 'O(?)', isComplexity: true, complexityType: 'time' },
-                        { label: '💾 공간복잡도', value: data?.SpaceComplexity || 'O(?)', isComplexity: true, complexityType: 'space' },
                         { label: '입력값', value: data?.input || '없음' },
-                        { label: '변수 개수', value: `${data?.variables?.length || 0}개` },
-                        { label: '실행 단계', value: `${totalSteps}단계` },
-                        { label: '데이터 소스', value: data?._dataSource || 'unknown' },
-                        { label: '애니메이션 타입', value: animationType }
-                    ].map((item, index) => (
-                        <div key={index} style={{
+                        { label: '이벤트 수', value: `${data?.events?.length || 0} 개` },
+                        { label: '데이터 소스', value: data?._dataSource || 'unknown' }
+                    ].map((item, idx) => (
+                        <div key={idx} style={{
                             display: 'flex',
                             justifyContent: 'space-between',
                             padding: '6px 8px',
-                            background: item.isComplexity
-                                ? (item.complexityType === 'time'
-                                    ? `${theme.colors.warning}20`
-                                    : `${theme.colors.info}20`)
-                                : theme.colors.cardSecondary,
+                            background: theme.colors.cardSecondary,
                             borderRadius: '6px',
-                            fontSize: '12px',
-                            border: item.isComplexity
-                                ? (item.complexityType === 'time'
-                                    ? `1px solid ${theme.colors.warning}`
-                                    : `1px solid ${theme.colors.info}`)
-                                : 'none'
+                            fontSize: '12px'
                         }}>
-                            <span style={{
-                                color: item.isComplexity
-                                    ? (item.complexityType === 'time' ? theme.colors.warning : theme.colors.info)
-                                    : theme.colors.textLight,
-                                fontWeight: item.isComplexity ? '600' : 'normal'
-                            }}>
-                                {item.label}:
-                            </span>
-                            <span style={{
-                                fontWeight: '600',
-                                color: item.isComplexity
-                                    ? (item.complexityType === 'time' ? theme.colors.warning : theme.colors.info)
-                                    : theme.colors.text,
-                                fontFamily: item.isComplexity ? 'monospace' : 'inherit'
-                            }}>
-                                {item.value}
-                            </span>
+                            <span style={{ color: theme.colors.textLight }}>{item.label}</span>
+                            <span style={{ fontWeight: '600', color: theme.colors.text }}>{item.value}</span>
                         </div>
                     ))}
+
+                    <div style={{
+                        display: 'flex',
+                        gap: '8px'
+                    }}>
+                        <div style={{
+                            flex: 1,
+                            padding: '6px 8px',
+                            background: `${theme.colors.warning}20`,
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            border: `1px solid ${theme.colors.warning}40`
+                        }}>
+                            ⏰ 시간복잡도
+                            <div style={{
+                                fontFamily: 'monospace',
+                                fontWeight: '600',
+                                marginTop: '2px',
+                                color: theme.colors.warning
+                            }}>
+                                {analysis.timeComplexity || '알 수 없음'}
+                            </div>
+                        </div>
+                        <div style={{
+                            flex: 1,
+                            padding: '6px 8px',
+                            background: `${theme.colors.info}20`,
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            border: `1px solid ${theme.colors.info}40`
+                        }}>
+                            💾 공간복잡도
+                            <div style={{
+                                fontFamily: 'monospace',
+                                fontWeight: '600',
+                                marginTop: '2px',
+                                color: theme.colors.info
+                            }}>
+                                {analysis.spaceComplexity || '알 수 없음'}
+                            </div>
+                        </div>
+                    </div>
+
+                    {opCounts && (
+                        <div style={{
+                            marginTop: '8px',
+                            padding: '8px',
+                            background: `${theme.colors.cardSecondary}`,
+                            borderRadius: '6px',
+                            border: `1px dashed ${theme.colors.border}`,
+                            fontSize: '12px',
+                            color: theme.colors.text
+                        }}>
+                            <div style={{ fontWeight: '600', marginBottom: '6px' }}>연산 카운트</div>
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
+                                gap: '6px'
+                            }}>
+                                {Object.entries(opCounts).map(([key, value]) => (
+                                    <div key={key} style={{
+                                        padding: '6px',
+                                        background: theme.colors.card,
+                                        borderRadius: '6px',
+                                        border: `1px solid ${theme.colors.border}`,
+                                        textAlign: 'center'
+                                    }}>
+                                        <div style={{ color: theme.colors.textLight }}>{key}</div>
+                                        <div style={{ fontWeight: '600' }}>{value}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </InfoCard>
 
-            {/* API 출력 결과 */}
-            {(data?.stdout || data?.stderr) && (
-                <InfoCard title="실행 결과" icon="💻">
-                    {data.stdout && (
-                        <div style={{
-                            background: `${theme.colors.info}15`,
-                            border: `1px solid ${theme.colors.info}30`,
-                            borderRadius: '6px',
-                            padding: '8px',
-                            marginBottom: '8px'
-                        }}>
-                            <div style={{ fontSize: '11px', color: theme.colors.info, marginBottom: '4px' }}>STDOUT:</div>
-                            <pre style={{
-                                margin: 0,
-                                fontSize: '12px',
-                                color: theme.colors.text,
-                                whiteSpace: 'pre-wrap',
-                                wordBreak: 'break-all'
-                            }}>
-                                {data.stdout}
-                            </pre>
-                        </div>
-                    )}
-                    {data.stderr && (
-                        <div style={{
-                            background: `${theme.colors.danger}15`,
-                            border: `1px solid ${theme.colors.danger}30`,
-                            borderRadius: '6px',
-                            padding: '8px'
-                        }}>
-                            <div style={{ fontSize: '11px', color: theme.colors.danger, marginBottom: '4px' }}>STDERR:</div>
-                            <pre style={{
-                                margin: 0,
-                                fontSize: '12px',
-                                color: theme.colors.danger,
-                                whiteSpace: 'pre-wrap',
-                                wordBreak: 'break-all'
-                            }}>
-                                {data.stderr}
-                            </pre>
-                        </div>
-                    )}
-                </InfoCard>
-            )}
-
-            {/* 변수 상태 */}
-            {data?.variables && data.variables.length > 0 && (
-                <InfoCard title="변수 상태" icon="📝">
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        {data.variables.map((variable, index) => (
-                            <div key={index} style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                padding: '8px 10px',
-                                background: theme.colors.cardSecondary,
+            {outputs.length > 0 && (
+                <InfoCard title="출력 로그" icon="�">
+                    <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '6px'
+                    }}>
+                        {outputs.map((line, idx) => (
+                            <div key={idx} style={{
+                                padding: '8px',
+                                background: `${theme.colors.info}15`,
                                 borderRadius: '6px',
-                                border: `1px solid ${theme.colors.border}`
+                                border: `1px solid ${theme.colors.info}30`,
+                                color: theme.colors.info,
+                                fontSize: '12px',
+                                whiteSpace: 'pre-wrap'
                             }}>
-                                <div>
-                                    <span style={{
-                                        fontWeight: '600',
-                                        color: theme.colors.primary,
-                                        fontSize: '13px'
-                                    }}>
-                                        {variable.name}
-                                    </span>
-                                    <span style={{
-                                        fontSize: '11px',
-                                        color: theme.colors.textLight,
-                                        marginLeft: '6px'
-                                    }}>
-                                        ({variable.type})
-                                    </span>
-                                </div>
-                                <span style={{
-                                    fontWeight: '600',
-                                    padding: '2px 6px',
-                                    background: `${theme.colors.primary}20`,
-                                    borderRadius: '4px',
-                                    fontSize: '11px',
-                                    color: theme.colors.primary
-                                }}>
-                                    {Array.isArray(variable.currentValue)
-                                        ? `[${variable.currentValue.join(', ')}]`
-                                        : (variable.currentValue ?? 'null')
-                                    }
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                </InfoCard>
-            )}
-
-            {/* 변수 변화 */}
-            {currentStepData?.changes && currentStepData.changes.length > 0 && (
-                <InfoCard title="변수 변화" icon="🔄">
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        {currentStepData.changes.map((change, index) => (
-                            <div key={index} style={{
-                                padding: '8px 10px',
-                                background: `${theme.colors.warning}20`,
-                                borderRadius: '6px',
-                                borderLeft: `3px solid ${theme.colors.warning}`,
-                                fontSize: '12px'
-                            }}>
-                                <span style={{ fontWeight: '600', color: theme.colors.warning }}>
-                                    {change.variable}
-                                </span>
-                                <span style={{ color: theme.colors.textLight, marginLeft: '6px' }}>
-                                    : {JSON.stringify(change.before)} → {JSON.stringify(change.after)}
-                                </span>
+                                {line}
                             </div>
                         ))}
                     </div>
@@ -855,25 +931,22 @@ const VisualizationModal = ({
                 // 약간의 딜레이로 로딩 효과만 제공 (API 호출은 하지 않음)
                 await new Promise(resolve => setTimeout(resolve, 200));
 
-                // JSON 데이터에 _dataSource 표시 추가
                 const jsonDataWithSource = {
                     ...preloadedJsonData,
                     _dataSource: 'preloaded-json'
                 };
 
-                setData(jsonDataWithSource);
-                const steps = preloadedJsonData.steps?.length || 0;
-                setTotalSteps(steps);
-                animationControls.reset();
+                const { data: normalizedData, animationType: detectedType, totalSteps: framesCount } = normalizeDVFlowData(jsonDataWithSource);
 
-                // 애니메이션 타입 설정
-                const detectedType = preloadedJsonData.algorithm || 'variables';
+                setData(normalizedData);
+                setTotalSteps(framesCount);
+                animationControls.reset();
                 setAnimationType(detectedType);
 
                 console.log('✅ JSON 직접 로드 완료 (API 미사용):', {
                     algorithm: detectedType,
-                    steps,
-                    variables: preloadedJsonData.variables?.length || 0,
+                    frames: framesCount,
+                    events: normalizedData.events?.length || 0,
                     dataSource: 'preloaded-json'
                 });
 
@@ -900,25 +973,22 @@ const VisualizationModal = ({
                 // 에디터의 JSON 텍스트 파싱
                 const parsedJson = JSON.parse(code);
 
-                // JSON 데이터에 _dataSource 표시 추가
                 const jsonDataWithSource = {
                     ...parsedJson,
                     _dataSource: 'editor-json'
                 };
 
-                setData(jsonDataWithSource);
-                const steps = parsedJson.steps?.length || 0;
-                setTotalSteps(steps);
-                animationControls.reset();
+                const { data: normalizedData, animationType: detectedType, totalSteps: framesCount } = normalizeDVFlowData(jsonDataWithSource);
 
-                // 애니메이션 타입 설정
-                const detectedType = parsedJson.algorithm || 'variables';
+                setData(normalizedData);
+                setTotalSteps(framesCount);
+                animationControls.reset();
                 setAnimationType(detectedType);
 
                 console.log('✅ 에디터 JSON 파싱 완료:', {
                     algorithm: detectedType,
-                    steps,
-                    variables: parsedJson.variables?.length || 0,
+                    frames: framesCount,
+                    events: normalizedData.events?.length || 0,
                     dataSource: 'editor-json'
                 });
 
@@ -942,20 +1012,20 @@ const VisualizationModal = ({
             // API 서비스 사용 (하이브리드 모드)
             const visualizationData = await ApiService.requestVisualization(code, language, input);
 
-            setData(visualizationData);
-            const steps = visualizationData.steps?.length || 0;
-            setTotalSteps(steps);
+            const { data: normalizedData, animationType: detectedType, totalSteps: framesCount } = normalizeDVFlowData(visualizationData);
+
+            setData(normalizedData);
+            setTotalSteps(framesCount);
             animationControls.reset();
 
-            // 애니메이션 타입 자동 감지
-            const detectedType = visualizationData.algorithm || ApiService.detectAlgorithmType(code);
-            setAnimationType(detectedType);
+            const finalType = detectedType || ApiService.detectAlgorithmType(code);
+            setAnimationType(finalType);
 
             console.log('✅ API 시각화 데이터 로드 완료:', {
-                algorithm: detectedType,
-                steps,
-                variables: visualizationData.variables?.length || 0,
-                dataSource: visualizationData._dataSource || 'api'
+                algorithm: finalType,
+                frames: framesCount,
+                events: normalizedData.events?.length || 0,
+                dataSource: normalizedData._dataSource || visualizationData._dataSource || 'api'
             });
 
         } catch (err) {

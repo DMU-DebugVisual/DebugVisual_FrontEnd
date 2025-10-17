@@ -1,7 +1,6 @@
 // IDE.jsx - ModernSidebar 디자인 통합 버전 (사이드바 접힘 시 에디터 레이아웃 자동 조정)
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate, useLocation, useParams } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
 import VisualizationModal from './VisualizationModal';
 import './IDE.css';
@@ -346,10 +345,6 @@ int main() {
     // 기본 상태들
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [username, setUsername] = useState('');
-    const navigate = useNavigate();
-    const location = useLocation();
-    const params = useParams();
-
     const [code, setCode] = useState('# 여기에 코드를 입력하세요');
     const [fileName, setFileName] = useState("untitled.py");
     const [isSaved, setIsSaved] = useState(true);
