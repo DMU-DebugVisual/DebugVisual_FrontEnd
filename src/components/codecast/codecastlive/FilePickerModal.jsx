@@ -33,6 +33,7 @@ export default function FilePickerModal({ files, onSelect, onClose }) {
             name: filename,
             language,
             content: '',
+            __new: true,          // ← 이 플래그로 분기
         });
     };
 

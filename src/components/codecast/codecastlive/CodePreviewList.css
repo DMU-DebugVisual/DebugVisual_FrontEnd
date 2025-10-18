@@ -60,6 +60,12 @@
     overflow: hidden;
 }
 
+.preview-card .snippet {
+    min-height: 48px;            /* 내용이 비어도 카드 높이 유지 */
+    white-space: pre-wrap;
+    overflow: hidden;
+}
+
 /* ========== Dark Mode Overrides ========== */
 
 .dark-mode .preview-bar {

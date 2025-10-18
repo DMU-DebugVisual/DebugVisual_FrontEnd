@@ -1,29 +1,27 @@
+// ChatPanel.jsx
 import React, { useEffect, useRef, useState } from 'react';
 import './ChatPanel.css';
 import { FaTimes, FaPaperPlane } from 'react-icons/fa';
 
-export default function ChatPanel({ open, messages, onClose, onSend }) {
+export default function ChatPanel({ docked = false, open, messages, onClose, onSend }) {
     const [text, setText] = useState('');
     const listRef = useRef(null);
 
     useEffect(() => {
-        // 새 메시지 도착/열릴 때 하단으로 스크롤
         listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' });
     }, [messages, open]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (!text.trim()) return;
         onSend?.(text);
         setText('');
     };
 
-    return (
-        <>
-            {/* 반투명 배경 (클릭 시 닫힘) */}
-            <div className={`chat-backdrop ${open ? 'show' : ''}`} onClick={onClose} />
-
-            {/* 패널 */}
-            <aside className={`chat-panel ${open ? 'open' : ''}`} aria-hidden={!open}>
+    if (docked) {
+        // ✅ 도킹 모드: 오른쪽 고정 사이드바
+        return (
+            <aside className="chat-panel docked" aria-hidden={!open}>
                 <div className="chat-header">
                     <h3>방 채팅</h3>
                     <button className="chat-close" onClick={onClose} aria-label="채팅 닫기"><FaTimes /></button>
@@ -50,6 +48,6 @@ export default function ChatPanel({ open, messages, onClose, onSend }) {
                     </button>
                 </form>
             </aside>
-        </>
-    );
+        );
+    }
 }
