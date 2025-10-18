@@ -30,7 +30,9 @@ function AppContent() {
 
     const isSignupPage = location.pathname === "/signup";
     const isIdePage = location.pathname.startsWith("/ide");
-    const isMainPage = location.pathname === "/"; // 👈 추가: 메인 페이지 플래그
+    const isMainPage = location.pathname === "/";
+    // ✅ CodecastLive 페이지 플래그 추가
+    const isCodecastLivePage = location.pathname === "/broadcast/live";
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -89,8 +91,8 @@ function AppContent() {
                 </Route>
             </Routes>
 
-            {/* 👈 푸터는 메인 페이지, 회원가입, IDE 페이지에서는 숨깁니다. */}
-            {(!isSignupPage && !isIdePage && !isMainPage) && <Footer />}
+            {/* 👈 푸터 렌더링 조건 수정: CodecastLive 페이지가 아닐 때만 렌더링 */}
+            {(!isSignupPage && !isIdePage && !isMainPage && !isCodecastLivePage) && <Footer />}
 
             {isLoginModalOpen && (
                 <Login
