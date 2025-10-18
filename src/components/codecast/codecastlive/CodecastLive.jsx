@@ -1,4 +1,3 @@
-// CodecastLive.jsx
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './CodecastLive.css';
@@ -12,7 +11,20 @@ import ChatPanel from './ChatPanel';
 import useCollabSocket from '../hooks/useCollabSocket';
 import { createSession } from '../api/sessions';
 
-// ✅ 추가: 권한/강퇴 API
+// ✅ 아이콘 임포트 수정 (FaDesktop, FaPhoneSlash 추가)
+import {
+    FaCrown,
+    FaPenFancy,
+    FaEye,
+    FaUser,
+    FaEllipsisV,
+    FaCheck,
+    FaComments,
+    FaDesktop,
+    FaPhoneSlash
+} from 'react-icons/fa';
+
+// ✅ 권한/강퇴 API
 import {
     kickParticipant,
     grantEditPermission,
@@ -31,7 +43,8 @@ def bubble_sort(arr):
     for i in range(n):
         for j in range(0, n - i - 1):
             if arr[j] > arr[j + 1]:
-                arr[j], arr[j + 1] = arr[j + 1]
+                if arr[j] > arr[j + 1]:
+                    arr[j], arr[j + 1] = arr[j + 1], arr[j]
     return arr
 
 array = [64, 34, 25, 12, 22, 11, 90]
@@ -69,6 +82,31 @@ function mergeSort(arr) {
 }`,
     },
 ];
+
+// ✅ 추가: 참여 API 호출 함수 (백엔드 요구사항 충족)
+async function joinRoomApi(roomId, token) {
+    if (!token) throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
+
+    // 환경 변수에서 API BASE URL 사용
+    const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://52.79.145.160:8080';
+    const res = await fetch(`${API_BASE}/api/collab/rooms/${encodeURIComponent(roomId)}/participants`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+    });
+
+    if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        // 409 Conflict는 이미 참여했다는 의미일 수 있으므로 성공으로 간주
+        if (res.status === 409) return { status: 'already_joined' };
+        throw new Error(text || `HTTP ${res.status}`);
+    }
+    return await res.json().catch(() => ({ status: 'success' }));
+}
+
 
 export default function CodecastLive({ isDark }) {
     const navigate = useNavigate();
@@ -144,7 +182,7 @@ export default function CodecastLive({ isDark }) {
         if (!u) return null;
         const id = u.userId ?? u.id ?? u.username ?? u.userName ?? u.name;
         const name = u.userName ?? u.name ?? id;
-        return id ? { id, name } : null;
+        return id ? { id, name, role: u.role } : null;
     };
 
     // ====== 연결 + 구독 ======
@@ -154,112 +192,152 @@ export default function CodecastLive({ isDark }) {
         let unsubs = [];
         let gotSystem = false;
 
+        // 💡 변경: 모든 소켓 로직을 비동기 함수로 감싸고, joinRoomApi를 먼저 호출합니다.
         (async () => {
-            console.log('[WS] effect start', { roomId: room.id, hasToken: !!token });
-            await connect(token);
-            console.log('[WS] after connect');
-
-            // 시스템 채널 구독
-            unsubs.push(
-                subscribeSystem(room.id, (msg) => {
-                    gotSystem = true;
-                    if (msg?.roomName) setRoom((prev) => ({ ...prev, title: msg.roomName }));
-
-                    const ownerN = normalizeUser(msg?.owner);
-                    const listN = Array.isArray(msg?.participants)
-                        ? msg.participants.map(normalizeUser).filter(Boolean)
-                        : [];
-
-                    let rebuilt = [];
-                    if (ownerN) {
-                        rebuilt.push({
-                            id: ownerN.id,
-                            name: ownerN.name,
-                            role: 'host',
-                            code: '',
-                            file: null,
-                            stage: 'empty',
-                        });
-                    }
-                    rebuilt = rebuilt.concat(
-                        listN
-                            .filter((u) => !ownerN || u.id !== ownerN.id)
-                            .map((u) => ({
-                                id: u.id,
-                                name: u.name,
-                                role: 'view',
-                                code: '',
-                                file: null,
-                                stage: 'empty',
-                            }))
-                    );
-
-                    if (!rebuilt.length) rebuilt = [initialMe];
-
-                    setParticipants(rebuilt);
-
-                    const me = rebuilt.find((u) => u.id === userId);
-                    if (me) {
-                        setCurrentUser((prev) => ({
-                            ...prev,
-                            id: me.id,
-                            name: me.name,
-                            role: me.role,
-                            code: prev.code ?? '',
-                            file: prev.file ?? null,
-                            stage: prev.stage ?? 'empty',
-                        }));
-                    } else {
-                        setCurrentUser(initialMe);
-                    }
-                })
-            );
-
-            // JOIN(서버가 사용하면 등록됨)
             try {
-                console.log('[WS] JOIN publish');
-                sendJoin(room.id, { senderId: userId, senderName: username });
-            } catch (e) {
-                console.warn('[WS] JOIN publish failed:', e);
-            }
+                if (token && room.id) {
+                    // 1. 참여 API 호출 (DB에 등록)
+                    console.log('[API] Joining room via REST API:', room.id);
+                    await joinRoomApi(room.id, token);
+                    console.log('[API] Room joined successfully or already registered.');
+                }
 
-            // 코드 채널 구독 (세션 존재 시)
-            if (sessionId) {
+                // 2. 소켓 연결 시작 (API 호출 성공 후에만 진행)
+                console.log('[WS] effect start', { roomId: room.id, hasToken: !!token });
+                await connect(token);
+                console.log('[WS] after connect');
+
+                // 3. 시스템 채널 구독 (이하 기존 로직 유지)
                 unsubs.push(
-                    subscribeCode(room.id, sessionId, (msg) => {
-                        if (msg?.senderId === userId) return;
-                        if (typeof msg?.content === 'string') {
-                            setCurrentUser((prev) => {
-                                const nextFile = prev.file ? { ...prev.file, content: msg.content } : prev.file;
-                                return { ...prev, code: msg.content, file: nextFile, stage: 'editing' };
-                            });
-                            setParticipants((prev) =>
-                                prev.map((p) =>
-                                    p.id === currentUser.id
-                                        ? {
-                                            ...p,
-                                            code: msg.content,
-                                            file: p.file ? { ...p.file, content: msg.content } : p.file,
-                                            stage: 'editing',
-                                        }
-                                        : p
-                                )
-                            );
-                        }
+                    subscribeSystem(room.id, (msg) => {
+                        gotSystem = true;
+                        if (msg?.roomName) setRoom((prev) => ({ ...prev, title: msg.roomName }));
+
+                        const ownerN = normalizeUser(msg?.owner);
+                        const listN = Array.isArray(msg?.participants)
+                            ? msg.participants.map(normalizeUser).filter(Boolean)
+                            : [];
+
+                        // ✅ 기존 참여자의 상태를 유지하면서 목록을 업데이트하는 로직
+                        setParticipants((prevParticipants) => {
+                            const prevMap = new Map(prevParticipants.map(p => [p.id, p]));
+                            const newParticipantsMap = new Map();
+
+                            // 1. 방장(Owner)을 추가/업데이트합니다.
+                            if (ownerN) {
+                                const existingHost = prevMap.get(ownerN.id);
+                                newParticipantsMap.set(ownerN.id, {
+                                    id: ownerN.id,
+                                    name: ownerN.name,
+                                    role: 'host', // 방장은 무조건 host
+                                    code: existingHost?.code || '',
+                                    file: existingHost?.file || null,
+                                    stage: existingHost?.stage || 'empty',
+                                });
+                            }
+
+                            // 2. 일반 참가자 목록을 추가/업데이트합니다.
+                            listN
+                                .filter((u) => !ownerN || u.id !== ownerN.id)
+                                .forEach((u) => {
+                                    const existingP = prevMap.get(u.id);
+                                    const role = u.role || existingP?.role || 'view';
+
+                                    newParticipantsMap.set(u.id, {
+                                        id: u.id,
+                                        name: u.name,
+                                        role: role,
+                                        code: existingP?.code || '',
+                                        file: existingP?.file || null,
+                                        stage: existingP?.stage || 'empty',
+                                    });
+                                });
+
+                            const rebuilt = Array.from(newParticipantsMap.values());
+
+                            const me = rebuilt.find((u) => u.id === userId);
+                            if (me) {
+                                setCurrentUser((prev) => ({
+                                    ...prev,
+                                    id: me.id,
+                                    name: me.name,
+                                    role: me.role,
+                                    code: prev.code ?? me.code,
+                                    file: prev.file ?? me.file,
+                                    stage: prev.stage ?? me.stage,
+                                }));
+                            }
+
+                            if (!rebuilt.length) return [initialMe];
+
+                            return rebuilt;
+                        });
                     })
                 );
+
+                // JOIN(서버가 사용하면 등록됨)
+                try {
+                    // 4. 소켓 채널 JOIN 발송 (등록 후 소켓 구독이 완료되었으므로 발송)
+                    console.log('[WS] JOIN publish');
+                    sendJoin(room.id, { senderId: userId, senderName: username });
+                } catch (e) {
+                    console.warn('[WS] JOIN publish failed:', e);
+                }
+
+                // 코드 채널 구독 (세션 존재 시) - 기존 로직 유지
+                if (sessionId) {
+                    unsubs.push(
+                        subscribeCode(room.id, sessionId, (msg) => {
+                            if (msg?.senderId === userId) return;
+                            if (typeof msg?.content === 'string') {
+                                const senderId = msg.senderId;
+                                const newContent = msg.content;
+
+                                setParticipants((prev) =>
+                                    prev.map((p) => {
+                                        if (p.id === senderId) {
+                                            return {
+                                                ...p,
+                                                code: newContent,
+                                                file: p.file ? { ...p.file, content: newContent } : p.file,
+                                                stage: 'editing',
+                                            };
+                                        }
+                                        return p;
+                                    })
+                                );
+
+                                setCurrentUser((prev) => {
+                                    if (prev.id === senderId) {
+                                        const nextFile = prev.file ? { ...prev.file, content: newContent } : prev.file;
+                                        return { ...prev, code: newContent, file: nextFile, stage: 'editing' };
+                                    }
+
+                                    const updatedParticipant = participants.find(p => p.id === prev.id);
+                                    return updatedParticipant ? updatedParticipant : prev;
+                                });
+                            }
+                        })
+                    );
+                }
+
+
+            } catch (error) {
+                console.error('[CodecastLive] Failed to join room or connect socket:', error.message);
+                // alert(`방 참여 실패: ${error.message}`);
+                // navigate('/broadcast');
             }
 
             setTimeout(() => {
                 if (!gotSystem) console.warn('[WS] WARNING: No RoomStateUpdate received after subscribe.');
             }, 1500);
-        })();
+        })(); // 비동기 함수 즉시 실행
 
         return () => {
             unsubs.forEach((u) => u?.());
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [room.id, sessionId]);
+    }, [room.id, sessionId, userId]);
 
     // 페이지 언마운트시에만 실제 소켓 종료
     useEffect(() => {
@@ -346,8 +424,26 @@ export default function CodecastLive({ isDark }) {
         }
     };
 
-    // 공유 시작(쓰기 권한 필요)
+    // 공유 시작/종료 로직
     const handleStartShare = () => {
+        if (currentUser.stage === 'editing') {
+            // 공유 중일 때: 공유 종료 (Session 종료 API 호출이 필요함)
+
+            // 임시 클라이언트 상태 초기화 (실제로는 API 응답으로 상태가 변경되어야 함)
+            setParticipants((prev) =>
+                prev.map((p) =>
+                    p.id === currentUser.id
+                        ? { ...p, file: null, code: '', stage: 'empty' }
+                        : p
+                )
+            );
+            setCurrentUser((prev) => ({ ...prev, file: null, code: '', stage: 'empty' }));
+            setSessionId(null); // 세션 ID 초기화
+            // alert('공유를 종료했습니다. (실제 세션 종료 API 연동 필요)');
+            return;
+        }
+
+        // 공유 중이 아닐 때: 공유 시작 (파일 선택 모달 띄우기)
         if (!canEdit) {
             alert('쓰기 권한이 없어 세션을 시작할 수 없습니다.');
             return;
@@ -407,6 +503,10 @@ export default function CodecastLive({ isDark }) {
 
     const findByName = (name) => participants.find((p) => p.name === name);
     const findById = (id) => participants.find((p) => p.id === id);
+
+    // ✅ 추가: 한 명이라도 코드를 공유 중인지 확인 (프리뷰 표시 조건)
+    const isAnyParticipantSharing = participants.some(p => p.stage === 'editing');
+
 
     return (
         <div ref={wrapperRef} className="broadcast-wrapper">
@@ -527,8 +627,44 @@ export default function CodecastLive({ isDark }) {
                     )}
                 </div>
 
-                {/* ✅ 프리뷰 스트립: 하단 중앙, 카드만 노출(제목/닫기 X 없음) */}
-                {previewOpen && (
+                {/* ✅ 수정: currentUser.stage가 'empty'가 아닐 때만 하단 제어 바를 표시합니다. */}
+                {(currentUser.stage !== 'empty') && (
+                    <div className="broadcast-controls-bar">
+                        <div className="left-controls">
+                            {/* 1. 화면 공유 버튼 (코드 공유 시작/종료 기능에 연결) */}
+                            <button
+                                className={`control-btn share-screen ${currentUser.stage === 'editing' ? 'active' : ''}`}
+                                onClick={handleStartShare}
+                                disabled={!canEdit && currentUser.stage !== 'editing'}
+                                title={
+                                    currentUser.stage === 'editing'
+                                        ? '현재 편집 세션 공유 중 (클릭 시 종료 로직 구현 필요)'
+                                        : !canEdit
+                                            ? '편집 권한이 있어야 공유할 수 있습니다.'
+                                            : '코드 공유 시작'
+                                }
+                            >
+                                <span className="icon-wrapper">
+                                    {currentUser.stage === 'editing'
+                                        ? <FaCheck className="icon check-icon" />
+                                        : <FaDesktop className="icon" />}
+                                </span>
+                                <span className="text">
+                                    {currentUser.stage === 'editing' ? '공유 중' : '공유중지'} {/* 텍스트 수정 */}
+                                </span>
+                            </button>
+                        </div>
+
+                        {/* ✅ 수정: 통화 끊기 기능 제거를 위해 right-controls 비움 */}
+                        <div className="right-controls">
+                            {/* 통화 끊기 버튼 제거됨 */}
+                        </div>
+                    </div>
+                )}
+
+
+                {/* ✅ 수정: 프리뷰 스트립은 '프리뷰 열림' 상태 AND '누군가 공유 중'일 때만 표시 */}
+                {(previewOpen && isAnyParticipantSharing) && (
                     <div className="preview-strip nochrome" aria-label="participants preview strip">
                         {/* 가로 스크롤 컨테이너 */}
                         <div className="preview-strip-scroller">
@@ -544,14 +680,16 @@ export default function CodecastLive({ isDark }) {
                     </div>
                 )}
 
-                {/* ✅ 열림/닫기 토글: 스트립 외부 하단 중앙 탭 */}
-                <button
-                    className={`preview-toggle ${previewOpen ? 'open' : 'closed'}`}
-                    onClick={() => setPreviewOpen((v) => !v)}
-                    title={previewOpen ? '프리뷰 숨기기' : '프리뷰 열기'}
-                >
-                    {previewOpen ? '프리뷰 숨기기 ▾' : '프리뷰 열기 ▴'}
-                </button>
+                {/* ✅ 수정: 열림/닫기 토글은 '누군가 공유 중'일 때만 표시 */}
+                {isAnyParticipantSharing && (
+                    <button
+                        className={`preview-toggle ${previewOpen ? 'open' : 'closed'}`}
+                        onClick={() => setPreviewOpen((v) => !v)}
+                        title={previewOpen ? '프리뷰 숨기기' : '프리뷰 열기'}
+                    >
+                        {previewOpen ? '프리뷰 숨기기 ▾' : '프리뷰 열기 ▴'}
+                    </button>
+                )}
 
                 {isChatOpen && (
                     <ChatPanel
