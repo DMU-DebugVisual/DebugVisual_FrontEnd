@@ -118,10 +118,6 @@
     padding: 0;
 }
 
-/* 필요시 헤더를 얇게 만들고 싶다면
-.broadcast-wrapper:fullscreen .broadcastlive-header { height: 48px; padding: 8px 16px; }
-*/
-
 /* ✅ 프리뷰 스트립(최소 크롬 / 카드만 보이게) */
 .preview-strip.nochrome {
     position: absolute;
@@ -173,15 +169,6 @@
     scroll-snap-align: center;         /* 카드 가운데 스냅 */
 }
 
-/* (옵션) CodePreviewList 내부 카드 공용 보정 (필요할 때만) */
-/*
-.preview-card {
-  min-width: 220px;
-  max-width: 260px;
-  flex: 0 0 auto;                    // 가로 고정폭 카드
-}
-*/
-
 /* ✅ 프리뷰가 겹치지 않게 에디터 하단 패딩 */
 .editor-area .code-editor { padding-bottom: 170px; }
 
@@ -199,7 +186,7 @@
     background: rgba(255,255,255,0.9);
     backdrop-filter: blur(8px);
     cursor: pointer;
-    z-index: 5;
+    z-index: 1001; /* 제어 바 (1000) 보다 높게 설정 */
     box-shadow: 0 8px 18px rgba(0,0,0,0.18);
 }
 
@@ -212,3 +199,102 @@
 /* 전체화면 시 살짝 위치 보정 (선택) */
 .broadcast-wrapper:fullscreen .preview-toggle.open { bottom: 150px; }
 .broadcast-wrapper:fullscreen .preview-strip.nochrome { bottom: 8px; }
+
+/* ================================================= */
+/* ✅ 디스코드 스타일 하단 제어 바 (Controls Bar)            */
+/* ================================================= */
+
+.broadcast-controls-bar {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    left: auto;
+    transform: none;
+
+    display: flex;
+    /* ✅ 수정: 버튼 그룹을 오른쪽 끝으로 붙이기 */
+    justify-content: flex-end;
+    align-items: center;
+
+    padding: 0; /* 패딩 최소화 */
+    z-index: 1000;
+
+    background: transparent; /* 배경 투명 */
+    box-shadow: none; /* 그림자 제거 */
+}
+
+.left-controls, .right-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-grow: 0;
+    /* ✅ 수정: right-controls는 비어있으므로 left-controls만 사용 */
+}
+
+.left-controls {
+    justify-content: flex-end; /* 오른쪽 끝으로 이동 */
+}
+
+/* 개별 제어 버튼 스타일 */
+.control-btn {
+    display: flex;
+    align-items: center;
+    /* ✅ 수정: 패딩 증가 (6px 12px -> 8px 16px) */
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    /* ✅ 수정: 폰트 크기 증가 */
+    font-size: 16px;
+    font-weight: 600;
+    transition: background-color 0.2s, opacity 0.2s;
+    white-space: nowrap;
+}
+
+.control-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.control-btn .icon {
+    /* ✅ 수정: 아이콘 크기 증가 */
+    margin-right: 8px; /* 여백도 살짝 조정 */
+    font-size: 20px;
+}
+
+/* 화면 공유 버튼 (기본/비활성 상태) */
+.share-screen {
+    background-color: #5865f2; /* 디스코드 블루 */
+    color: white;
+}
+
+.share-screen:not(:disabled):hover {
+    background-color: #4752c4;
+}
+
+/* 화면 공유 버튼 (활성 상태, 공유 중) */
+.share-screen.active {
+    background-color: #38a75e; /* 공유 중 녹색 */
+}
+
+.share-screen.active:not(:disabled):hover {
+    background-color: #2e8b4c;
+}
+
+.share-screen .check-icon {
+    /* ✅ 수정: 체크 아이콘 크기도 버튼 크기에 맞춰 조정 */
+    font-size: 16px;
+    margin-right: 8px;
+}
+
+
+/* 다크 모드 오버라이드 */
+.dark-mode .broadcast-controls-bar {
+    background: transparent;
+}
+
+/* 전체화면 모드에서 하단 제어 바 위치 조정 */
+.broadcast-wrapper:fullscreen .broadcast-controls-bar {
+    bottom: 10px;
+    right: 10px;
+}
