@@ -11,7 +11,6 @@ import ChatPanel from './ChatPanel';
 import useCollabSocket from '../hooks/useCollabSocket';
 import { createSession } from '../api/sessions';
 
-// ✅ 아이콘 임포트 수정 (FaDesktop, FaPhoneSlash 추가)
 import {
     FaCrown,
     FaPenFancy,
@@ -24,7 +23,6 @@ import {
     FaPhoneSlash
 } from 'react-icons/fa';
 
-// ✅ 권한/강퇴 API
 import {
     kickParticipant,
     grantEditPermission,
@@ -83,11 +81,10 @@ function mergeSort(arr) {
     },
 ];
 
-// ✅ 추가: 참여 API 호출 함수 (백엔드 요구사항 충족)
+// 참여 API 호출 함수
 async function joinRoomApi(roomId, token) {
     if (!token) throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
 
-    // 환경 변수에서 API BASE URL 사용
     const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://52.79.145.160:8080';
     const res = await fetch(`${API_BASE}/api/collab/rooms/${encodeURIComponent(roomId)}/participants`, {
         method: 'POST',
@@ -100,7 +97,6 @@ async function joinRoomApi(roomId, token) {
 
     if (!res.ok) {
         const text = await res.text().catch(() => '');
-        // 409 Conflict는 이미 참여했다는 의미일 수 있으므로 성공으로 간주
         if (res.status === 409) return { status: 'already_joined' };
         throw new Error(text || `HTTP ${res.status}`);
     }
@@ -113,7 +109,7 @@ export default function CodecastLive({ isDark }) {
     const location = useLocation();
     const injected = location.state || {};
     const qs = new URLSearchParams(location.search);
-    const ridFromQuery = qs.get('rid'); // 초대코드(=roomId)
+    const ridFromQuery = qs.get('rid');
 
     // 로그인 유저
     const username = localStorage.getItem('username') || 'anonymous';
@@ -124,11 +120,19 @@ export default function CodecastLive({ isDark }) {
     const isOwner = injected.ownerId && injected.ownerId === username;
     const defaultRole = isOwner ? 'host' : (ridFromQuery ? 'view' : 'host');
 
+    // 기본 파일 설정
+    const defaultFile = useMemo(() => ({
+        id: 'f_default',
+        name: `${username}.py`,
+        language: 'python',
+        content: `# 여기에 코드를 입력하세요`,
+    }), [username]);
+
     // 전체화면
     const wrapperRef = useRef(null);
     const [isFullscreen, setIsFullscreen] = useState(false);
 
-    // 👇 추가: 프리뷰 열림/펼침 상태
+    // 프리뷰 열림/펼침 상태
     const [previewOpen, setPreviewOpen] = useState(true);
 
     // 방/세션
@@ -145,11 +149,11 @@ export default function CodecastLive({ isDark }) {
             id: userId,
             name: username,
             role: defaultRole,
-            code: '',
-            file: null,
-            stage: 'empty',
+            code: defaultFile.content,
+            file: defaultFile,
+            stage: 'ready', // 초기 상태는 'ready'
         }),
-        [userId, username, defaultRole]
+        [userId, username, defaultRole, defaultFile]
     );
 
     const [participants, setParticipants] = useState([initialMe]);
@@ -192,22 +196,18 @@ export default function CodecastLive({ isDark }) {
         let unsubs = [];
         let gotSystem = false;
 
-        // 💡 변경: 모든 소켓 로직을 비동기 함수로 감싸고, joinRoomApi를 먼저 호출합니다.
         (async () => {
             try {
                 if (token && room.id) {
-                    // 1. 참여 API 호출 (DB에 등록)
                     console.log('[API] Joining room via REST API:', room.id);
                     await joinRoomApi(room.id, token);
                     console.log('[API] Room joined successfully or already registered.');
                 }
 
-                // 2. 소켓 연결 시작 (API 호출 성공 후에만 진행)
                 console.log('[WS] effect start', { roomId: room.id, hasToken: !!token });
                 await connect(token);
                 console.log('[WS] after connect');
 
-                // 3. 시스템 채널 구독 (이하 기존 로직 유지)
                 unsubs.push(
                     subscribeSystem(room.id, (msg) => {
                         gotSystem = true;
@@ -218,25 +218,22 @@ export default function CodecastLive({ isDark }) {
                             ? msg.participants.map(normalizeUser).filter(Boolean)
                             : [];
 
-                        // ✅ 기존 참여자의 상태를 유지하면서 목록을 업데이트하는 로직
                         setParticipants((prevParticipants) => {
                             const prevMap = new Map(prevParticipants.map(p => [p.id, p]));
                             const newParticipantsMap = new Map();
 
-                            // 1. 방장(Owner)을 추가/업데이트합니다.
                             if (ownerN) {
                                 const existingHost = prevMap.get(ownerN.id);
                                 newParticipantsMap.set(ownerN.id, {
                                     id: ownerN.id,
                                     name: ownerN.name,
-                                    role: 'host', // 방장은 무조건 host
+                                    role: 'host',
                                     code: existingHost?.code || '',
                                     file: existingHost?.file || null,
-                                    stage: existingHost?.stage || 'empty',
+                                    stage: existingHost?.stage || 'ready',
                                 });
                             }
 
-                            // 2. 일반 참가자 목록을 추가/업데이트합니다.
                             listN
                                 .filter((u) => !ownerN || u.id !== ownerN.id)
                                 .forEach((u) => {
@@ -249,7 +246,7 @@ export default function CodecastLive({ isDark }) {
                                         role: role,
                                         code: existingP?.code || '',
                                         file: existingP?.file || null,
-                                        stage: existingP?.stage || 'empty',
+                                        stage: existingP?.stage || 'ready',
                                     });
                                 });
 
@@ -268,23 +265,21 @@ export default function CodecastLive({ isDark }) {
                                 }));
                             }
 
-                            if (!rebuilt.length) return [initialMe];
+                            if (!rebuilt.length) return prevParticipants.length ? prevParticipants : [initialMe];
 
                             return rebuilt;
                         });
                     })
                 );
 
-                // JOIN(서버가 사용하면 등록됨)
                 try {
-                    // 4. 소켓 채널 JOIN 발송 (등록 후 소켓 구독이 완료되었으므로 발송)
                     console.log('[WS] JOIN publish');
                     sendJoin(room.id, { senderId: userId, senderName: username });
                 } catch (e) {
                     console.warn('[WS] JOIN publish failed:', e);
                 }
 
-                // 코드 채널 구독 (세션 존재 시) - 기존 로직 유지
+                // 코드 업데이트 구독은 'editing' 상태와 관계없이 항상 유지
                 if (sessionId) {
                     unsubs.push(
                         subscribeCode(room.id, sessionId, (msg) => {
@@ -300,7 +295,7 @@ export default function CodecastLive({ isDark }) {
                                                 ...p,
                                                 code: newContent,
                                                 file: p.file ? { ...p.file, content: newContent } : p.file,
-                                                stage: 'editing',
+                                                stage: 'editing', // 다른 사람의 업데이트는 공유 중임을 의미
                                             };
                                         }
                                         return p;
@@ -308,6 +303,7 @@ export default function CodecastLive({ isDark }) {
                                 );
 
                                 setCurrentUser((prev) => {
+                                    // 현재 사용자가 받은 업데이트를 자신의 상태에 반영
                                     if (prev.id === senderId) {
                                         const nextFile = prev.file ? { ...prev.file, content: newContent } : prev.file;
                                         return { ...prev, code: newContent, file: nextFile, stage: 'editing' };
@@ -324,14 +320,12 @@ export default function CodecastLive({ isDark }) {
 
             } catch (error) {
                 console.error('[CodecastLive] Failed to join room or connect socket:', error.message);
-                // alert(`방 참여 실패: ${error.message}`);
-                // navigate('/broadcast');
             }
 
             setTimeout(() => {
                 if (!gotSystem) console.warn('[WS] WARNING: No RoomStateUpdate received after subscribe.');
             }, 1500);
-        })(); // 비동기 함수 즉시 실행
+        })();
 
         return () => {
             unsubs.forEach((u) => u?.());
@@ -349,6 +343,8 @@ export default function CodecastLive({ isDark }) {
 
     // 에디터 변경 → 서버 publish
     const handleEditorChange = (nextText) => {
+        // 서버에 보내는 것은 동일
+        // 로컬 상태 업데이트
         setCurrentUser((prev) => ({
             ...prev,
             code: nextText,
@@ -362,7 +358,8 @@ export default function CodecastLive({ isDark }) {
             )
         );
 
-        if (room.id && sessionId) {
+        // 공유 중일 때만 업데이트를 브로드캐스트
+        if (room.id && sessionId && currentUser.stage === 'editing') {
             sendCodeUpdate(room.id, sessionId, { senderId: userId, content: nextText });
         }
     };
@@ -390,7 +387,7 @@ export default function CodecastLive({ isDark }) {
                                 ...p,
                                 file: { name: picked.name, language: picked.language, content: '' },
                                 code: '',
-                                stage: 'editing',
+                                stage: 'ready',
                             }
                             : p
                     )
@@ -399,13 +396,13 @@ export default function CodecastLive({ isDark }) {
                     ...prev,
                     file: { name: picked.name, language: picked.language, content: '' },
                     code: '',
-                    stage: 'editing',
+                    stage: 'ready',
                 }));
             } else {
                 setParticipants((prev) =>
                     prev.map((p) =>
                         p.id === currentUser.id
-                            ? { ...p, file: picked, code: picked.content ?? '', stage: 'editing' }
+                            ? { ...p, file: picked, code: picked.content ?? '', stage: 'ready' }
                             : p
                     )
                 );
@@ -413,7 +410,7 @@ export default function CodecastLive({ isDark }) {
                     ...prev,
                     file: picked,
                     code: picked.content ?? '',
-                    stage: 'editing',
+                    stage: 'ready',
                 }));
             }
 
@@ -424,32 +421,73 @@ export default function CodecastLive({ isDark }) {
         }
     };
 
-    // 공유 시작/종료 로직
-    const handleStartShare = () => {
-        if (currentUser.stage === 'editing') {
-            // 공유 중일 때: 공유 종료 (Session 종료 API 호출이 필요함)
-
-            // 임시 클라이언트 상태 초기화 (실제로는 API 응답으로 상태가 변경되어야 함)
-            setParticipants((prev) =>
-                prev.map((p) =>
-                    p.id === currentUser.id
-                        ? { ...p, file: null, code: '', stage: 'empty' }
-                        : p
-                )
-            );
-            setCurrentUser((prev) => ({ ...prev, file: null, code: '', stage: 'empty' }));
-            setSessionId(null); // 세션 ID 초기화
-            // alert('공유를 종료했습니다. (실제 세션 종료 API 연동 필요)');
-            return;
-        }
-
-        // 공유 중이 아닐 때: 공유 시작 (파일 선택 모달 띄우기)
+    // 파일 선택 모달 열기
+    const handleOpenFilePicker = () => {
         if (!canEdit) {
-            alert('쓰기 권한이 없어 세션을 시작할 수 없습니다.');
+            alert('쓰기 권한이 없어 파일을 선택할 수 없습니다.');
             return;
         }
         setShowPicker(true);
     };
+
+    // ✅ 수정: 공유 시작/중지 토글 (기본 파일도 공유 가능)
+    const handleShareToggle = () => {
+
+        // 파일이 없으면 토글 불가 (기본 파일은 항상 있으므로 이 경고는 사실상 작동하지 않음)
+        if (!currentUser.file) {
+            alert("파일이 없습니다. 파일을 먼저 선택해주세요.");
+            return;
+        }
+
+        // 쓰기 권한 없으면 토글 불가
+        if (!canEdit) {
+            alert('쓰기 권한이 없어 공유 상태를 변경할 수 없습니다.');
+            return;
+        }
+
+        if (currentUser.stage === 'editing') {
+            // 공유 중일 때: 공유 중지
+            setParticipants((prev) =>
+                prev.map((p) =>
+                    p.id === currentUser.id
+                        ? { ...p, stage: 'ready' } // 상태만 'ready'로 변경
+                        : p
+                )
+            );
+            setCurrentUser((prev) => ({ ...prev, stage: 'ready' }));
+            // ⚠️ TODO: 서버에 공유 중지 알림 로직 (예: sendStageChange(room.id, userId, 'ready')) 필요
+        } else {
+            // 공유 중이 아닐 때: 공유 시작
+            setParticipants((prev) =>
+                prev.map((p) =>
+                    p.id === currentUser.id
+                        ? { ...p, stage: 'editing' } // 상태를 'editing'으로 변경
+                        : p
+                )
+            );
+            setCurrentUser((prev) => ({ ...prev, stage: 'editing' }));
+            // ⚠️ TODO: 서버에 공유 시작 알림 로직 (예: sendStageChange(room.id, userId, 'editing')) 필요
+
+            // ✅ 수정: 공유 시작 시 현재 에디터의 코드를 무조건 브로드캐스트하여 프리뷰에 즉시 반영
+            if (room.id && sessionId) {
+                sendCodeUpdate(room.id, sessionId, { senderId: userId, content: currentUser.code });
+            } else {
+                // 세션 ID가 없다면 (매우 드문 경우, 새 방 생성 직후 등)
+                console.warn("Session ID가 없어 코드 업데이트를 보낼 수 없습니다.");
+            }
+        }
+    };
+
+    // CodeEditor로 전달할 파일 선택 버튼
+    const FileSelectButton = (
+        <button
+            className="control-btn select-file-btn"
+            onClick={handleOpenFilePicker}
+            title={"파일 선택 (클릭 시 새 파일 선택 또는 기존 파일 변경)"}
+        >
+            {'＋ 파일 선택'}
+        </button>
+    );
 
     // 포커스 모드
     const toggleFullscreen = async () => {
@@ -504,8 +542,9 @@ export default function CodecastLive({ isDark }) {
     const findByName = (name) => participants.find((p) => p.name === name);
     const findById = (id) => participants.find((p) => p.id === id);
 
-    // ✅ 추가: 한 명이라도 코드를 공유 중인지 확인 (프리뷰 표시 조건)
-    const isAnyParticipantSharing = participants.some(p => p.stage === 'editing');
+    // 참가자가 'editing' 상태일 때만 프리뷰에 표시
+    // 이제 기본 파일도 공유 가능하므로 defaultFile.id 조건은 제거합니다.
+    const isAnyParticipantSharing = participants.some(p => p.stage === 'editing' && p.file !== null);
 
 
     return (
@@ -528,7 +567,6 @@ export default function CodecastLive({ isDark }) {
                         const target = findByName(name);
                         if (!target) return;
 
-                        // host 승격/강등은 지원하지 않음
                         if (nextRole === 'host') {
                             alert('방장 권한 변경은 지원하지 않습니다.');
                             return;
@@ -539,7 +577,6 @@ export default function CodecastLive({ isDark }) {
                             return;
                         }
 
-                        // 방장만 타인 권한 변경 (필요 없으면 제거)
                         if (currentUser.role !== 'host' && currentUser.id !== target.id) {
                             alert('다른 사람 권한은 방장만 변경할 수 있습니다.');
                             return;
@@ -548,7 +585,6 @@ export default function CodecastLive({ isDark }) {
                         const prevParticipants = participants;
                         const prevCurrent = currentUser;
 
-                        // 낙관적 업데이트
                         setParticipants((prev) =>
                             prev.map((p) => (p.id === target.id ? { ...p, role: nextRole } : p))
                         );
@@ -562,9 +598,7 @@ export default function CodecastLive({ isDark }) {
                             } else if (nextRole === 'view') {
                                 await revokeEditPermission({ token, sessionId, targetUserId: target.id });
                             }
-                            // 성공 → 서버가 system 스냅샷을 쏘면 여기 상태는 곧 동기화됨
                         } catch (e) {
-                            // 롤백
                             setParticipants(prevParticipants);
                             setCurrentUser(prevCurrent);
                             console.error(e);
@@ -588,7 +622,6 @@ export default function CodecastLive({ isDark }) {
                         const prevParticipants = participants;
                         const prevCurrent = currentUser;
 
-                        // 낙관적 제거
                         setParticipants((prev) => prev.filter((p) => p.id !== target.id));
                         if (currentUser.id === target.id) {
                             const me = findById(userId) || prevParticipants.find((p) => p.id !== target.id);
@@ -597,9 +630,7 @@ export default function CodecastLive({ isDark }) {
 
                         try {
                             await kickParticipant({ token, roomId: room.id, targetUserId: target.id });
-                            // 성공 → 시스템 스냅샷 방송 기대
                         } catch (e) {
-                            // 롤백
                             setParticipants(prevParticipants);
                             setCurrentUser(prevCurrent);
                             console.error(e);
@@ -610,39 +641,23 @@ export default function CodecastLive({ isDark }) {
                 />
 
                 <div className="editor-area">
-                    {currentUser.stage === 'empty' && (
-                        <div className="empty-state">
-                            <button className="plus-button" onClick={handleStartShare}>＋</button>
-                            <p className="empty-help">파일을 선택하세요</p>
-                        </div>
-                    )}
-
-                    {currentUser.stage === 'editing' && (
-                        <CodeEditor
-                            file={currentUser.file}
-                            onChange={handleEditorChange}
-                            currentUser={currentUser}
-                            isDark={isDark}
-                        />
-                    )}
+                    <CodeEditor
+                        file={currentUser.file}
+                        onChange={handleEditorChange}
+                        currentUser={currentUser}
+                        isDark={isDark}
+                        selectFileAction={FileSelectButton}
+                    />
                 </div>
 
-                {/* ✅ 수정: currentUser.stage가 'empty'가 아닐 때만 하단 제어 바를 표시합니다. */}
-                {(currentUser.stage !== 'empty') && (
+                {/* 하단 제어 바는 파일이 존재하고 쓰기 권한이 있을 때 표시 */}
+                {(currentUser.file && canEdit) && (
                     <div className="broadcast-controls-bar">
                         <div className="left-controls">
-                            {/* 1. 화면 공유 버튼 (코드 공유 시작/종료 기능에 연결) */}
                             <button
-                                className={`control-btn share-screen ${currentUser.stage === 'editing' ? 'active' : ''}`}
-                                onClick={handleStartShare}
-                                disabled={!canEdit && currentUser.stage !== 'editing'}
-                                title={
-                                    currentUser.stage === 'editing'
-                                        ? '현재 편집 세션 공유 중 (클릭 시 종료 로직 구현 필요)'
-                                        : !canEdit
-                                            ? '편집 권한이 있어야 공유할 수 있습니다.'
-                                            : '코드 공유 시작'
-                                }
+                                className={`control-btn share-toggle-btn ${currentUser.stage === 'editing' ? 'active' : ''}`}
+                                onClick={handleShareToggle}
+                                title={currentUser.stage === 'editing' ? '클릭하여 공유 중지' : '클릭하여 방 참가자들에게 코드 공유 시작'}
                             >
                                 <span className="icon-wrapper">
                                     {currentUser.stage === 'editing'
@@ -650,26 +665,21 @@ export default function CodecastLive({ isDark }) {
                                         : <FaDesktop className="icon" />}
                                 </span>
                                 <span className="text">
-                                    {currentUser.stage === 'editing' ? '공유 중' : '공유중지'} {/* 텍스트 수정 */}
+                                    {currentUser.stage === 'editing' ? '공유 중' : '공유하기'}
                                 </span>
                             </button>
                         </div>
-
-                        {/* ✅ 수정: 통화 끊기 기능 제거를 위해 right-controls 비움 */}
                         <div className="right-controls">
-                            {/* 통화 끊기 버튼 제거됨 */}
                         </div>
                     </div>
                 )}
 
 
-                {/* ✅ 수정: 프리뷰 스트립은 '프리뷰 열림' 상태 AND '누군가 공유 중'일 때만 표시 */}
                 {(previewOpen && isAnyParticipantSharing) && (
                     <div className="preview-strip nochrome" aria-label="participants preview strip">
-                        {/* 가로 스크롤 컨테이너 */}
                         <div className="preview-strip-scroller">
                             <CodePreviewList
-                                participants={participants}
+                                participants={participants.filter(p => p.stage === 'editing')}
                                 activeName={currentUser.name}
                                 onSelect={(userName) => {
                                     const pickedUser = participants.find((p) => p.name === userName);
@@ -680,7 +690,6 @@ export default function CodecastLive({ isDark }) {
                     </div>
                 )}
 
-                {/* ✅ 수정: 열림/닫기 토글은 '누군가 공유 중'일 때만 표시 */}
                 {isAnyParticipantSharing && (
                     <button
                         className={`preview-toggle ${previewOpen ? 'open' : 'closed'}`}

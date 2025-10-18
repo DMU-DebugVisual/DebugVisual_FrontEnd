@@ -62,7 +62,7 @@
 }
 
 .empty-help {
-    margin: 0;                     /* ✅ 기본 마진 제거! */
+    margin: 0;                     /* 기본 마진 제거! */
     color: #555;
     font-size: 15px;
     letter-spacing: 0.2px;
@@ -228,7 +228,6 @@
     align-items: center;
     gap: 8px;
     flex-grow: 0;
-    /* ✅ 수정: right-controls는 비어있으므로 left-controls만 사용 */
 }
 
 .left-controls {
@@ -262,25 +261,30 @@
     font-size: 20px;
 }
 
-/* 화면 공유 버튼 (기본/비활성 상태) */
+/* ⚠️ 수정: .share-toggle-btn이 기본 스타일을 사용하도록 추가 */
+.share-toggle-btn,
 .share-screen {
-    background-color: #5865f2; /* 디스코드 블루 */
+    background-color: #6a0dad; /* 디스코드 블루 (공유하기 기본 색상) */
     color: white;
 }
 
+.share-toggle-btn:not(:disabled):hover,
 .share-screen:not(:disabled):hover {
-    background-color: #4752c4;
+    background-color: #c9a7ff;
 }
 
 /* 화면 공유 버튼 (활성 상태, 공유 중) */
+.share-toggle-btn.active,
 .share-screen.active {
     background-color: #38a75e; /* 공유 중 녹색 */
 }
 
+.share-toggle-btn.active:not(:disabled):hover,
 .share-screen.active:not(:disabled):hover {
     background-color: #2e8b4c;
 }
 
+.share-toggle-btn .check-icon,
 .share-screen .check-icon {
     /* ✅ 수정: 체크 아이콘 크기도 버튼 크기에 맞춰 조정 */
     font-size: 16px;

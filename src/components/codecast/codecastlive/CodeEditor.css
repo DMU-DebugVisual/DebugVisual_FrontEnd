@@ -78,6 +78,27 @@
     color: #4f2aa3;
 }
 
+/* ✅ [수정된 부분] 파일 선택 버튼 크기 조정 */
+.toolbar-right .select-file-btn {
+    /* run-button, viz-button과 동일한 패딩을 적용하여 크기를 맞춤 */
+    padding: 6px 12px;
+
+    /* 기존 스타일 유지 (CodecastLive.js에서 부여한 클래스) */
+    background-color: #555;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.toolbar-right .select-file-btn:hover {
+    background-color: #777;
+}
+
+
 /* Monaco 에디터가 부모 높이를 꽉 채우도록 */
 .code-editor > div, /* @monaco-editor/react 래퍼 */
 .code-editor .monaco-editor,
