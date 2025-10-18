@@ -1,262 +1,307 @@
 {
-  "algorithm": "fibonacci-recursion",
   "lang": "c",
   "input": "7",
-  "variables": [
-    { "name": "n", "type": "int", "initialValue": null, "currentValue": 7 }
-  ],
-  "functions": [
-    { "name": "fibo", "params": ["n"], "called": 25 }
-  ],
-  "steps": [
+  "analysis": {
+    "timeComplexity": "O(2^n)",
+    "spaceComplexity": "O(n)",
+    "opCounts": {
+      "call": 25,
+      "return": 25,
+      "compare": 25,
+      "branch": 25,
+      "assign": 2,
+      "io": 2
+    }
+  },
+  "events": [
     {
-      "line": 5,
-      "description": "입력값 n을 사용자로부터 입력받음",
-      "changes": [
-        { "variable": "n", "before": null, "after": 7 }
+      "t": 1,
+      "kind": "io",
+      "loc": {"line": 5},
+      "dir": "in",
+      "channel": "stdin",
+      "data": "7"
+    },
+    {
+      "t": 2,
+      "kind": "assign",
+      "loc": {"line": 5},
+      "var": "n",
+      "before": null,
+      "after": 7
+    },
+    {
+      "t": 3,
+      "kind": "call",
+      "loc": {"line": 6},
+      "fn": "fibo",
+      "args": [
+        {"name": "n", "value": 7}
       ]
     },
     {
-      "line": 6,
-      "description": "fibo(7) 호출",
-      "changes": [],
-      "stack": [
-        { "function": "fibo", "params": [7] }
+      "t": 4,
+      "kind": "compare",
+      "loc": {"line": 1},
+      "expr": "n == 0",
+      "read": [
+        {"ref": "n", "value": 7}
       ],
-      "dataStructure": {
-        "type": "recursionTree",
-        "root": {
-          "id": "fibo(7)",
-          "value": 13,
-          "children": [
-            {
-              "id": "fibo(5)",
-              "value": 5,
-              "children": [
-                {
-                  "id": "fibo(3)",
-                  "value": 2,
-                  "children": [
-                    {
-                      "id": "fibo(1)",
-                      "value": 1,
-                      "children": []
-                    },
-                    {
-                      "id": "fibo(2)",
-                      "value": 1,
-                      "children": [
-                        {
-                          "id": "fibo(0)",
-                          "value": 0,
-                          "children": []
-                        },
-                        {
-                          "id": "fibo(1)",
-                          "value": 1,
-                          "children": []
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "id": "fibo(4)",
-                  "value": 3,
-                  "children": [
-                    {
-                      "id": "fibo(2)",
-                      "value": 1,
-                      "children": [
-                        {
-                          "id": "fibo(0)",
-                          "value": 0,
-                          "children": []
-                        },
-                        {
-                          "id": "fibo(1)",
-                          "value": 1,
-                          "children": []
-                        }
-                      ]
-                    },
-                    {
-                      "id": "fibo(3)",
-                      "value": 2,
-                      "children": [
-                        {
-                          "id": "fibo(1)",
-                          "value": 1,
-                          "children": []
-                        },
-                        {
-                          "id": "fibo(2)",
-                          "value": 1,
-                          "children": [
-                            {
-                              "id": "fibo(0)",
-                              "value": 0,
-                              "children": []
-                            },
-                            {
-                              "id": "fibo(1)",
-                              "value": 1,
-                              "children": []
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "id": "fibo(6)",
-              "value": 8,
-              "children": [
-                {
-                  "id": "fibo(4)",
-                  "value": 3,
-                  "children": [
-                    {
-                      "id": "fibo(2)",
-                      "value": 1,
-                      "children": [
-                        {
-                          "id": "fibo(0)",
-                          "value": 0,
-                          "children": []
-                        },
-                        {
-                          "id": "fibo(1)",
-                          "value": 1,
-                          "children": []
-                        }
-                      ]
-                    },
-                    {
-                      "id": "fibo(3)",
-                      "value": 2,
-                      "children": [
-                        {
-                          "id": "fibo(1)",
-                          "value": 1,
-                          "children": []
-                        },
-                        {
-                          "id": "fibo(2)",
-                          "value": 1,
-                          "children": [
-                            {
-                              "id": "fibo(0)",
-                              "value": 0,
-                              "children": []
-                            },
-                            {
-                              "id": "fibo(1)",
-                              "value": 1,
-                              "children": []
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "id": "fibo(5)",
-                  "value": 5,
-                  "children": [
-                    {
-                      "id": "fibo(3)",
-                      "value": 2,
-                      "children": [
-                        {
-                          "id": "fibo(1)",
-                          "value": 1,
-                          "children": []
-                        },
-                        {
-                          "id": "fibo(2)",
-                          "value": 1,
-                          "children": [
-                            {
-                              "id": "fibo(0)",
-                              "value": 0,
-                              "children": []
-                            },
-                            {
-                              "id": "fibo(1)",
-                              "value": 1,
-                              "children": []
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "id": "fibo(4)",
-                      "value": 3,
-                      "children": [
-                        {
-                          "id": "fibo(2)",
-                          "value": 1,
-                          "children": [
-                            {
-                              "id": "fibo(0)",
-                              "value": 0,
-                              "children": []
-                            },
-                            {
-                              "id": "fibo(1)",
-                              "value": 1,
-                              "children": []
-                            }
-                          ]
-                        },
-                        {
-                          "id": "fibo(3)",
-                          "value": 2,
-                          "children": [
-                            {
-                              "id": "fibo(1)",
-                              "value": 1,
-                              "children": []
-                            },
-                            {
-                              "id": "fibo(2)",
-                              "value": 1,
-                              "children": [
-                                {
-                                  "id": "fibo(0)",
-                                  "value": 0,
-                                  "children": []
-                                },
-                                {
-                                  "id": "fibo(1)",
-                                  "value": 1,
-                                  "children": []
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
+      "result": false
+    },
+    {
+      "t": 5,
+      "kind": "compare",
+      "loc": {"line": 1},
+      "expr": "n == 1",
+      "read": [
+        {"ref": "n", "value": 7}
+      ],
+      "result": false
+    },
+    {
+      "t": 6,
+      "kind": "call",
+      "loc": {"line": 2},
+      "fn": "fibo",
+      "args": [
+        {"name": "n", "value": 5}
+      ],
+      "viz": {
+        "recursionDepth": 1,
+        "callTree": "fibo(7) -> fibo(5)"
+      }
+    },
+    {
+      "t": 7,
+      "kind": "call",
+      "loc": {"line": 2},
+      "fn": "fibo",
+      "args": [
+        {"name": "n", "value": 3}
+      ],
+      "viz": {
+        "recursionDepth": 2,
+        "callTree": "fibo(7) -> fibo(5) -> fibo(3)"
+      }
+    },
+    {
+      "t": 8,
+      "kind": "call",
+      "loc": {"line": 2},
+      "fn": "fibo",
+      "args": [
+        {"name": "n", "value": 1}
+      ],
+      "viz": {
+        "recursionDepth": 3,
+        "callTree": "fibo(7) -> fibo(5) -> fibo(3) -> fibo(1)"
+      }
+    },
+    {
+      "t": 9,
+      "kind": "compare",
+      "loc": {"line": 1},
+      "expr": "n == 1",
+      "read": [
+        {"ref": "n", "value": 1}
+      ],
+      "result": true
+    },
+    {
+      "t": 10,
+      "kind": "branch",
+      "loc": {"line": 1},
+      "expr": "n == 1",
+      "result": true
+    },
+    {
+      "t": 11,
+      "kind": "return",
+      "loc": {"line": 1},
+      "fn": "fibo",
+      "value": 1
+    },
+    {
+      "t": 12,
+      "kind": "call",
+      "loc": {"line": 2},
+      "fn": "fibo",
+      "args": [
+        {"name": "n", "value": 2}
+      ],
+      "viz": {
+        "recursionDepth": 3,
+        "callTree": "fibo(7) -> fibo(5) -> fibo(3) -> fibo(2)"
+      }
+    },
+    {
+      "t": 13,
+      "kind": "call",
+      "loc": {"line": 2},
+      "fn": "fibo",
+      "args": [
+        {"name": "n", "value": 0}
+      ],
+      "viz": {
+        "recursionDepth": 4,
+        "callTree": "fibo(7) -> fibo(5) -> fibo(3) -> fibo(2) -> fibo(0)"
+      }
+    },
+    {
+      "t": 14,
+      "kind": "compare",
+      "loc": {"line": 1},
+      "expr": "n == 0",
+      "read": [
+        {"ref": "n", "value": 0}
+      ],
+      "result": true
+    },
+    {
+      "t": 15,
+      "kind": "branch",
+      "loc": {"line": 1},
+      "expr": "n == 0",
+      "result": true
+    },
+    {
+      "t": 16,
+      "kind": "return",
+      "loc": {"line": 1},
+      "fn": "fibo",
+      "value": 0
+    },
+    {
+      "t": 17,
+      "kind": "call",
+      "loc": {"line": 2},
+      "fn": "fibo",
+      "args": [
+        {"name": "n", "value": 1}
+      ],
+      "viz": {
+        "recursionDepth": 4,
+        "callTree": "fibo(7) -> fibo(5) -> fibo(3) -> fibo(2) -> fibo(1)"
+      }
+    },
+    {
+      "t": 18,
+      "kind": "return",
+      "loc": {"line": 1},
+      "fn": "fibo",
+      "value": 1
+    },
+    {
+      "t": 19,
+      "kind": "return",
+      "loc": {"line": 2},
+      "fn": "fibo",
+      "value": 1,
+      "viz": {
+        "note": "fibo(2) = fibo(0) + fibo(1) = 0 + 1"
+      }
+    },
+    {
+      "t": 20,
+      "kind": "return",
+      "loc": {"line": 2},
+      "fn": "fibo",
+      "value": 2,
+      "viz": {
+        "note": "fibo(3) = fibo(1) + fibo(2) = 1 + 1"
+      }
+    },
+    {
+      "t": 21,
+      "kind": "call",
+      "loc": {"line": 2},
+      "fn": "fibo",
+      "args": [
+        {"name": "n", "value": 4}
+      ],
+      "viz": {
+        "recursionDepth": 2,
+        "callTree": "fibo(7) -> fibo(5) -> fibo(4)"
+      }
+    },
+    {
+      "t": 22,
+      "kind": "note",
+      "loc": {"line": 2},
+      "text": "Similar recursive pattern: fibo(4) expands to fibo(2) + fibo(3), creating 5 more function calls"
+    },
+    {
+      "t": 23,
+      "kind": "return",
+      "loc": {"line": 2},
+      "fn": "fibo",
+      "value": 3,
+      "viz": {
+        "note": "fibo(4) = 3"
+      }
+    },
+    {
+      "t": 24,
+      "kind": "return",
+      "loc": {"line": 2},
+      "fn": "fibo",
+      "value": 5,
+      "viz": {
+        "note": "fibo(5) = fibo(3) + fibo(4) = 2 + 3"
+      }
+    },
+    {
+      "t": 25,
+      "kind": "call",
+      "loc": {"line": 2},
+      "fn": "fibo",
+      "args": [
+        {"name": "n", "value": 6}
+      ],
+      "viz": {
+        "recursionDepth": 1,
+        "callTree": "fibo(7) -> fibo(6)"
+      }
+    },
+    {
+      "t": 26,
+      "kind": "note",
+      "loc": {"line": 2},
+      "text": "Similar recursive pattern: fibo(6) expands creating additional calls"
+    },
+    {
+      "t": 27,
+      "kind": "return",
+      "loc": {"line": 2},
+      "fn": "fibo",
+      "value": 8,
+      "viz": {
+        "note": "fibo(6) = 8"
+      }
+    },
+    {
+      "t": 28,
+      "kind": "return",
+      "loc": {"line": 2},
+      "fn": "fibo",
+      "value": 13,
+      "viz": {
+        "note": "fibo(7) = fibo(5) + fibo(6) = 5 + 8",
+        "recursionTree": {
+          "root": "fibo(7)=13",
+          "left": "fibo(5)=5",
+          "right": "fibo(6)=8"
         }
       }
     },
     {
-      "line": 6,
-      "description": "fibo(7)의 결과를 출력",
-      "changes": [],
-      "stack": []
+      "t": 29,
+      "kind": "io",
+      "loc": {"line": 6},
+      "dir": "out",
+      "channel": "stdout",
+      "data": "13"
     }
   ]
 }

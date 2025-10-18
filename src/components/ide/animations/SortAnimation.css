@@ -1,0 +1,79 @@
+/* ./animations/SortAnimation.css */
+
+.sort-animation-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    gap: 20px;
+}
+
+.sort-animation-container h3 {
+    color: var(--modal-text-light);
+    font-weight: 500;
+}
+
+.bar-container {
+    display: flex;
+    align-items: flex-end; /* 막대가 아래에서부터 자라도록 */
+    justify-content: center;
+    height: 300px;
+    width: 100%;
+    gap: 8px;
+}
+
+.bar-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+    max-width: 60px;
+}
+
+.bar {
+    width: 100%;
+    background: linear-gradient(180deg, var(--modal-primary), #a78bfa);
+    border-radius: 6px 6px 0 0;
+    display: flex;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    transition: all 0.3s ease-in-out;
+    position: relative;
+    box-shadow: var(--modal-shadow-sm);
+}
+
+.bar-value {
+    position: absolute;
+    top: -20px;
+    font-size: 12px;
+    color: var(--modal-text);
+    font-weight: 600;
+}
+
+.bar-index {
+    font-size: 11px;
+    color: var(--modal-text-light);
+}
+
+/* 🔍 비교할 때 막대 스타일 */
+.bar.comparing {
+    background: linear-gradient(180deg, #fbbf24, #f59e0b); /* 주황색 계열 */
+    transform: scale(1.05); /* 살짝 커지는 효과 */
+}
+
+/* 🔄 교환할 때 막대 스타일 */
+.bar.swapping {
+    background: linear-gradient(180deg, #22c55e, #10b981); /* 초록색 계열 */
+    animation: swap-pulse 0.5s ease-in-out;
+}
+
+@keyframes swap-pulse {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}

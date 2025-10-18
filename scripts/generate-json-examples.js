@@ -1,4 +1,4 @@
-// scripts/generate-examples.js
+// scripts/generate-json-examples.js
 
 const fs = require('fs');
 const path = require('path');
