@@ -2,6 +2,9 @@
 import { useRef, useCallback } from "react";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
+import config from "../../../config";
+
+const COLLAB_SOCKET_URL = `${config.API_BASE_URL}/ws-collab`;
 
 /**
  * STOMP/SockJS 래퍼 훅 (견고 버전)
@@ -63,8 +66,7 @@ export default function useCollabSocket() {
         isConnectingRef.current = true;
 
         return new Promise((resolve, reject) => {
-            const sockUrl = `http://52.79.145.160:8080/ws-collab`; // 필요시 config로 이동
-            const sock = new SockJS(sockUrl);
+            const sock = new SockJS(COLLAB_SOCKET_URL);
 
             const client = new Client({
                 webSocketFactory: () => sock,

@@ -2,8 +2,7 @@
 import config from "../../../config";
 
 export async function createSession({ token, roomId, fileName, language }) {
-    // const url = `${config.API_BASE_URL}/api/collab/rooms/${roomId}/sessions`;
-    const url = `http://52.79.145.160:8080/api/collab/rooms/${roomId}/sessions`;
+    const url = `${config.API_BASE_URL}/api/collab/rooms/${roomId}/sessions`;
 
     const res = await fetch(url, {
         method: "POST",
