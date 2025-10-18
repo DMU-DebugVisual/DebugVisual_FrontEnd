@@ -1,72 +1,569 @@
 {
-  "algorithm": "binary-tree",
   "lang": "c",
   "input": "",
-  "variables": [
-    { "name": "root", "type": "Node*", "initialValue": "NULL", "currentValue": "0x01" },
-    { "name": "newNode", "type": "Node*", "initialValue": null, "currentValue": "0x05" }
-  ],
-  "functions": [
-    { "name": "createNode", "params": ["data"] },
-    { "name": "insert", "params": ["root", "data"] },
-    { "name": "inorder", "params": ["root"] }
-  ],
-  "steps": [
-    { "line": 29, "description": "main 시작, root 초기화", "changes": [{ "variable": "root", "before": "NULL", "after": "NULL" }] },
-    { "line": 30, "description": "insert(root, 50) 호출", "stack": [{ "function": "insert", "params": ["NULL", 50] }] },
-    { "line": 17, "description": "root == NULL, createNode(50) 호출", "stack": [{ "function": "createNode", "params": [50] }] },
-    { "line": 11, "description": "newNode 생성 및 초기화", "changes": [{ "variable": "newNode", "before": null, "after": "0x01" }], "dataStructure": { "type": "bst", "nodes": [{ "id": "0x01", "value": 50, "links": [] }] } },
-    { "line": 13, "description": "createNode 반환", "stack": [{ "function": "insert", "params": ["NULL", 50] }] },
-    { "line": 18, "description": "insert 반환, root=0x01", "changes": [{ "variable": "root", "before": "NULL", "after": "0x01" }] },
-    { "line": 31, "description": "insert(root, 30) 호출", "stack": [{ "function": "insert", "params": ["0x01", 30] }] },
-    { "line": 19, "description": "30 < 50, insert(root->left, 30) 재귀호출", "stack": [{ "function": "insert", "params": ["NULL", 30] }] },
-    { "line": 17, "description": "root==NULL, createNode(30) 호출", "stack": [{ "function": "createNode", "params": [30] }] },
-    { "line": 11, "description": "newNode 생성 및 초기화", "changes": [{ "variable": "newNode", "before": "0x01", "after": "0x02" }], "dataStructure": { "type": "bst", "nodes": [{ "id": "0x01", "value": 50, "links": ["0x02"] }, { "id": "0x02", "value": 30, "links": [] }] } },
-    { "line": 13, "description": "createNode 반환", "stack": [{ "function": "insert", "params": ["NULL", 30] }] },
-    { "line": 18, "description": "재귀 insert 반환, root->left=0x02", "stack": [{ "function": "insert", "params": ["0x01", 30] }] },
-    { "line": 22, "description": "insert 반환" },
-    { "line": 32, "description": "insert(root, 70) 호출", "stack": [{ "function": "insert", "params": ["0x01", 70] }] },
-    { "line": 20, "description": "70 > 50, insert(root->right, 70) 재귀호출", "stack": [{ "function": "insert", "params": ["NULL", 70] }] },
-    { "line": 17, "description": "root==NULL, createNode(70) 호출", "stack": [{ "function": "createNode", "params": [70] }] },
-    { "line": 11, "description": "newNode 생성 및 초기화", "changes": [{ "variable": "newNode", "before": "0x02", "after": "0x03" }], "dataStructure": { "type": "bst", "nodes": [{ "id": "0x01", "value": 50, "links": ["0x02", "0x03"] }, { "id": "0x02", "value": 30, "links": [] }, { "id": "0x03", "value": 70, "links": [] }] } },
-    { "line": 13, "description": "createNode 반환", "stack": [{ "function": "insert", "params": ["NULL", 70] }] },
-    { "line": 18, "description": "재귀 insert 반환, root->right=0x03", "stack": [{ "function": "insert", "params": ["0x01", 70] }] },
-    { "line": 22, "description": "insert 반환" },
-    { "line": 33, "description": "insert(root, 20) 호출", "stack": [{ "function": "insert", "params": ["0x01", 20] }] },
-    { "line": 19, "description": "20 < 50, insert(root->left, 20) 재귀호출", "stack": [{ "function": "insert", "params": ["0x02", 20] }] },
-    { "line": 19, "description": "20 < 30, insert(root->left, 20) 재귀호출", "stack": [{ "function": "insert", "params": ["NULL", 20] }] },
-    { "line": 17, "description": "root==NULL, createNode(20) 호출", "stack": [{ "function": "createNode", "params": [20] }] },
-    { "line": 11, "description": "newNode 생성 및 초기화", "changes": [{ "variable": "newNode", "before": "0x03", "after": "0x04" }], "dataStructure": { "type": "bst", "nodes": [{ "id": "0x01", "value": 50, "links": ["0x02", "0x03"] }, { "id": "0x02", "value": 30, "links": ["0x04"] }, { "id": "0x03", "value": 70, "links": [] }, { "id": "0x04", "value": 20, "links": [] }] } },
-    { "line": 13, "description": "createNode 반환" },
-    { "line": 18, "description": "재귀 insert 반환, root->left=0x04" },
-    { "line": 18, "description": "재귀 insert 반환, root->left=0x02" },
-    { "line": 22, "description": "insert 반환" },
-    { "line": 34, "description": "insert(root, 40) 호출", "stack": [{ "function": "insert", "params": ["0x01", 40] }] },
-    { "line": 19, "description": "40 < 50, insert(root->left, 40) 재귀호출", "stack": [{ "function": "insert", "params": ["0x02", 40] }] },
-    { "line": 20, "description": "40 > 30, insert(root->right, 40) 재귀호출", "stack": [{ "function": "insert", "params": ["NULL", 40] }] },
-    { "line": 17, "description": "root==NULL, createNode(40) 호출", "stack": [{ "function": "createNode", "params": [40] }] },
-    { "line": 11, "description": "newNode 생성 및 초기화", "changes": [{ "variable": "newNode", "before": "0x04", "after": "0x05" }], "dataStructure": { "type": "bst", "nodes": [{ "id": "0x01", "value": 50, "links": ["0x02", "0x03"] }, { "id": "0x02", "value": 30, "links": ["0x04", "0x05"] }, { "id": "0x03", "value": 70, "links": [] }, { "id": "0x04", "value": 20, "links": [] }, { "id": "0x05", "value": 40, "links": [] }] } },
-    { "line": 13, "description": "createNode 반환" },
-    { "line": 18, "description": "재귀 insert 반환, root->right=0x05" },
-    { "line": 18, "description": "재귀 insert 반환, root->left=0x02" },
-    { "line": 22, "description": "insert 반환" },
-    { "line": 36, "description": "printf(\"Inorder Traversal\")" },
-    { "line": 37, "description": "inorder(root) 호출", "stack": [{ "function": "inorder", "params": ["0x01"] }] },
-    { "line": 25, "description": "inorder(root->left) 호출", "stack": [{ "function": "inorder", "params": ["0x02"] }] },
-    { "line": 25, "description": "inorder(root->left) 호출", "stack": [{ "function": "inorder", "params": ["0x04"] }] },
-    { "line": 25, "description": "inorder(root->left=NULL), 반환" },
-    { "line": 27, "description": "출력: 20" },
-    { "line": 28, "description": "inorder(root->right=NULL), 반환" },
-    { "line": 27, "description": "출력: 30" },
-    { "line": 28, "description": "inorder(root->right) 호출", "stack": [{ "function": "inorder", "params": ["0x05"] }] },
-    { "line": 25, "description": "inorder(root->left=NULL), 반환" },
-    { "line": 27, "description": "출력: 40" },
-    { "line": 28, "description": "inorder(root->right=NULL), 반환" },
-    { "line": 27, "description": "출력: 50" },
-    { "line": 28, "description": "inorder(root->right) 호출", "stack": [{ "function": "inorder", "params": ["0x03"] }] },
-    { "line": 25, "description": "inorder(root->left=NULL), 반환" },
-    { "line": 27, "description": "출력: 70" },
-    { "line": 28, "description": "inorder(root->right=NULL), 반환" },
-    { "line": 39, "description": "main 종료" }
+  "analysis": {
+    "timeComplexity": "O(n log n)",
+    "spaceComplexity": "O(n)",
+    "opCounts": {
+      "call": 15,
+      "return": 15,
+      "assign": 10,
+      "compare": 10,
+      "branch": 10,
+      "ds_op": 5,
+      "io": 5
+    }
+  },
+  "events": [
+    {
+      "t": 1,
+      "kind": "assign",
+      "loc": {"line": 29},
+      "var": "root",
+      "before": null,
+      "after": null
+    },
+    {
+      "t": 2,
+      "kind": "call",
+      "loc": {"line": 30},
+      "fn": "insert",
+      "args": [
+        {"name": "root", "value": null},
+        {"name": "data", "value": 50}
+      ]
+    },
+    {
+      "t": 3,
+      "kind": "compare",
+      "loc": {"line": 17},
+      "expr": "root == NULL",
+      "read": [
+        {"ref": "root", "value": null}
+      ],
+      "result": true
+    },
+    {
+      "t": 4,
+      "kind": "branch",
+      "loc": {"line": 17},
+      "expr": "root == NULL",
+      "result": true
+    },
+    {
+      "t": 5,
+      "kind": "call",
+      "loc": {"line": 18},
+      "fn": "createNode",
+      "args": [
+        {"name": "data", "value": 50}
+      ]
+    },
+    {
+      "t": 6,
+      "kind": "assign",
+      "loc": {"line": 11},
+      "var": "newNode",
+      "before": null,
+      "after": "0x01"
+    },
+    {
+      "t": 7,
+      "kind": "ds_op",
+      "loc": {"line": 11},
+      "target": "bst",
+      "op": "insert",
+      "args": ["0x01", 50],
+      "viz": {
+        "type": "bst",
+        "nodes": [
+          {"id": "0x01", "value": 50, "left": null, "right": null}
+        ]
+      }
+    },
+    {
+      "t": 8,
+      "kind": "return",
+      "loc": {"line": 13},
+      "fn": "createNode",
+      "value": "0x01"
+    },
+    {
+      "t": 9,
+      "kind": "assign",
+      "loc": {"line": 30},
+      "var": "root",
+      "before": null,
+      "after": "0x01"
+    },
+    {
+      "t": 10,
+      "kind": "return",
+      "loc": {"line": 18},
+      "fn": "insert",
+      "value": "0x01"
+    },
+    {
+      "t": 11,
+      "kind": "call",
+      "loc": {"line": 31},
+      "fn": "insert",
+      "args": [
+        {"name": "root", "value": "0x01"},
+        {"name": "data", "value": 30}
+      ]
+    },
+    {
+      "t": 12,
+      "kind": "compare",
+      "loc": {"line": 19},
+      "expr": "data < root->data",
+      "read": [
+        {"ref": "data", "value": 30},
+        {"ref": "root->data", "value": 50}
+      ],
+      "result": true
+    },
+    {
+      "t": 13,
+      "kind": "branch",
+      "loc": {"line": 19},
+      "expr": "data < root->data",
+      "result": true
+    },
+    {
+      "t": 14,
+      "kind": "call",
+      "loc": {"line": 19},
+      "fn": "insert",
+      "args": [
+        {"name": "root", "value": null},
+        {"name": "data", "value": 30}
+      ],
+      "viz": {
+        "recursionDepth": 1,
+        "note": "Inserting 30 to left of 50"
+      }
+    },
+    {
+      "t": 15,
+      "kind": "call",
+      "loc": {"line": 17},
+      "fn": "createNode",
+      "args": [
+        {"name": "data", "value": 30}
+      ]
+    },
+    {
+      "t": 16,
+      "kind": "assign",
+      "loc": {"line": 11},
+      "var": "newNode",
+      "before": "0x01",
+      "after": "0x02"
+    },
+    {
+      "t": 17,
+      "kind": "ds_op",
+      "loc": {"line": 11},
+      "target": "bst",
+      "op": "insert",
+      "args": ["0x02", 30],
+      "viz": {
+        "type": "bst",
+        "nodes": [
+          {"id": "0x01", "value": 50, "left": "0x02", "right": null},
+          {"id": "0x02", "value": 30, "left": null, "right": null}
+        ]
+      }
+    },
+    {
+      "t": 18,
+      "kind": "return",
+      "loc": {"line": 13},
+      "fn": "createNode",
+      "value": "0x02"
+    },
+    {
+      "t": 19,
+      "kind": "return",
+      "loc": {"line": 19},
+      "fn": "insert",
+      "value": "0x02"
+    },
+    {
+      "t": 20,
+      "kind": "return",
+      "loc": {"line": 22},
+      "fn": "insert",
+      "value": "0x01"
+    },
+    {
+      "t": 21,
+      "kind": "call",
+      "loc": {"line": 32},
+      "fn": "insert",
+      "args": [
+        {"name": "root", "value": "0x01"},
+        {"name": "data", "value": 70}
+      ]
+    },
+    {
+      "t": 22,
+      "kind": "compare",
+      "loc": {"line": 20},
+      "expr": "data > root->data",
+      "read": [
+        {"ref": "data", "value": 70},
+        {"ref": "root->data", "value": 50}
+      ],
+      "result": true
+    },
+    {
+      "t": 23,
+      "kind": "branch",
+      "loc": {"line": 20},
+      "expr": "data > root->data",
+      "result": true
+    },
+    {
+      "t": 24,
+      "kind": "call",
+      "loc": {"line": 17},
+      "fn": "createNode",
+      "args": [
+        {"name": "data", "value": 70}
+      ]
+    },
+    {
+      "t": 25,
+      "kind": "assign",
+      "loc": {"line": 11},
+      "var": "newNode",
+      "before": "0x02",
+      "after": "0x03"
+    },
+    {
+      "t": 26,
+      "kind": "ds_op",
+      "loc": {"line": 11},
+      "target": "bst",
+      "op": "insert",
+      "args": ["0x03", 70],
+      "viz": {
+        "type": "bst",
+        "nodes": [
+          {"id": "0x01", "value": 50, "left": "0x02", "right": "0x03"},
+          {"id": "0x02", "value": 30, "left": null, "right": null},
+          {"id": "0x03", "value": 70, "left": null, "right": null}
+        ]
+      }
+    },
+    {
+      "t": 27,
+      "kind": "return",
+      "loc": {"line": 13},
+      "fn": "createNode",
+      "value": "0x03"
+    },
+    {
+      "t": 28,
+      "kind": "return",
+      "loc": {"line": 20},
+      "fn": "insert",
+      "value": "0x03"
+    },
+    {
+      "t": 29,
+      "kind": "return",
+      "loc": {"line": 22},
+      "fn": "insert",
+      "value": "0x01"
+    },
+    {
+      "t": 30,
+      "kind": "call",
+      "loc": {"line": 33},
+      "fn": "insert",
+      "args": [
+        {"name": "root", "value": "0x01"},
+        {"name": "data", "value": 20}
+      ]
+    },
+    {
+      "t": 31,
+      "kind": "compare",
+      "loc": {"line": 19},
+      "expr": "data < root->data",
+      "read": [
+        {"ref": "data", "value": 20},
+        {"ref": "root->data", "value": 50}
+      ],
+      "result": true
+    },
+    {
+      "t": 32,
+      "kind": "call",
+      "loc": {"line": 19},
+      "fn": "insert",
+      "args": [
+        {"name": "root", "value": "0x02"},
+        {"name": "data", "value": 20}
+      ],
+      "viz": {
+        "recursionDepth": 1
+      }
+    },
+    {
+      "t": 33,
+      "kind": "compare",
+      "loc": {"line": 19},
+      "expr": "data < root->data",
+      "read": [
+        {"ref": "data", "value": 20},
+        {"ref": "root->data", "value": 30}
+      ],
+      "result": true
+    },
+    {
+      "t": 34,
+      "kind": "call",
+      "loc": {"line": 17},
+      "fn": "createNode",
+      "args": [
+        {"name": "data", "value": 20}
+      ]
+    },
+    {
+      "t": 35,
+      "kind": "assign",
+      "loc": {"line": 11},
+      "var": "newNode",
+      "before": "0x03",
+      "after": "0x04"
+    },
+    {
+      "t": 36,
+      "kind": "ds_op",
+      "loc": {"line": 11},
+      "target": "bst",
+      "op": "insert",
+      "args": ["0x04", 20],
+      "viz": {
+        "type": "bst",
+        "nodes": [
+          {"id": "0x01", "value": 50, "left": "0x02", "right": "0x03"},
+          {"id": "0x02", "value": 30, "left": "0x04", "right": null},
+          {"id": "0x03", "value": 70, "left": null, "right": null},
+          {"id": "0x04", "value": 20, "left": null, "right": null}
+        ]
+      }
+    },
+    {
+      "t": 37,
+      "kind": "return",
+      "loc": {"line": 13},
+      "fn": "createNode",
+      "value": "0x04"
+    },
+    {
+      "t": 38,
+      "kind": "return",
+      "loc": {"line": 19},
+      "fn": "insert",
+      "value": "0x04"
+    },
+    {
+      "t": 39,
+      "kind": "return",
+      "loc": {"line": 22},
+      "fn": "insert",
+      "value": "0x02"
+    },
+    {
+      "t": 40,
+      "kind": "return",
+      "loc": {"line": 22},
+      "fn": "insert",
+      "value": "0x01"
+    },
+    {
+      "t": 41,
+      "kind": "call",
+      "loc": {"line": 34},
+      "fn": "insert",
+      "args": [
+        {"name": "root", "value": "0x01"},
+        {"name": "data", "value": 40}
+      ]
+    },
+    {
+      "t": 42,
+      "kind": "compare",
+      "loc": {"line": 19},
+      "expr": "data < root->data",
+      "read": [
+        {"ref": "data", "value": 40},
+        {"ref": "root->data", "value": 50}
+      ],
+      "result": true
+    },
+    {
+      "t": 43,
+      "kind": "call",
+      "loc": {"line": 19},
+      "fn": "insert",
+      "args": [
+        {"name": "root", "value": "0x02"},
+        {"name": "data", "value": 40}
+      ],
+      "viz": {
+        "recursionDepth": 1
+      }
+    },
+    {
+      "t": 44,
+      "kind": "compare",
+      "loc": {"line": 20},
+      "expr": "data > root->data",
+      "read": [
+        {"ref": "data", "value": 40},
+        {"ref": "root->data", "value": 30}
+      ],
+      "result": true
+    },
+    {
+      "t": 45,
+      "kind": "call",
+      "loc": {"line": 17},
+      "fn": "createNode",
+      "args": [
+        {"name": "data", "value": 40}
+      ]
+    },
+    {
+      "t": 46,
+      "kind": "assign",
+      "loc": {"line": 11},
+      "var": "newNode",
+      "before": "0x04",
+      "after": "0x05"
+    },
+    {
+      "t": 47,
+      "kind": "ds_op",
+      "loc": {"line": 11},
+      "target": "bst",
+      "op": "insert",
+      "args": ["0x05", 40],
+      "viz": {
+        "type": "bst",
+        "nodes": [
+          {"id": "0x01", "value": 50, "left": "0x02", "right": "0x03"},
+          {"id": "0x02", "value": 30, "left": "0x04", "right": "0x05"},
+          {"id": "0x03", "value": 70, "left": null, "right": null},
+          {"id": "0x04", "value": 20, "left": null, "right": null},
+          {"id": "0x05", "value": 40, "left": null, "right": null}
+        ]
+      }
+    },
+    {
+      "t": 48,
+      "kind": "return",
+      "loc": {"line": 13},
+      "fn": "createNode",
+      "value": "0x05"
+    },
+    {
+      "t": 49,
+      "kind": "return",
+      "loc": {"line": 20},
+      "fn": "insert",
+      "value": "0x05"
+    },
+    {
+      "t": 50,
+      "kind": "return",
+      "loc": {"line": 22},
+      "fn": "insert",
+      "value": "0x02"
+    },
+    {
+      "t": 51,
+      "kind": "return",
+      "loc": {"line": 22},
+      "fn": "insert",
+      "value": "0x01"
+    },
+    {
+      "t": 52,
+      "kind": "io",
+      "loc": {"line": 36},
+      "dir": "out",
+      "channel": "stdout",
+      "data": "Inorder Traversal"
+    },
+    {
+      "t": 53,
+      "kind": "call",
+      "loc": {"line": 37},
+      "fn": "inorder",
+      "args": [
+        {"name": "root", "value": "0x01"}
+      ]
+    },
+    {
+      "t": 54,
+      "kind": "note",
+      "loc": {"line": 25},
+      "text": "Recursive inorder traversal: left -> root -> right"
+    },
+    {
+      "t": 55,
+      "kind": "io",
+      "loc": {"line": 27},
+      "dir": "out",
+      "channel": "stdout",
+      "data": "20"
+    },
+    {
+      "t": 56,
+      "kind": "io",
+      "loc": {"line": 27},
+      "dir": "out",
+      "channel": "stdout",
+      "data": "30"
+    },
+    {
+      "t": 57,
+      "kind": "io",
+      "loc": {"line": 27},
+      "dir": "out",
+      "channel": "stdout",
+      "data": "40"
+    },
+    {
+      "t": 58,
+      "kind": "io",
+      "loc": {"line": 27},
+      "dir": "out",
+      "channel": "stdout",
+      "data": "50"
+    },
+    {
+      "t": 59,
+      "kind": "io",
+      "loc": {"line": 27},
+      "dir": "out",
+      "channel": "stdout",
+      "data": "70"
+    },
+    {
+      "t": 60,
+      "kind": "return",
+      "loc": {"line": 28},
+      "fn": "inorder",
+      "value": null
+    }
   ]
 }

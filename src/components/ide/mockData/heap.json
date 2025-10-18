@@ -1,116 +1,347 @@
 {
-  "algorithm": "heap",
   "lang": "c",
   "input": "",
-  "variables": [
-    { "name": "heap", "type": "heap", "initialValue": "empty", "currentValue": "empty" },
-    { "name": "e1", "type": "element", "initialValue": "{10}", "currentValue": "{10}" },
-    { "name": "e2", "type": "element", "initialValue": "{5}", "currentValue": "{5}" },
-    { "name": "e3", "type": "element", "initialValue": "{30}", "currentValue": "{30}" },
-    { "name": "e4", "type": "element", "initialValue": "undefined", "currentValue": "{30}" },
-    { "name": "e5", "type": "element", "initialValue": "undefined", "currentValue": "{10}" },
-    { "name": "e6", "type": "element", "initialValue": "undefined", "currentValue": "{5}" }
-  ],
-  "functions": [
-    { "name": "create", "params": [], "called": 1 },
-    { "name": "init", "params": ["h"], "called": 1 },
-    { "name": "insert_max_heap", "params": ["h", "item"], "called": 3 },
-    { "name": "delete_max_heap", "params": ["h"], "called": 3 }
-  ],
-  "steps": [
+  "analysis": {
+    "timeComplexity": "O(n log n)",
+    "spaceComplexity": "O(n)",
+    "opCounts": {
+      "call": 7,
+      "return": 7,
+      "assign": 12,
+      "compare": 6,
+      "ds_op": 6
+    }
+  },
+  "events": [
     {
-      "line": 41,
-      "description": "힙 생성 및 초기화",
-      "changes": [
-        { "variable": "heap", "before": "empty", "after": "heap_size=0" }
+      "t": 1,
+      "kind": "call",
+      "loc": {"line": 41},
+      "fn": "create",
+      "args": []
+    },
+    {
+      "t": 2,
+      "kind": "call",
+      "loc": {"line": 41},
+      "fn": "init",
+      "args": [
+        {"name": "h", "value": "heap_ptr"}
+      ]
+    },
+    {
+      "t": 3,
+      "kind": "assign",
+      "loc": {"line": 41},
+      "var": "heap.size",
+      "before": null,
+      "after": 0
+    },
+    {
+      "t": 4,
+      "kind": "return",
+      "loc": {"line": 41},
+      "fn": "init",
+      "value": null
+    },
+    {
+      "t": 5,
+      "kind": "call",
+      "loc": {"line": 44},
+      "fn": "insert_max_heap",
+      "args": [
+        {"name": "h", "value": "heap_ptr"},
+        {"name": "item", "value": 10}
+      ]
+    },
+    {
+      "t": 6,
+      "kind": "assign",
+      "loc": {"line": 44},
+      "var": "heap.size",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "t": 7,
+      "kind": "ds_op",
+      "loc": {"line": 44},
+      "target": "heap",
+      "op": "insert",
+      "args": [1, 10],
+      "viz": {
+        "type": "heap",
+        "nodes": [
+          {"id": "1", "value": 10, "children": []}
+        ]
+      }
+    },
+    {
+      "t": 8,
+      "kind": "return",
+      "loc": {"line": 44},
+      "fn": "insert_max_heap",
+      "value": null
+    },
+    {
+      "t": 9,
+      "kind": "call",
+      "loc": {"line": 45},
+      "fn": "insert_max_heap",
+      "args": [
+        {"name": "h", "value": "heap_ptr"},
+        {"name": "item", "value": 5}
+      ]
+    },
+    {
+      "t": 10,
+      "kind": "assign",
+      "loc": {"line": 45},
+      "var": "heap.size",
+      "before": 1,
+      "after": 2
+    },
+    {
+      "t": 11,
+      "kind": "ds_op",
+      "loc": {"line": 45},
+      "target": "heap",
+      "op": "insert",
+      "args": [2, 5],
+      "viz": {
+        "type": "heap",
+        "nodes": [
+          {"id": "1", "value": 10, "children": [2]},
+          {"id": "2", "value": 5, "children": []}
+        ]
+      }
+    },
+    {
+      "t": 12,
+      "kind": "compare",
+      "loc": {"line": 45},
+      "expr": "5 > parent(10)",
+      "read": [
+        {"ref": "item", "value": 5},
+        {"ref": "parent", "value": 10}
       ],
-      "dataStructure": {
+      "result": false
+    },
+    {
+      "t": 13,
+      "kind": "return",
+      "loc": {"line": 45},
+      "fn": "insert_max_heap",
+      "value": null
+    },
+    {
+      "t": 14,
+      "kind": "call",
+      "loc": {"line": 46},
+      "fn": "insert_max_heap",
+      "args": [
+        {"name": "h", "value": "heap_ptr"},
+        {"name": "item", "value": 30}
+      ]
+    },
+    {
+      "t": 15,
+      "kind": "assign",
+      "loc": {"line": 46},
+      "var": "heap.size",
+      "before": 2,
+      "after": 3
+    },
+    {
+      "t": 16,
+      "kind": "compare",
+      "loc": {"line": 46},
+      "expr": "30 > parent(10)",
+      "read": [
+        {"ref": "item", "value": 30},
+        {"ref": "parent", "value": 10}
+      ],
+      "result": true
+    },
+    {
+      "t": 17,
+      "kind": "swap",
+      "loc": {"line": 46},
+      "target": "heap",
+      "indices": [1, 3],
+      "before": [10, 30],
+      "after": [30, 10]
+    },
+    {
+      "t": 18,
+      "kind": "ds_op",
+      "loc": {"line": 46},
+      "target": "heap",
+      "op": "insert",
+      "args": [3, 30],
+      "viz": {
+        "type": "heap",
+        "nodes": [
+          {"id": "1", "value": 30, "children": [2, 3]},
+          {"id": "2", "value": 5, "children": []},
+          {"id": "3", "value": 10, "children": []}
+        ]
+      }
+    },
+    {
+      "t": 19,
+      "kind": "return",
+      "loc": {"line": 46},
+      "fn": "insert_max_heap",
+      "value": null
+    },
+    {
+      "t": 20,
+      "kind": "call",
+      "loc": {"line": 48},
+      "fn": "delete_max_heap",
+      "args": [
+        {"name": "h", "value": "heap_ptr"}
+      ]
+    },
+    {
+      "t": 21,
+      "kind": "assign",
+      "loc": {"line": 48},
+      "var": "e4",
+      "before": null,
+      "after": 30
+    },
+    {
+      "t": 22,
+      "kind": "assign",
+      "loc": {"line": 48},
+      "var": "heap.size",
+      "before": 3,
+      "after": 2
+    },
+    {
+      "t": 23,
+      "kind": "compare",
+      "loc": {"line": 48},
+      "expr": "10 < max_child(5)",
+      "read": [
+        {"ref": "temp", "value": 10},
+        {"ref": "max_child", "value": 5}
+      ],
+      "result": false
+    },
+    {
+      "t": 24,
+      "kind": "ds_op",
+      "loc": {"line": 48},
+      "target": "heap",
+      "op": "delete_max",
+      "args": [],
+      "viz": {
+        "type": "heap",
+        "nodes": [
+          {"id": "1", "value": 10, "children": [2]},
+          {"id": "2", "value": 5, "children": []}
+        ]
+      }
+    },
+    {
+      "t": 25,
+      "kind": "return",
+      "loc": {"line": 48},
+      "fn": "delete_max_heap",
+      "value": 30
+    },
+    {
+      "t": 26,
+      "kind": "call",
+      "loc": {"line": 49},
+      "fn": "delete_max_heap",
+      "args": [
+        {"name": "h", "value": "heap_ptr"}
+      ]
+    },
+    {
+      "t": 27,
+      "kind": "assign",
+      "loc": {"line": 49},
+      "var": "e5",
+      "before": null,
+      "after": 10
+    },
+    {
+      "t": 28,
+      "kind": "assign",
+      "loc": {"line": 49},
+      "var": "heap.size",
+      "before": 2,
+      "after": 1
+    },
+    {
+      "t": 29,
+      "kind": "ds_op",
+      "loc": {"line": 49},
+      "target": "heap",
+      "op": "delete_max",
+      "args": [],
+      "viz": {
+        "type": "heap",
+        "nodes": [
+          {"id": "1", "value": 5, "children": []}
+        ]
+      }
+    },
+    {
+      "t": 30,
+      "kind": "return",
+      "loc": {"line": 49},
+      "fn": "delete_max_heap",
+      "value": 10
+    },
+    {
+      "t": 31,
+      "kind": "call",
+      "loc": {"line": 50},
+      "fn": "delete_max_heap",
+      "args": [
+        {"name": "h", "value": "heap_ptr"}
+      ]
+    },
+    {
+      "t": 32,
+      "kind": "assign",
+      "loc": {"line": 50},
+      "var": "e6",
+      "before": null,
+      "after": 5
+    },
+    {
+      "t": 33,
+      "kind": "assign",
+      "loc": {"line": 50},
+      "var": "heap.size",
+      "before": 1,
+      "after": 0
+    },
+    {
+      "t": 34,
+      "kind": "ds_op",
+      "loc": {"line": 50},
+      "target": "heap",
+      "op": "delete_max",
+      "args": [],
+      "viz": {
         "type": "heap",
         "nodes": []
       }
     },
     {
-      "line": 44,
-      "description": "10 삽입 (루트에 삽입)",
-      "changes": [
-        { "variable": "heap", "before": "heap_size=0", "after": "heap_size=1" }
-      ],
-      "dataStructure": {
-        "type": "heap",
-        "nodes": [
-          { "id": "1", "value": 10, "links": [] }
-        ]
-      }
-    },
-    {
-      "line": 45,
-      "description": "5 삽입 (부모 10보다 작아 그대로 삽입)",
-      "changes": [
-        { "variable": "heap", "before": "heap_size=1", "after": "heap_size=2" }
-      ],
-      "dataStructure": {
-        "type": "heap",
-        "nodes": [
-          { "id": "1", "value": 10, "links": ["2"] },
-          { "id": "2", "value": 5, "links": [] }
-        ]
-      }
-    },
-    {
-      "line": 46,
-      "description": "30 삽입 (부모 10보다 커서 루트로 승격)",
-      "changes": [
-        { "variable": "heap", "before": "heap_size=2", "after": "heap_size=3" }
-      ],
-      "dataStructure": {
-        "type": "heap",
-        "nodes": [
-          { "id": "1", "value": 30, "links": ["2", "3"] },
-          { "id": "2", "value": 5, "links": [] },
-          { "id": "3", "value": 10, "links": [] }
-        ]
-      }
-    },
-    {
-      "line": 48,
-      "description": "첫 번째 삭제 (루트 30 삭제, 마지막 노드 10이 루트로 이동 후 재정렬)",
-      "changes": [
-        { "variable": "e4", "before": "undefined", "after": "{30}" },
-        { "variable": "heap", "before": "heap_size=3", "after": "heap_size=2" }
-      ],
-      "dataStructure": {
-        "type": "heap",
-        "nodes": [
-          { "id": "1", "value": 10, "links": ["2"] },
-          { "id": "2", "value": 5, "links": [] }
-        ]
-      }
-    },
-    {
-      "line": 49,
-      "description": "두 번째 삭제 (루트 10 삭제, 마지막 노드 5가 루트로 이동)",
-      "changes": [
-        { "variable": "e5", "before": "undefined", "after": "{10}" },
-        { "variable": "heap", "before": "heap_size=2", "after": "heap_size=1" }
-      ],
-      "dataStructure": {
-        "type": "heap",
-        "nodes": [
-          { "id": "1", "value": 5, "links": [] }
-        ]
-      }
-    },
-    {
-      "line": 50,
-      "description": "세 번째 삭제 (루트 5 삭제, 힙 비움)",
-      "changes": [
-        { "variable": "e6", "before": "undefined", "after": "{5}" },
-        { "variable": "heap", "before": "heap_size=1", "after": "heap_size=0" }
-      ],
-      "dataStructure": {
-        "type": "heap",
-        "nodes": []
-      }
+      "t": 35,
+      "kind": "return",
+      "loc": {"line": 50},
+      "fn": "delete_max_heap",
+      "value": 5
     }
   ]
 }

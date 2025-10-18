@@ -1,42 +1,424 @@
 {
-  "algorithm": "linked-list",
   "lang": "c",
-  "input": ["3", "5", "7", "0"],
-  "variables": [
-    { "name": "head", "type": "Node*", "initialValue": "NULL", "currentValue": "0x01" },
-    { "name": "tail", "type": "Node*", "initialValue": "NULL", "currentValue": "0x03" },
-    { "name": "cur", "type": "Node*", "initialValue": "NULL", "currentValue": "0x03" },
-    { "name": "newNode", "type": "Node*", "initialValue": "NULL", "currentValue": "0x03" },
-    { "name": "readData", "type": "int", "initialValue": null, "currentValue": 0 },
-    { "name": "delNode", "type": "Node*", "initialValue": null, "currentValue": "0x03" },
-    { "name": "delNextNode", "type": "Node*", "initialValue": null, "currentValue": null }
-  ],
-  "functions": [],
-  "steps": [
-    { "line": 15, "description": "scanf로 readData 입력받음", "changes": [{ "variable": "readData", "before": null, "after": 3 }] },
-    { "line": 19, "description": "readData>=1, malloc으로 새 노드 생성 및 초기화", "changes": [{ "variable": "newNode", "before": "NULL", "after": "0x01" }], "dataStructure": { "type": "linkedList", "nodes": [{ "id": "0x01", "value": 3, "links": [] }] } },
-    { "line": 23, "description": "head == NULL, head와 tail을 newNode로 지정", "changes": [{ "variable": "head", "before": "NULL", "after": "0x01" }, { "variable": "tail", "before": "NULL", "after": "0x01" }], "dataStructure": { "type": "linkedList", "nodes": [{ "id": "0x01", "value": 3, "links": [] }] } },
-    { "line": 15, "description": "scanf로 readData 입력받음", "changes": [{ "variable": "readData", "before": 3, "after": 5 }] },
-    { "line": 19, "description": "readData>=1, malloc으로 새 노드 생성 및 초기화", "changes": [{ "variable": "newNode", "before": "0x01", "after": "0x02" }], "dataStructure": { "type": "linkedList", "nodes": [{ "id": "0x01", "value": 3, "links": ["0x02"] }, { "id": "0x02", "value": 5, "links": [] }] } },
-    { "line": 25, "description": "head != NULL, tail->next에 newNode 연결 후 tail 갱신", "changes": [{ "variable": "tail", "before": "0x01", "after": "0x02" }], "dataStructure": { "type": "linkedList", "nodes": [{ "id": "0x01", "value": 3, "links": ["0x02"] }, { "id": "0x02", "value": 5, "links": [] }] } },
-    { "line": 15, "description": "scanf로 readData 입력받음", "changes": [{ "variable": "readData", "before": 5, "after": 7 }] },
-    { "line": 19, "description": "readData>=1, malloc으로 새 노드 생성 및 초기화", "changes": [{ "variable": "newNode", "before": "0x02", "after": "0x03" }], "dataStructure": { "type": "linkedList", "nodes": [{ "id": "0x01", "value": 3, "links": ["0x02"] }, { "id": "0x02", "value": 5, "links": ["0x03"] }, { "id": "0x03", "value": 7, "links": [] }] } },
-    { "line": 25, "description": "head != NULL, tail->next에 newNode 연결 후 tail 갱신", "changes": [{ "variable": "tail", "before": "0x02", "after": "0x03" }], "dataStructure": { "type": "linkedList", "nodes": [{ "id": "0x01", "value": 3, "links": ["0x02"] }, { "id": "0x02", "value": 5, "links": ["0x03"] }, { "id": "0x03", "value": 7, "links": [] }] } },
-    { "line": 15, "description": "scanf로 readData 입력받음", "changes": [{ "variable": "readData", "before": 7, "after": 0 }] },
-    { "line": 17, "description": "readData<1, while문 탈출" },
-    { "line": 31, "description": "head != NULL, cur을 head로 지정", "changes": [{ "variable": "cur", "before": "NULL", "after": "0x01" }] },
-    { "line": 32, "description": "첫 번째 노드 출력: 3" },
-    { "line": 34, "description": "cur->next != NULL, cur을 다음 노드로 이동", "changes": [{ "variable": "cur", "before": "0x01", "after": "0x02" }] },
-    { "line": 35, "description": "데이터 출력: 5" },
-    { "line": 34, "description": "cur->next != NULL, cur을 다음 노드로 이동", "changes": [{ "variable": "cur", "before": "0x02", "after": "0x03" }] },
-    { "line": 35, "description": "데이터 출력: 7" },
-    { "line": 34, "description": "cur->next == NULL, 출력 종료" },
-    { "line": 42, "description": "head != NULL, 삭제 단계 진입. delNode=head, delNextNode=head->next 지정", "changes": [{ "variable": "delNode", "before": null, "after": "0x01" }, { "variable": "delNextNode", "before": null, "after": "0x02" }] },
-    { "line": 45, "description": "첫 번째 노드(3) 삭제", "dataStructure": { "type": "linkedList", "nodes": [{ "id": "0x02", "value": 5, "links": ["0x03"] }, { "id": "0x03", "value": 7, "links": [] }] } },
-    { "line": 47, "description": "두 번째 노드 존재, 삭제 준비. delNode=delNextNode, delNextNode=delNextNode->next", "changes": [{ "variable": "delNode", "before": "0x01", "after": "0x02" }, { "variable": "delNextNode", "before": "0x02", "after": "0x03" }] },
-    { "line": 50, "description": "두 번째 노드(5) 삭제", "dataStructure": { "type": "linkedList", "nodes": [{ "id": "0x03", "value": 7, "links": [] }] } },
-    { "line": 47, "description": "세 번째 노드 존재, 삭제 준비. delNode=delNextNode, delNextNode=delNextNode->next", "changes": [{ "variable": "delNode", "before": "0x02", "after": "0x03" }, { "variable": "delNextNode", "before": "0x03", "after": null }] },
-    { "line": 50, "description": "세 번째 노드(7) 삭제", "dataStructure": { "type": "linkedList", "nodes": [] } },
-    { "line": 54, "description": "프로그램 종료" }
+  "input": "3\n5\n7\n0",
+  "analysis": {
+    "timeComplexity": "O(n)",
+    "spaceComplexity": "O(n)",
+    "opCounts": {
+      "assign": 15,
+      "compare": 7,
+      "call": 3,
+      "io": 7,
+      "ds_op": 9
+    }
+  },
+  "events": [
+    {
+      "t": 1,
+      "kind": "io",
+      "loc": {"line": 15},
+      "dir": "in",
+      "channel": "stdin",
+      "data": "3"
+    },
+    {
+      "t": 2,
+      "kind": "assign",
+      "loc": {"line": 15},
+      "var": "readData",
+      "before": null,
+      "after": 3
+    },
+    {
+      "t": 3,
+      "kind": "compare",
+      "loc": {"line": 17},
+      "expr": "readData >= 1",
+      "read": [
+        {"ref": "readData", "value": 3}
+      ],
+      "result": true
+    },
+    {
+      "t": 4,
+      "kind": "branch",
+      "loc": {"line": 17},
+      "expr": "readData >= 1",
+      "result": true
+    },
+    {
+      "t": 5,
+      "kind": "call",
+      "loc": {"line": 19},
+      "fn": "malloc",
+      "args": [
+        {"name": "size", "value": 16}
+      ]
+    },
+    {
+      "t": 6,
+      "kind": "assign",
+      "loc": {"line": 19},
+      "var": "newNode",
+      "before": null,
+      "after": "0x01"
+    },
+    {
+      "t": 7,
+      "kind": "ds_op",
+      "loc": {"line": 19},
+      "target": "linkedList",
+      "op": "insert",
+      "args": ["0x01", 3],
+      "viz": {
+        "nodes": [
+          {"id": "0x01", "value": 3, "next": null}
+        ]
+      }
+    },
+    {
+      "t": 8,
+      "kind": "compare",
+      "loc": {"line": 21},
+      "expr": "head == NULL",
+      "read": [
+        {"ref": "head", "value": null}
+      ],
+      "result": true
+    },
+    {
+      "t": 9,
+      "kind": "assign",
+      "loc": {"line": 23},
+      "var": "head",
+      "before": null,
+      "after": "0x01"
+    },
+    {
+      "t": 10,
+      "kind": "assign",
+      "loc": {"line": 23},
+      "var": "tail",
+      "before": null,
+      "after": "0x01"
+    },
+    {
+      "t": 11,
+      "kind": "io",
+      "loc": {"line": 15},
+      "dir": "in",
+      "channel": "stdin",
+      "data": "5"
+    },
+    {
+      "t": 12,
+      "kind": "assign",
+      "loc": {"line": 15},
+      "var": "readData",
+      "before": 3,
+      "after": 5
+    },
+    {
+      "t": 13,
+      "kind": "compare",
+      "loc": {"line": 17},
+      "expr": "readData >= 1",
+      "read": [
+        {"ref": "readData", "value": 5}
+      ],
+      "result": true
+    },
+    {
+      "t": 14,
+      "kind": "call",
+      "loc": {"line": 19},
+      "fn": "malloc",
+      "args": [
+        {"name": "size", "value": 16}
+      ]
+    },
+    {
+      "t": 15,
+      "kind": "assign",
+      "loc": {"line": 19},
+      "var": "newNode",
+      "before": "0x01",
+      "after": "0x02"
+    },
+    {
+      "t": 16,
+      "kind": "ds_op",
+      "loc": {"line": 25},
+      "target": "linkedList",
+      "op": "insert",
+      "args": ["0x02", 5],
+      "viz": {
+        "nodes": [
+          {"id": "0x01", "value": 3, "next": "0x02"},
+          {"id": "0x02", "value": 5, "next": null}
+        ]
+      }
+    },
+    {
+      "t": 17,
+      "kind": "assign",
+      "loc": {"line": 25},
+      "var": "tail",
+      "before": "0x01",
+      "after": "0x02"
+    },
+    {
+      "t": 18,
+      "kind": "io",
+      "loc": {"line": 15},
+      "dir": "in",
+      "channel": "stdin",
+      "data": "7"
+    },
+    {
+      "t": 19,
+      "kind": "assign",
+      "loc": {"line": 15},
+      "var": "readData",
+      "before": 5,
+      "after": 7
+    },
+    {
+      "t": 20,
+      "kind": "call",
+      "loc": {"line": 19},
+      "fn": "malloc",
+      "args": [
+        {"name": "size", "value": 16}
+      ]
+    },
+    {
+      "t": 21,
+      "kind": "assign",
+      "loc": {"line": 19},
+      "var": "newNode",
+      "before": "0x02",
+      "after": "0x03"
+    },
+    {
+      "t": 22,
+      "kind": "ds_op",
+      "loc": {"line": 25},
+      "target": "linkedList",
+      "op": "insert",
+      "args": ["0x03", 7],
+      "viz": {
+        "nodes": [
+          {"id": "0x01", "value": 3, "next": "0x02"},
+          {"id": "0x02", "value": 5, "next": "0x03"},
+          {"id": "0x03", "value": 7, "next": null}
+        ]
+      }
+    },
+    {
+      "t": 23,
+      "kind": "assign",
+      "loc": {"line": 25},
+      "var": "tail",
+      "before": "0x02",
+      "after": "0x03"
+    },
+    {
+      "t": 24,
+      "kind": "io",
+      "loc": {"line": 15},
+      "dir": "in",
+      "channel": "stdin",
+      "data": "0"
+    },
+    {
+      "t": 25,
+      "kind": "assign",
+      "loc": {"line": 15},
+      "var": "readData",
+      "before": 7,
+      "after": 0
+    },
+    {
+      "t": 26,
+      "kind": "compare",
+      "loc": {"line": 17},
+      "expr": "readData >= 1",
+      "read": [
+        {"ref": "readData", "value": 0}
+      ],
+      "result": false
+    },
+    {
+      "t": 27,
+      "kind": "branch",
+      "loc": {"line": 17},
+      "expr": "readData >= 1",
+      "result": false
+    },
+    {
+      "t": 28,
+      "kind": "assign",
+      "loc": {"line": 31},
+      "var": "cur",
+      "before": null,
+      "after": "0x01"
+    },
+    {
+      "t": 29,
+      "kind": "io",
+      "loc": {"line": 32},
+      "dir": "out",
+      "channel": "stdout",
+      "data": "3"
+    },
+    {
+      "t": 30,
+      "kind": "compare",
+      "loc": {"line": 34},
+      "expr": "cur->next != NULL",
+      "read": [
+        {"ref": "cur->next", "value": "0x02"}
+      ],
+      "result": true
+    },
+    {
+      "t": 31,
+      "kind": "assign",
+      "loc": {"line": 34},
+      "var": "cur",
+      "before": "0x01",
+      "after": "0x02"
+    },
+    {
+      "t": 32,
+      "kind": "io",
+      "loc": {"line": 35},
+      "dir": "out",
+      "channel": "stdout",
+      "data": "5"
+    },
+    {
+      "t": 33,
+      "kind": "compare",
+      "loc": {"line": 34},
+      "expr": "cur->next != NULL",
+      "read": [
+        {"ref": "cur->next", "value": "0x03"}
+      ],
+      "result": true
+    },
+    {
+      "t": 34,
+      "kind": "assign",
+      "loc": {"line": 34},
+      "var": "cur",
+      "before": "0x02",
+      "after": "0x03"
+    },
+    {
+      "t": 35,
+      "kind": "io",
+      "loc": {"line": 35},
+      "dir": "out",
+      "channel": "stdout",
+      "data": "7"
+    },
+    {
+      "t": 36,
+      "kind": "compare",
+      "loc": {"line": 34},
+      "expr": "cur->next != NULL",
+      "read": [
+        {"ref": "cur->next", "value": null}
+      ],
+      "result": false
+    },
+    {
+      "t": 37,
+      "kind": "assign",
+      "loc": {"line": 42},
+      "var": "delNode",
+      "before": null,
+      "after": "0x01"
+    },
+    {
+      "t": 38,
+      "kind": "assign",
+      "loc": {"line": 42},
+      "var": "delNextNode",
+      "before": null,
+      "after": "0x02"
+    },
+    {
+      "t": 39,
+      "kind": "ds_op",
+      "loc": {"line": 45},
+      "target": "linkedList",
+      "op": "delete",
+      "args": ["0x01"],
+      "viz": {
+        "nodes": [
+          {"id": "0x02", "value": 5, "next": "0x03"},
+          {"id": "0x03", "value": 7, "next": null}
+        ]
+      }
+    },
+    {
+      "t": 40,
+      "kind": "assign",
+      "loc": {"line": 47},
+      "var": "delNode",
+      "before": "0x01",
+      "after": "0x02"
+    },
+    {
+      "t": 41,
+      "kind": "assign",
+      "loc": {"line": 47},
+      "var": "delNextNode",
+      "before": "0x02",
+      "after": "0x03"
+    },
+    {
+      "t": 42,
+      "kind": "ds_op",
+      "loc": {"line": 50},
+      "target": "linkedList",
+      "op": "delete",
+      "args": ["0x02"],
+      "viz": {
+        "nodes": [
+          {"id": "0x03", "value": 7, "next": null}
+        ]
+      }
+    },
+    {
+      "t": 43,
+      "kind": "assign",
+      "loc": {"line": 47},
+      "var": "delNode",
+      "before": "0x02",
+      "after": "0x03"
+    },
+    {
+      "t": 44,
+      "kind": "assign",
+      "loc": {"line": 47},
+      "var": "delNextNode",
+      "before": "0x03",
+      "after": null
+    },
+    {
+      "t": 45,
+      "kind": "ds_op",
+      "loc": {"line": 50},
+      "target": "linkedList",
+      "op": "delete",
+      "args": ["0x03"],
+      "viz": {
+        "nodes": []
+      }
+    }
   ]
 }
