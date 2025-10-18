@@ -7,27 +7,55 @@
  */
 
 // JSON 파일들 직접 import (DV-Flow v1.3 스키마)
+import binaryTreeJson from './binaryTree.json';
 import bubbleSortJson from './bubbleSort.json';
+import fibonacciJson from './fibonacci.json';
 import graphJson from './graph.json';
+import heapJson from './heap.json';
+import linkedListJson from './linkedList.json';
 
 // JSON 예제 파일들을 객체 형태로 export
 export const jsonExamples = [
+    {
+        name: 'binaryTree.json',
+        type: 'json',
+        code: JSON.stringify(binaryTreeJson, null, 2)
+    },
     {
         name: 'bubbleSort.json',
         type: 'json',
         code: JSON.stringify(bubbleSortJson, null, 2)
     },
     {
+        name: 'fibonacci.json',
+        type: 'json',
+        code: JSON.stringify(fibonacciJson, null, 2)
+    },
+    {
         name: 'graph.json',
         type: 'json',
         code: JSON.stringify(graphJson, null, 2)
+    },
+    {
+        name: 'heap.json',
+        type: 'json',
+        code: JSON.stringify(heapJson, null, 2)
+    },
+    {
+        name: 'linkedList.json',
+        type: 'json',
+        code: JSON.stringify(linkedListJson, null, 2)
     }
 ];
 
 // JSON 데이터 객체 매핑 (파일명 -> 원본 JSON 데이터)
 const jsonDataMap = {
+    binaryTree: binaryTreeJson,
     bubbleSort: bubbleSortJson,
-    graph: graphJson
+    fibonacci: fibonacciJson,
+    graph: graphJson,
+    heap: heapJson,
+    linkedList: linkedListJson
 };
 
 // JSON 파일들을 동적으로 import하는 함수 (호환성 유지)
@@ -48,7 +76,7 @@ const importJsonFile = async (filename) => {
 
 export class JsonVisualizationManager {
     // 📋 현재 사용 가능한 JSON 파일들 (확장자 제외)
-    static availableJsonFiles = ['bubbleSort', 'graph'];
+    static availableJsonFiles = ['binaryTree', 'bubbleSort', 'fibonacci', 'graph', 'heap', 'linkedList'];
 
     // 🗄️ 로드된 JSON 데이터 캐시
     static jsonCache = new Map();
@@ -70,8 +98,12 @@ export class JsonVisualizationManager {
 
         // 🔍 패턴 매칭으로 적절한 JSON 파일 찾기
         const patterns = {
+            binaryTree: ['binary tree', 'binarytree', 'bst', '트리', 'node->left', 'node->right'],
             bubbleSort: ['bubble', '버블', 'sort'],
-            graph: ['graph', '그래프', 'adj', 'adjacency']
+            fibonacci: ['fibonacci', 'fib', '피보나치'],
+            graph: ['graph', '그래프', 'adj', 'adjacency'],
+            heap: ['heap', 'priority', '힙'],
+            linkedList: ['linked list', 'linkedlist', 'linked_list', '연결 리스트', 'node->next']
         };
 
         // 패턴 매칭 시도
