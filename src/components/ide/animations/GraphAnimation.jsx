@@ -1,15 +1,13 @@
-// GraphAnimation.jsx - DV-Flow v1.3 + SVG Zoom 기능
+// GraphAnimation.jsx - 정적 원형 레이아웃 (Force Simulation 제거)
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as d3 from 'd3';
 
 const GraphAnimation = ({ data, currentStep, theme }) => {
     const svgRef = useRef(null);
-    const gRef = useRef(null);
-    const [zoomLevel, setZoomLevel] = useState(1);
+    const [zoomLevel, setZoomLevel] = useState(100);
+    const zoomBehaviorRef = useRef(null);
+    const currentTransformRef = useRef(d3.zoomIdentity);
 
-    console.log('🕸️ GraphAnimation 렌더링:', { currentStep, hasData: !!data });
-
-    // 📊 현재까지의 그래프 상태 구축
     const graphState = useMemo(() => {
         if (!data?.events) return { vertexCount: 0, edges: [], adjacency: [] };
 
@@ -17,230 +15,208 @@ const GraphAnimation = ({ data, currentStep, theme }) => {
         const edges = [];
         const adjacencyMap = new Map();
 
-        console.log('🔍 그래프 상태 구축 시작, 총 이벤트:', data.events.length);
-
-        // currentStep까지의 이벤트를 순회하며 그래프 상태 구축
         for (let i = 0; i <= currentStep && i < data.events.length; i++) {
             const event = data.events[i];
 
-            // 정점 추가 (insert_vertex)
             if (event.kind === 'assign' && event.var === 'g->n') {
                 vertexCount = event.after;
-                console.log(`✅ 정점 개수 업데이트: ${vertexCount}`);
             }
 
-            // 간선 추가 (ds_op with target 'g->adj_mat')
             if (event.kind === 'ds_op' && event.target === 'g->adj_mat' && event.op === 'set') {
                 const [from, to, value] = event.args;
                 if (value === 1) {
-                    // 간선 추가 (중복 방지)
                     const edgeKey = `${Math.min(from, to)}-${Math.max(from, to)}`;
                     if (!adjacencyMap.has(edgeKey)) {
                         edges.push([from, to]);
                         adjacencyMap.set(edgeKey, true);
-                        console.log(`✅ 간선 추가: ${from} - ${to}`);
                     }
                 }
             }
         }
 
-        console.log('📊 최종 그래프 상태:', { vertexCount, edgeCount: edges.length });
-
-        // 인접 행렬 생성
         const adjacency = Array(vertexCount).fill(0).map(() => Array(vertexCount).fill(0));
         edges.forEach(([from, to]) => {
             adjacency[from][to] = 1;
-            adjacency[to][from] = 1; // 무방향 그래프
+            adjacency[to][from] = 1;
         });
 
         return { vertexCount, edges, adjacency };
     }, [data, currentStep]);
 
-    // 🎯 현재 이벤트에서 하이라이트할 간선
     const highlightedEdge = useMemo(() => {
         if (!data?.events || currentStep >= data.events.length) return null;
-
         const event = data.events[currentStep];
-
-        // ds_op 이벤트에서 간선 추가 중인 경우
         if (event.kind === 'ds_op' && event.target === 'g->adj_mat' && event.op === 'set') {
             const [from, to, value] = event.args;
-            if (value === 1) {
-                return [from, to];
-            }
+            if (value === 1) return [from, to];
         }
-
         return null;
     }, [data, currentStep]);
 
-    // 🎨 D3 그래프 렌더링 + Zoom 기능
     useEffect(() => {
         const svg = d3.select(svgRef.current);
         svg.selectAll('*').remove();
 
-        if (graphState.vertexCount === 0) {
-            return;
-        }
+        if (graphState.vertexCount === 0) return;
 
-        // SVG 크기를 동적으로 가져오기
         const svgElement = svgRef.current;
         const width = svgElement?.clientWidth || 800;
         const height = svgElement?.clientHeight || 600;
 
-        // 줌 가능한 그룹 (먼저 생성)
         const g = svg.append('g');
-        gRef.current = g.node();
 
-        // Zoom behavior 설정 (g를 생성한 후)
         const zoom = d3.zoom()
-            .scaleExtent([0.5, 3]) // 50% ~ 300% 확대
+            .scaleExtent([0.5, 3])
             .on('zoom', (event) => {
                 g.attr('transform', event.transform);
+                currentTransformRef.current = event.transform;
                 setZoomLevel(Math.round(event.transform.k * 100));
             });
 
+        zoomBehaviorRef.current = zoom;
         svg.call(zoom);
+        svg.call(zoom.transform, currentTransformRef.current);
 
-        const nodes = Array.from({ length: graphState.vertexCount }, (_, id) => ({ id }));
+        // 정적 원형 레이아웃 계산
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const radius = Math.min(width, height) * 0.35;
+
+        const nodes = Array.from({ length: graphState.vertexCount }, (_, id) => {
+            const angle = (id / graphState.vertexCount) * 2 * Math.PI - Math.PI / 2;
+            return {
+                id,
+                x: centerX + radius * Math.cos(angle),
+                y: centerY + radius * Math.sin(angle)
+            };
+        });
+
         const links = graphState.edges.map(([source, target]) => ({
-            source,
-            target,
+            source: nodes[source],
+            target: nodes[target],
             highlighted: highlightedEdge && (
                 (highlightedEdge[0] === source && highlightedEdge[1] === target) ||
                 (highlightedEdge[0] === target && highlightedEdge[1] === source)
             )
         }));
 
-        const simulation = d3.forceSimulation(nodes)
-            .force('charge', d3.forceManyBody().strength(-500))
-            .force('center', d3.forceCenter(width / 2, height / 2))
-            .force('link', d3.forceLink(links).id(d => d.id).distance(150))
-            .force('collision', d3.forceCollide().radius(50));
-
-        // 간선
-        const link = g.selectAll('line')
+        // 간선 그리기
+        g.selectAll('line')
             .data(links)
             .enter()
             .append('line')
+            .attr('x1', d => d.source.x)
+            .attr('y1', d => d.source.y)
+            .attr('x2', d => d.target.x)
+            .attr('y2', d => d.target.y)
             .attr('stroke', d => d.highlighted ? '#f97316' : '#94a3b8')
-            .attr('stroke-width', d => d.highlighted ? 4 : 2);
+            .attr('stroke-width', d => d.highlighted ? 4 : 2)
+            .style('transition', 'stroke 0.3s, stroke-width 0.3s');
 
-        // 노드
-        const node = g.selectAll('circle')
+        // 노드 그리기
+        const nodeGroups = g.selectAll('g.node')
             .data(nodes)
             .enter()
-            .append('circle')
+            .append('g')
+            .attr('class', 'node')
+            .attr('transform', d => `translate(${d.x}, ${d.y})`);
+
+        nodeGroups.append('circle')
             .attr('r', 30)
             .attr('fill', '#60a5fa')
             .attr('stroke', '#0f172a')
             .attr('stroke-width', 2)
-            .style('cursor', 'pointer')
-            .call(d3.drag()
-                .on('start', dragstarted)
-                .on('drag', dragged)
-                .on('end', dragended));
+            .style('cursor', 'pointer');
 
-        // 레이블
-        const label = g.selectAll('text')
-            .data(nodes)
-            .enter()
-            .append('text')
+        nodeGroups.append('text')
             .attr('text-anchor', 'middle')
+            .attr('dy', '0.35em')
             .attr('font-size', 18)
             .attr('font-weight', '600')
             .attr('fill', '#0f172a')
-            .attr('pointer-events', 'none')
             .text(d => d.id);
 
-        function dragstarted(event, d) {
-            if (!event.active) simulation.alphaTarget(0.3).restart();
-            d.fx = d.x;
-            d.fy = d.y;
-        }
-
-        function dragged(event, d) {
-            d.fx = event.x;
-            d.fy = event.y;
-        }
-
-        function dragended(event, d) {
-            if (!event.active) simulation.alphaTarget(0);
-            d.fx = null;
-            d.fy = null;
-        }
-
-        simulation.on('tick', () => {
-            link
-                .attr('x1', d => d.source.x ?? 0)
-                .attr('y1', d => d.source.y ?? 0)
-                .attr('x2', d => d.target.x ?? 0)
-                .attr('y2', d => d.target.y ?? 0);
-
-            node
-                .attr('cx', d => d.x ?? 0)
-                .attr('cy', d => d.y ?? 0);
-
-            label
-                .attr('x', d => d.x ?? 0)
-                .attr('y', d => (d.y ?? 0) + 6);
-        });
-
-        return () => simulation.stop();
     }, [graphState, highlightedEdge]);
 
-    // 🔍 Zoom 컨트롤 함수
     const handleZoomIn = () => {
         const svg = d3.select(svgRef.current);
-        svg.transition().call(d3.zoom().scaleBy, 1.3);
+        svg.transition().call(zoomBehaviorRef.current.scaleBy, 1.3);
     };
 
     const handleZoomOut = () => {
         const svg = d3.select(svgRef.current);
-        svg.transition().call(d3.zoom().scaleBy, 0.7);
+        svg.transition().call(zoomBehaviorRef.current.scaleBy, 0.7);
     };
 
     const handleZoomReset = () => {
         const svg = d3.select(svgRef.current);
-        svg.transition().call(d3.zoom().transform, d3.zoomIdentity);
+        svg.transition().call(zoomBehaviorRef.current.transform, d3.zoomIdentity);
+        currentTransformRef.current = d3.zoomIdentity;
         setZoomLevel(100);
     };
 
-    // 📝 현재 이벤트 설명
     const getDescription = () => {
-        if (!data?.events || currentStep >= data.events.length) {
-            return '그래프 초기 상태';
-        }
-
+        if (!data?.events || currentStep >= data.events.length) return '그래프 초기 상태';
         const event = data.events[currentStep];
-
         switch (event.kind) {
-            case 'call':
-                return `함수 호출: ${event.fn}()`;
+            case 'call': return `함수 호출: ${event.fn}()`;
             case 'assign':
-                if (event.var === 'g->n') {
-                    return `정점 추가 완료 (총 ${event.after}개)`;
-                }
+                if (event.var === 'g->n') return `정점 추가 완료 (총 ${event.after}개)`;
                 return `변수 할당: ${event.var}`;
             case 'ds_op':
                 if (event.target === 'g->adj_mat' && event.op === 'set') {
                     const [from, to, value] = event.args;
-                    if (value === 1) {
-                        return `간선 추가: ${from} ↔ ${to}`;
-                    }
+                    if (value === 1) return `간선 추가: ${from} ↔ ${to}`;
                 }
                 return '그래프 연산';
-            case 'compare':
-                return `조건 비교: ${event.expr}`;
-            case 'loopIter':
-                return `반복 ${event.loop.iter + 1}/${event.loop.total}`;
-            case 'io':
-                return '출력 중...';
-            default:
-                return `이벤트: ${event.kind}`;
+            case 'compare': return `조건 비교: ${event.expr}`;
+            case 'loopIter': return `반복 ${event.loop.iter + 1}/${event.loop.total}`;
+            case 'io': return '출력 중...';
+            default: return `이벤트: ${event.kind}`;
         }
     };
 
     const description = getDescription();
+
+    // 초기 빈 상태
+    if (!data?.events || graphState.vertexCount === 0) {
+        return (
+            <div style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative',
+                minHeight: '600px'
+            }}>
+                <svg
+                    ref={svgRef}
+                    width="100%"
+                    height="100%"
+                    style={{
+                        background: '#f1f5f9',
+                        cursor: 'grab',
+                        minHeight: '600px'
+                    }}
+                />
+
+                {/* Zoom 컨트롤 (비활성화) */}
+                <div style={{
+                    position: 'absolute', top: '20px', right: '20px',
+                    display: 'flex', flexDirection: 'column', gap: '8px',
+                    background: 'white', padding: '8px', borderRadius: '8px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    border: '1px solid #e2e8f0', zIndex: 10, opacity: 0.5
+                }}>
+                    <button disabled style={{ width: '32px', height: '32px', border: 'none', borderRadius: '6px', background: '#3b82f6', color: 'white', cursor: 'not-allowed', fontSize: '18px', fontWeight: 'bold' }}>+</button>
+                    <div style={{ fontSize: '11px', fontWeight: '600', color: '#64748b', textAlign: 'center', padding: '4px 0' }}>100%</div>
+                    <button disabled style={{ width: '32px', height: '32px', border: 'none', borderRadius: '6px', background: '#3b82f6', color: 'white', cursor: 'not-allowed', fontSize: '18px', fontWeight: 'bold' }}>−</button>
+                    <button disabled style={{ width: '32px', height: '32px', border: 'none', borderRadius: '6px', background: '#64748b', color: 'white', cursor: 'not-allowed', fontSize: '14px' }}>⟲</button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div style={{
@@ -249,148 +225,44 @@ const GraphAnimation = ({ data, currentStep, theme }) => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            position: 'relative'
+            position: 'relative',
+            minHeight: '600px'
         }}>
-            {graphState.vertexCount > 0 ? (
-                <>
-                    <svg
-                        ref={svgRef}
-                        width="100%"
-                        height="100%"
-                        style={{
-                            background: '#f1f5f9',
-                            cursor: 'grab',
-                            minHeight: '600px'
-                        }}
-                    />
+            <svg ref={svgRef} width="100%" height="100%" style={{ background: '#f1f5f9', cursor: 'grab', minHeight: '600px' }} />
 
-                    {/* Zoom 컨트롤 버튼 */}
-                    <div style={{
-                        position: 'absolute',
-                        top: '20px',
-                        right: '20px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '8px',
-                        background: 'white',
-                        padding: '8px',
-                        borderRadius: '8px',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                        border: '1px solid #e2e8f0',
-                        zIndex: 10
-                    }}>
-                        <button
-                            onClick={handleZoomIn}
-                            style={{
-                                width: '32px',
-                                height: '32px',
-                                border: 'none',
-                                borderRadius: '6px',
-                                background: '#3b82f6',
-                                color: 'white',
-                                cursor: 'pointer',
-                                fontSize: '18px',
-                                fontWeight: 'bold',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                            }}
-                            title="확대"
-                        >
-                            +
-                        </button>
+            {/* Zoom 컨트롤 */}
+            <div style={{
+                position: 'absolute', top: '20px', right: '20px',
+                display: 'flex', flexDirection: 'column', gap: '8px',
+                background: 'white', padding: '8px', borderRadius: '8px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)', border: '1px solid #e2e8f0', zIndex: 10
+            }}>
+                <button onClick={handleZoomIn} style={{ width: '32px', height: '32px', border: 'none', borderRadius: '6px', background: '#3b82f6', color: 'white', cursor: 'pointer', fontSize: '18px', fontWeight: 'bold' }}>+</button>
+                <div style={{ fontSize: '11px', fontWeight: '600', color: '#64748b', textAlign: 'center', padding: '4px 0' }}>{zoomLevel}%</div>
+                <button onClick={handleZoomOut} style={{ width: '32px', height: '32px', border: 'none', borderRadius: '6px', background: '#3b82f6', color: 'white', cursor: 'pointer', fontSize: '18px', fontWeight: 'bold' }}>−</button>
+                <button onClick={handleZoomReset} style={{ width: '32px', height: '32px', border: 'none', borderRadius: '6px', background: '#64748b', color: 'white', cursor: 'pointer', fontSize: '14px' }}>⟲</button>
+            </div>
 
-                        <div style={{
-                            fontSize: '11px',
-                            fontWeight: '600',
-                            color: '#64748b',
-                            textAlign: 'center',
-                            padding: '4px 0'
-                        }}>
-                            {zoomLevel}%
-                        </div>
+            {/* 현재 단계 */}
+            <div style={{ position: 'absolute', top: '20px', left: '20px', background: 'rgba(255, 255, 255, 0.95)', padding: '10px 16px', borderRadius: '8px', fontSize: '13px', color: theme?.colors?.text || '#1e293b', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', zIndex: 10 }}>
+                <strong>Step {currentStep + 1} / {data?.events?.length || 0}:</strong>
+                <div style={{ marginTop: '4px', fontSize: '12px' }}>이벤트: {description}</div>
+            </div>
 
-                        <button
-                            onClick={handleZoomOut}
-                            style={{
-                                width: '32px',
-                                height: '32px',
-                                border: 'none',
-                                borderRadius: '6px',
-                                background: '#3b82f6',
-                                color: 'white',
-                                cursor: 'pointer',
-                                fontSize: '18px',
-                                fontWeight: 'bold',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                            }}
-                            title="축소"
-                        >
-                            −
-                        </button>
+            {/* 사용법 안내 */}
+            <div style={{ position: 'absolute', bottom: '20px', left: '20px', background: 'rgba(255, 255, 255, 0.9)', padding: '8px 12px', borderRadius: '6px', fontSize: '11px', color: '#64748b', border: '1px solid #e2e8f0', zIndex: 10 }}>
+                💡 <strong>마우스 휠</strong>로 확대/축소, <strong>드래그</strong>로 이동
+            </div>
 
-                        <button
-                            onClick={handleZoomReset}
-                            style={{
-                                width: '32px',
-                                height: '32px',
-                                border: 'none',
-                                borderRadius: '6px',
-                                background: '#64748b',
-                                color: 'white',
-                                cursor: 'pointer',
-                                fontSize: '14px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                            }}
-                            title="리셋"
-                        >
-                            ⟲
-                        </button>
-                    </div>
-
-                    {/* 사용법 안내 */}
-                    <div style={{
-                        position: 'absolute',
-                        bottom: '20px',
-                        left: '20px',
-                        background: 'rgba(255, 255, 255, 0.9)',
-                        padding: '8px 12px',
-                        borderRadius: '6px',
-                        fontSize: '11px',
-                        color: '#64748b',
-                        border: '1px solid #e2e8f0',
-                        zIndex: 10
-                    }}>
-                        💡 <strong>마우스 휠</strong>로 확대/축소, <strong>드래그</strong>로 이동
-                    </div>
-
-                    {/* 현재 단계 표시 */}
-                    <div style={{
-                        position: 'absolute',
-                        top: '20px',
-                        left: '20px',
-                        background: 'rgba(255, 255, 255, 0.95)',
-                        padding: '10px 16px',
-                        borderRadius: '8px',
-                        fontSize: '13px',
-                        color: theme?.colors?.text || '#1e293b',
-                        border: '1px solid #e2e8f0',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                        zIndex: 10
-                    }}>
-                        <strong>Step {currentStep + 1} / {data?.events?.length || 0}:</strong> {description}
-                    </div>
-                </>
-            ) : (
-                <div style={{ textAlign: 'center', color: '#64748b' }}>
-                    <div style={{ fontSize: '48px', marginBottom: '8px' }}>📊</div>
-                    <p>그래프 초기화 중...</p>
+            {/* 그래프 정보 */}
+            <div style={{ position: 'absolute', bottom: '20px', right: '20px', background: 'rgba(255, 255, 255, 0.95)', padding: '12px 16px', borderRadius: '8px', fontSize: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', zIndex: 10 }}>
+                <div style={{ marginBottom: '6px' }}>
+                    <strong>정점 수:</strong> {graphState.vertexCount}
                 </div>
-            )}
+                <div>
+                    <strong>간선 수:</strong> {graphState.edges.length}
+                </div>
+            </div>
         </div>
     );
 };
