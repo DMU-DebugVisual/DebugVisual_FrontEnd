@@ -81,6 +81,14 @@
     border-left: 1px solid rgba(255,255,255,0.06);
 }
 
+/* 🟢 수정/추가: CodeEditor의 루트 배경을 다크 모드에 맞게 설정 */
+/* CodeEditor 내 Monaco 테마와 별개로, CodeEditor 컴포넌트의 루트 요소에 적용 */
+.dark-mode .code-editor {
+    background-color: #0f0f1a;
+    color: #fff;
+}
+
+
 .dark-mode .plus-button {
     background: #3a2a55;
     box-shadow: 0 6px 16px rgba(0,0,0,0.35);
