@@ -929,7 +929,8 @@ const IDE = () => {
                                         {sidebarSections.myFiles ? '▼' : '▶'}
                                     </span>
                                     <i data-feather="folder" className="section-icon"></i>
-                                    <span className="section-title">내 파일 ({myServerFiles.length + myLocalFiles.length}개)</span>
+                                    {/* 💡 파일 개수 표시 제거 */}
+                                    <span className="section-title">내 파일</span>
                                 </button>
 
                                 {sidebarSections.myFiles && (
@@ -943,7 +944,7 @@ const IDE = () => {
                                             >
                                                 {getFileIcon(file.name)}
                                                 <span className="file-name">{file.name}</span>
-                                                {/* ⛔ 뱃지 제거 */}
+                                                {/* ⛔ 뱃지 제거됨 */}
 
                                                 {/* 🔑 파일 삭제 버튼 추가 */}
                                                 <button
@@ -968,7 +969,7 @@ const IDE = () => {
                                             >
                                                 {getFileIcon(file.name)}
                                                 <span className="file-name">{file.name}</span>
-                                                {/* ⛔ 뱃지 제거 */}
+                                                {/* ⛔ 뱃지 제거됨 */}
                                             </div>
                                         ))}
                                     </div>
