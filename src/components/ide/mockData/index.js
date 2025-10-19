@@ -6,28 +6,98 @@
  * 🗂️ JSON 기반 Mock 데이터 매니저
  */
 
+// 코드 예제 문자열 import
+import bubbleSortCode from './codeExamples/bubbleSort';
+import linkedListCode from './codeExamples/linkedList';
+import fibonacciCode from './codeExamples/fibonacci';
+import binaryTreeCode from './codeExamples/binaryTree';
+import heapCode from './codeExamples/heap';
+import graphCode from './codeExamples/graph';
+
 // JSON 파일들 직접 import (DV-Flow v1.3 스키마)
-import bubbleSortJson from './bubbleSort.json';
-import graphJson from './graph.json';
+import binaryTreeJson from './jsonExamples/binaryTree.json';
+import bubbleSortJson from './jsonExamples/bubbleSort.json';
+import fibonacciJson from './jsonExamples/fibonacci.json';
+import graphJson from './jsonExamples/graph.json';
+import heapJson from './jsonExamples/heap.json';
+import linkedListJson from './jsonExamples/linkedList.json';
+
+// 코드 예제 파일들을 객체 형태로 export
+export const codeExamples = [
+    {
+        name: 'bubble_sort.c',
+        type: 'code',
+        code: bubbleSortCode
+    },
+    {
+        name: 'linked_list.c',
+        type: 'code',
+        code: linkedListCode
+    },
+    {
+        name: 'fibonacci.c',
+        type: 'code',
+        code: fibonacciCode
+    },
+    {
+        name: 'binary_tree.c',
+        type: 'code',
+        code: binaryTreeCode
+    },
+    {
+        name: 'heap.c',
+        type: 'code',
+        code: heapCode
+    },
+    {
+        name: 'graph.c',
+        type: 'code',
+        code: graphCode
+    }
+];
 
 // JSON 예제 파일들을 객체 형태로 export
 export const jsonExamples = [
+    {
+        name: 'binaryTree.json',
+        type: 'json',
+        code: JSON.stringify(binaryTreeJson, null, 2)
+    },
     {
         name: 'bubbleSort.json',
         type: 'json',
         code: JSON.stringify(bubbleSortJson, null, 2)
     },
     {
+        name: 'fibonacci.json',
+        type: 'json',
+        code: JSON.stringify(fibonacciJson, null, 2)
+    },
+    {
         name: 'graph.json',
         type: 'json',
         code: JSON.stringify(graphJson, null, 2)
+    },
+    {
+        name: 'heap.json',
+        type: 'json',
+        code: JSON.stringify(heapJson, null, 2)
+    },
+    {
+        name: 'linkedList.json',
+        type: 'json',
+        code: JSON.stringify(linkedListJson, null, 2)
     }
 ];
 
 // JSON 데이터 객체 매핑 (파일명 -> 원본 JSON 데이터)
 const jsonDataMap = {
+    binaryTree: binaryTreeJson,
     bubbleSort: bubbleSortJson,
-    graph: graphJson
+    fibonacci: fibonacciJson,
+    graph: graphJson,
+    heap: heapJson,
+    linkedList: linkedListJson
 };
 
 // JSON 파일들을 동적으로 import하는 함수 (호환성 유지)
@@ -48,7 +118,7 @@ const importJsonFile = async (filename) => {
 
 export class JsonVisualizationManager {
     // 📋 현재 사용 가능한 JSON 파일들 (확장자 제외)
-    static availableJsonFiles = ['bubbleSort', 'graph'];
+    static availableJsonFiles = ['binaryTree', 'bubbleSort', 'fibonacci', 'graph', 'heap', 'linkedList'];
 
     // 🗄️ 로드된 JSON 데이터 캐시
     static jsonCache = new Map();
