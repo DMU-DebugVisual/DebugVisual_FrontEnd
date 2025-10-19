@@ -1,5 +1,5 @@
 .demo-section {
-    height: 100vh;
+    /* height: 100vh; 제거: 콘텐츠 크기에 따라 유동적으로 높이를 가져가도록 변경 */
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -8,6 +8,8 @@
     text-align: center;
     padding: 3rem;
     box-sizing: border-box;
+    /* ✅ 추가: 최소 높이를 뷰포트 높이로 설정하여 전체 화면을 사용하되, 내용이 넘치면 스크롤 가능하게 함 */
+    min-height: 100vh;
 }
 
 .demo-title {
@@ -23,14 +25,21 @@
 }
 
 .demo-content {
+    /* ✅ 수정: flex-wrap 제거 또는 flex-wrap: nowrap; 설정. (기존 flex-wrap: wrap; 대신) */
     display: flex;
     gap: 32px;
     justify-content: center;
-    flex-wrap: wrap;
+    /* flex-wrap: wrap; // 제거하여 한 줄에 강제 배치 */
+    flex-wrap: nowrap;
+    /* ✅ 추가: 내용이 가운데에 정렬되도록 최대 너비 확보 (선택 사항) */
+    width: 100%;
+    max-width: 1400px; /* 전체 너비를 제한하여 너무 커지는 것을 방지 */
+
 }
 
 .demo-box {
-    width: 640px;        /* 더 크게 */
+    /* ✅ 수정: 너비를 줄여 한 줄에 들어갈 수 있도록 조정 (640px -> 480px 또는 그 이하) */
+    width: 480px;
     height: 400px;
     padding: 24px;
     border-radius: 16px;
@@ -40,6 +49,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
+
+    /* flex-shrink: 0; 를 추가하면 박스가 줄어들지 않고 고정 너비를 유지하려 함 */
+    flex-shrink: 0;
 }
 
 .placeholder-box strong {

@@ -109,10 +109,31 @@
 
 /* ========== Dark Mode Overrides ========== */
 
+/* 🟢 수정: CodeEditor 루트 배경을 #1c1c1c로 설정 */
 .dark-mode .code-editor {
-    background-color: #0f0f1a;
+    background-color: #1c1c1c;
     color: #fff;
 }
+
+/* 🟢 수정: Monaco Editor 내부 요소의 배경색을 #1c1c1c로 강제 적용 */
+.dark-mode .monaco-editor,
+.dark-mode .monaco-editor .lines-content,
+.dark-mode .monaco-editor .view-overlays,
+.dark-mode .monaco-editor .scroll-decoration {
+    background-color: #1c1c1c !important;
+}
+
+/* 🟢 수정: Gutter(라인 번호 영역) 및 내부 마진 배경도 #1c1c1c로 맞춤 */
+.dark-mode .monaco-editor .monaco-editor-background,
+.dark-mode .monaco-editor .margin {
+    background-color: #1c1c1c !important;
+}
+
+/* ✅ 추가: 라인 번호 색상을 흰색으로 설정 */
+.dark-mode .monaco-editor .line-numbers {
+    color: #ffffff !important;
+}
+
 
 .dark-mode .current-user-badge {
     background-color: #222;
