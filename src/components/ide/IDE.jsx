@@ -5,7 +5,7 @@ import Editor from '@monaco-editor/react';
 import VisualizationModal from './VisualizationModal';
 import './IDE.css';
 import config from '../../config';
-import { jsonExamples } from './mockData';
+import { codeExamples as codeExampleMocks, jsonExamples as jsonExampleMocks } from './mockData';
 
 // 🎨 Feather Icons CDN 로드 (원본 유지)
 if (!document.querySelector('script[src*="feather"]')) {
@@ -22,16 +22,8 @@ if (!document.querySelector('script[src*="feather"]')) {
 // ⛔ Script error 방지를 위해 applyResizeObserverFix 함수 정의 전체를 제거했습니다.
 
 const IDE = () => {
-    // 🆕 더미 파일 데이터 (내용 축약)
-    const [dummyFiles] = useState([
-        { name: "bubble_sort.c", type: "code", code: `#include <stdio.h>\n\nvoid bubbleSort(int arr[], int n) { /* ... */ }` },
-        { name: "linked_list.c", type: "code", code: `#include <stdio.h>\n#include <stdlib.h>\n\nstruct Node { /* ... */ }` },
-        { name: "fibonacci.c", type: "code", code: `#include <stdio.h>\n\nint fibonacci(int n) { /* ... */ }` },
-        { name: "binary_tree.c", type: "code", code: `#include <stdio.h>\n#include <stdlib.h>\n\nstruct Node { /* ... */ }` },
-        { name: "heap.c", type: "code", code: `#include <stdio.h>\n\nvoid heapify(int arr[], int n, int i) { /* ... */ }` },
-        { name: "graph.c", type: "code", code: `#include <stdio.h>\n#include <stdlib.h>\n\n#define MAX_VERTICES 100\n\nstruct Graph { /* ... */ }` },
-        ...jsonExamples
-    ]);
+    // 🆕 더미 파일 데이터 (mockData 기반)
+    const [dummyFiles] = useState(() => [...codeExampleMocks, ...jsonExampleMocks]);
 
     // 🆕 사이드바 섹션 상태 관리 (원본 유지)
     const [sidebarSections, setSidebarSections] = useState({
