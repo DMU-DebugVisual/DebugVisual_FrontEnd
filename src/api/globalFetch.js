@@ -8,8 +8,8 @@ window.fetch = async (...args) => {
     // 3. 백업해둔 원래 fetch 함수를 호출하여 실제 API 요청을 보냅니다.
     const response = await originalFetch(...args);
 
-    // 4. 응답을 받은 후, 만약 401 에러(토큰 만료)가 발생했다면
-    if (response.status === 401) {
+    // 4. 응답을 받은 후, 인증 실패(401/403)가 발생했다면
+    if (response.status === 401 || response.status === 403) {
         // 이전에 localStorage에 저장된 토큰이 있을 때만 로그아웃 처리
         if (localStorage.getItem('token')) {
             localStorage.removeItem('token');
