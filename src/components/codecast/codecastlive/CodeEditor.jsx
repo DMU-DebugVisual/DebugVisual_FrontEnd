@@ -8,9 +8,10 @@ import './CodeEditor.css';
  * - file?: { name, language, content }
  * - readOnly?: boolean
  * - onChange?: (next: string) => void
- * - currentUser?: { name: string, role: 'host'|'edit'|'view', code?: string } // ✅ 뱃지 표시용
+ * - currentUser?: { name: string, role: 'host'|'edit'|'view', code?: string }
+ * - selectFileAction?: React.ReactNode // ✅ 파일 선택 버튼을 받기 위한 prop
  */
-export default function CodeEditor({ file, readOnly = false, onChange, currentUser, isDark }) {
+export default function CodeEditor({ file, readOnly = false, onChange, currentUser, isDark, selectFileAction }) {
     const initialValue = useMemo(() => file?.content ?? '', [file?.content]);
     const [code, setCode] = useState(initialValue);
 
@@ -28,33 +29,35 @@ export default function CodeEditor({ file, readOnly = false, onChange, currentUs
         return '';
     };
 
-    const theme = isDark ? 'vs-dark' : 'vs-light';   // ✅ props 우선
+    const theme = isDark ? 'vs-dark' : 'vs-light';
 
     return (
         <section className="code-editor">
             <div className="editor-header">
-                {/* ✅ 사용자 뱃지 복원, 권한 뱃지 제거 */}
+                {/* 사용자 뱃지 */}
                 {currentUser?.name && (
                     <div className="current-user-badge">
                         {roleIcon(currentUser.role)} {currentUser.name}
                     </div>
                 )}
 
-                {/*<button className="run-button" onClick={handleRun}>
-                    <FaPlay /> 실행
-                </button>*/}
-                {/* ✅ 오른쪽 툴바: 실행 + 시각화 */}
+                {/* ✅ 오른쪽 툴바: 파일 선택 + 실행 + 시각화 */}
                 <div className="toolbar-right">
+                    {/* 1. 파일 선택 버튼 (CodecastLive.js에서 전달됨) */}
+                    {selectFileAction}
+
+                    {/* 2. 실행 버튼 */}
                     <button className="run-button" onClick={handleRun}>
                         <FaPlay/> 실행
                     </button>
+
+                    {/* 3. 시각화 버튼 */}
                     <button className="viz-button" onClick={handleVisualize}>
                         <FaChartBar/> 시각화
                     </button>
                 </div>
             </div>
 
-            {/* 필요 시 height=100%로 바꿔도 됩니다 (부모 컨테이너가 flex:1이면) */}
             <Editor
                 height="90%"
                 language={language}
