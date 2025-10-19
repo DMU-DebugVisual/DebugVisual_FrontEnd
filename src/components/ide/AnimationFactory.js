@@ -1,4 +1,4 @@
-// AnimationFactory.js - DV-Flow v1.3 완전 대응 (업데이트)
+// AnimationFactory.js - DV-Flow v1.3 완전 대응 (key 수정)
 import React from 'react';
 
 // 실제 애니메이션 컴포넌트들 import
@@ -21,7 +21,7 @@ export class AnimationFactory {
         'insertion-sort': SortAnimation,
         'merge-sort': SortAnimation,
         'quick-sort': SortAnimation,
-        'sort': SortAnimation, // 일반 정렬
+        'sort': SortAnimation,
 
         // ✅ 트리 구조
         'binary-tree': BinaryTreeAnimation,
@@ -71,8 +71,9 @@ export class AnimationFactory {
             console.warn('⚠️ 구버전 JSON 구조 감지! events 필드가 없습니다.');
         }
 
+        // ⚡ CRITICAL: Date.now() 제거! 고정된 key 사용
         return React.createElement(AnimationComponent, {
-            key: `animation-${normalizedType}-${Date.now()}`,
+            key: `animation-${normalizedType}`, // 타입별 고정 key
             animationType: normalizedType,
             ...props
         });
@@ -147,14 +148,13 @@ export class AnimationFactory {
         const hasCompare = events.some(e => e.kind === 'compare');
         const hasSwap = events.some(e => e.kind === 'swap');
         if (hasCompare && hasSwap) {
-            // 특정 정렬 알고리즘 감지 시도
             const hasPivot = events.some(e => e.viz?.pivot !== undefined);
             if (hasPivot) return 'quick-sort';
 
             const hasMerge = events.some(e => e.kind === 'merge');
             if (hasMerge) return 'merge-sort';
 
-            return 'bubble-sort'; // 기본 정렬
+            return 'bubble-sort';
         }
 
         // 그래프 패턴

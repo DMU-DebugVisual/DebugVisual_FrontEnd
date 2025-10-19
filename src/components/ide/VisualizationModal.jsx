@@ -1,4 +1,4 @@
-// VisualizationModal.jsx - 개선 버전 (DV-Flow v1.3 완전 대응)
+// VisualizationModal.jsx - 확대/축소 상태 유지 버전
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import AnimationFactory from './AnimationFactory';
@@ -61,28 +61,6 @@ const useAnimationControls = (totalSteps) => {
     return { isPlaying, currentStep, speed, play, pause, stepBack, stepForward, reset, goToStep, setSpeed };
 };
 
-// 🔍 확대/축소 훅
-const useZoomControls = () => {
-    const [zoom, setZoom] = useState(100);
-    const MIN_ZOOM = 50;
-    const MAX_ZOOM = 200;
-    const ZOOM_STEP = 25;
-
-    const zoomIn = useCallback(() => {
-        setZoom(prev => Math.min(MAX_ZOOM, prev + ZOOM_STEP));
-    }, []);
-
-    const zoomOut = useCallback(() => {
-        setZoom(prev => Math.max(MIN_ZOOM, prev - ZOOM_STEP));
-    }, []);
-
-    const resetZoom = useCallback(() => {
-        setZoom(100);
-    }, []);
-
-    return { zoom, zoomIn, zoomOut, resetZoom, MIN_ZOOM, MAX_ZOOM };
-};
-
 // 🎛️ 컨트롤 버튼
 const ControlButton = ({ onClick, disabled, variant = 'default', children, title, theme }) => {
     const getButtonStyle = () => {
@@ -108,8 +86,6 @@ const ControlButton = ({ onClick, disabled, variant = 'default', children, title
                 return { ...baseStyle, background: theme.colors.success, color: 'white' };
             case 'playing':
                 return { ...baseStyle, background: theme.colors.warning, color: 'white' };
-            case 'zoom':
-                return { ...baseStyle, background: theme.colors.info, color: 'white', minWidth: '40px' };
             default:
                 return {
                     ...baseStyle,
@@ -128,11 +104,10 @@ const ControlButton = ({ onClick, disabled, variant = 'default', children, title
     );
 };
 
-// 🎮 시각화 컨트롤
+// 🎮 시각화 컨트롤 (확대/축소 제거)
 const VisualizationControls = ({
-                                   isPlaying, currentStep, totalSteps, speed, zoom,
+                                   isPlaying, currentStep, totalSteps, speed,
                                    onPlay, onPause, onStepBack, onStepForward, onReset, onSpeedChange, onStepChange,
-                                   onZoomIn, onZoomOut, onZoomReset,
                                    theme
                                }) => {
     return (
@@ -231,68 +206,6 @@ const VisualizationControls = ({
                         {speedValue}x
                     </button>
                 ))}
-            </div>
-
-            {/* 🔍 확대/축소 컨트롤 */}
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: theme.colors.card,
-                border: `2px solid ${theme.colors.info}`,
-                padding: '6px 10px',
-                borderRadius: '8px',
-                height: '36px',
-                boxShadow: `0 2px 4px ${theme.colors.info}40`
-            }}>
-                <ControlButton
-                    onClick={onZoomOut}
-                    disabled={zoom <= 50}
-                    variant="zoom"
-                    title="축소 (Ctrl + 휠 아래)"
-                    theme={theme}
-                >
-                    🔍-
-                </ControlButton>
-
-                <span style={{
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    color: theme.colors.info,
-                    minWidth: '50px',
-                    textAlign: 'center'
-                }}>
-                    {zoom}%
-                </span>
-
-                <ControlButton
-                    onClick={onZoomIn}
-                    disabled={zoom >= 200}
-                    variant="zoom"
-                    title="확대 (Ctrl + 휠 위)"
-                    theme={theme}
-                >
-                    🔍+
-                </ControlButton>
-
-                <button
-                    onClick={onZoomReset}
-                    style={{
-                        padding: '4px 8px',
-                        border: 'none',
-                        borderRadius: '6px',
-                        fontSize: '10px',
-                        cursor: 'pointer',
-                        background: zoom === 100 ? theme.colors.info : 'transparent',
-                        color: zoom === 100 ? 'white' : theme.colors.textLight,
-                        minWidth: '32px',
-                        height: '24px',
-                        transition: 'all 0.2s'
-                    }}
-                    title="100%로 리셋"
-                >
-                    100%
-                </button>
             </div>
         </div>
     );
@@ -409,38 +322,21 @@ const InfoPanel = ({ data, currentStep, totalSteps, theme }) => {
 };
 
 // 🎬 애니메이션 디스플레이
-const AnimationDisplay = ({ data, currentStep, totalSteps, zoom, animationType, isPlaying, theme }) => {
-    const containerRef = useRef(null);
-
+const AnimationDisplay = ({ data, currentStep, totalSteps, animationType, isPlaying, theme }) => {
     console.log('🎬 AnimationDisplay 렌더링:', {
         animationType,
         currentStep,
         totalSteps,
         hasData: !!data,
-        eventsCount: data?.events?.length || 0,
-        zoom
+        eventsCount: data?.events?.length || 0
     });
 
-    const getAnimationInfo = (type) => {
-        const typeMap = {
-            'bubble-sort': { icon: '📊', name: '버블 정렬' },
-            'graph': { icon: '🕸️', name: '그래프' },
-            'linked-list': { icon: '🔗', name: '링크드 리스트' },
-            'binary-tree': { icon: '🌲', name: '이진 트리' },
-            'heap': { icon: '🔺', name: '힙' },
-            'recursion': { icon: '🌳', name: '재귀' }
-        };
-        return typeMap[type] || { icon: '🎬', name: '알고리즘 시각화' };
-    };
-
-    const { icon, name } = getAnimationInfo(animationType);
     const isImplemented = AnimationFactory?.isImplemented ? AnimationFactory.isImplemented(animationType) : false;
 
     let animationComponent = null;
 
     try {
         if (AnimationFactory?.createAnimation) {
-            console.log('� AnimationFactory.createAnimation 호출...');
             animationComponent = AnimationFactory.createAnimation(animationType, {
                 data,
                 currentStep,
@@ -448,7 +344,6 @@ const AnimationDisplay = ({ data, currentStep, totalSteps, zoom, animationType, 
                 isPlaying,
                 theme
             });
-            console.log('✅ 애니메이션 컴포넌트 생성됨');
         }
     } catch (error) {
         console.error('❌ 애니메이션 생성 실패:', error);
@@ -462,77 +357,57 @@ const AnimationDisplay = ({ data, currentStep, totalSteps, zoom, animationType, 
             flexDirection: 'column',
             overflow: 'hidden'
         }}>
-            {/* 메인 영역 (스크롤 가능) */}
-            <div
-                ref={containerRef}
-                style={{
-                    flex: 1,
-                    overflowY: 'auto',
-                    overflowX: 'auto',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'flex-start',
-                    justifyContent: animationComponent ? 'flex-start' : 'center',
-                    minHeight: 0,
-                    width: '100%'
-                }}
-                className="visualization-scrollbar"
+            <div style={{
+                flex: 1,
+                overflowY: 'auto',
+                overflowX: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                justifyContent: animationComponent ? 'flex-start' : 'center',
+                minHeight: 0,
+                width: '100%'
+            }}
+                 className="visualization-scrollbar"
             >
-                {/* 확대/축소 적용 래퍼 */}
-                <div style={{
-                    transform: `scale(${zoom / 100})`,
-                    transformOrigin: 'top left',
-                    transition: 'transform 0.3s ease-out',
-                    minWidth: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center'
-                }}>
-                    {animationComponent ? (
-                        <div style={{
-                            width: '100%',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center'
-                        }}>
-                            {animationComponent}
-                        </div>
-                    ) : (
-                        <div style={{
-                            textAlign: 'center',
-                            padding: '40px',
-                            borderRadius: '8px',
-                            background: `${theme.colors.warning}10`,
-                            border: `1px solid ${theme.colors.warning}30`
-                        }}>
-                            <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚙️</div>
-                            <h3 style={{ margin: '0 0 12px 0', color: theme.colors.text }}>애니메이션 준비 중</h3>
-                            <p style={{ margin: 0, color: theme.colors.textLight }}>
-                                {isImplemented ? 'AnimationFactory에서 컴포넌트 로딩 중...' : '이 알고리즘은 아직 개발 중입니다.'}
-                            </p>
-                        </div>
-                    )}
-                </div>
+                {animationComponent ? (
+                    <div style={{
+                        width: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        minHeight: '100%'
+                    }}>
+                        {animationComponent}
+                    </div>
+                ) : (
+                    <div style={{
+                        textAlign: 'center',
+                        padding: '40px',
+                        borderRadius: '8px',
+                        background: `${theme.colors.warning}10`,
+                        border: `1px solid ${theme.colors.warning}30`
+                    }}>
+                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚙️</div>
+                        <h3 style={{ margin: '0 0 12px 0', color: theme.colors.text }}>애니메이션 준비 중</h3>
+                        <p style={{ margin: 0, color: theme.colors.textLight }}>
+                            {isImplemented ? 'AnimationFactory에서 컴포넌트 로딩 중...' : '이 알고리즘은 아직 개발 중입니다.'}
+                        </p>
+                    </div>
+                )}
             </div>
         </div>
     );
 };
 
-// 🔍 개선된 알고리즘 감지 로직
+// 알고리즘 감지 (기존 로직 유지)
 const detectAlgorithmFromEvents = (events) => {
     if (!events || events.length === 0) return 'variables';
 
-    console.log('🔍 알고리즘 감지 시작, 이벤트 수:', events.length);
-
-    // 🎯 1순위: viz.type 직접 확인 (가장 신뢰도 높음!)
     for (let i = 0; i < events.length; i++) {
         const event = events[i];
         if (event.viz?.type) {
             const vizType = event.viz.type.toLowerCase();
-
-            console.log(`✅ viz.type 발견: "${vizType}" (event ${i})`);
-
-            // viz.type 매핑
             if (vizType === 'heap') return 'heap';
             if (vizType === 'bst' || vizType === 'tree') return 'binary-tree';
             if (vizType === 'graph') return 'graph';
@@ -540,100 +415,25 @@ const detectAlgorithmFromEvents = (events) => {
         }
     }
 
-    // 🎯 2순위: target 기반 감지 (우선순위 중요!)
+    const heapEvent = events.find(e => e.kind === 'ds_op' && e.target?.toLowerCase().includes('heap'));
+    if (heapEvent) return 'heap';
 
-    // 2-1. Heap 먼저 체크 (tree보다 우선!)
-    const heapEvent = events.find(e =>
-        e.kind === 'ds_op' &&
-        e.target?.toLowerCase().includes('heap')
-    );
-    if (heapEvent) {
-        console.log('✅ Heap target 감지:', heapEvent.target);
-        return 'heap';
-    }
+    const listEvent = events.find(e => e.kind === 'ds_op' && e.target && (e.target.toLowerCase().includes('list') || e.target.toLowerCase().includes('linkedlist') || e.target.toLowerCase().includes('node')));
+    if (listEvent) return 'linked-list';
 
-    // 2-2. 링크드 리스트
-    const listEvent = events.find(e =>
-        e.kind === 'ds_op' &&
-        e.target &&
-        (e.target.toLowerCase().includes('list') ||
-            e.target.toLowerCase().includes('linkedlist') ||
-            e.target.toLowerCase().includes('node'))
-    );
-    if (listEvent) {
-        console.log('✅ LinkedList target 감지:', listEvent.target);
-        return 'linked-list';
-    }
+    const graphEvent = events.find(e => e.kind === 'ds_op' && e.target && (e.target.toLowerCase().includes('graph') || e.target.toLowerCase().includes('adj')));
+    if (graphEvent) return 'graph';
 
-    // 2-3. 그래프
-    const graphEvent = events.find(e =>
-        e.kind === 'ds_op' &&
-        e.target &&
-        (e.target.toLowerCase().includes('graph') ||
-            e.target.toLowerCase().includes('adj'))
-    );
-    if (graphEvent) {
-        console.log('✅ Graph target 감지:', graphEvent.target);
-        return 'graph';
-    }
+    const treeEvent = events.find(e => e.kind === 'ds_op' && e.target && (e.target.toLowerCase().includes('tree') || e.target.toLowerCase().includes('bst')));
+    if (treeEvent) return 'binary-tree';
 
-    // 2-4. 트리 (heap 체크 이후!)
-    const treeEvent = events.find(e =>
-        e.kind === 'ds_op' &&
-        e.target &&
-        (e.target.toLowerCase().includes('tree') ||
-            e.target.toLowerCase().includes('bst'))
-    );
-    if (treeEvent) {
-        console.log('✅ BinaryTree target 감지:', treeEvent.target);
-        return 'binary-tree';
-    }
+    const recursionEvents = events.filter(e => e.kind === 'call' && e.viz?.recursionDepth !== undefined);
+    if (recursionEvents.length > 0) return 'recursion';
 
-    // 🎯 3순위: 재귀 감지 (엄격하게)
-    const recursionEvents = events.filter(e =>
-        e.kind === 'call' && e.viz?.recursionDepth !== undefined
-    );
-    if (recursionEvents.length > 0) {
-        console.log('✅ 재귀 패턴 감지 (recursionDepth):', recursionEvents.length);
-        return 'recursion';
-    }
-
-    // 보조: 함수명 기반 재귀 감지
-    const recursiveFunctions = ['fib', 'fibonacci', 'factorial', 'hanoi', 'tower'];
-    const recursiveCallEvents = events.filter(e =>
-        e.kind === 'call' &&
-        recursiveFunctions.some(fn => e.fn?.toLowerCase().includes(fn))
-    );
-    if (recursiveCallEvents.length > 3) {
-        console.log('✅ 재귀 패턴 감지 (함수명):', recursiveCallEvents[0].fn);
-        return 'recursion';
-    }
-
-    // 🎯 4순위: 정렬 감지
     const hasCompare = events.some(e => e.kind === 'compare');
     const hasSwap = events.some(e => e.kind === 'swap');
+    if (hasCompare && hasSwap) return 'bubble-sort';
 
-    if (hasCompare && hasSwap) {
-        console.log('✅ 정렬 패턴 감지 (compare + swap)');
-
-        // 정렬 알고리즘 세부 구분 시도
-        const hasPivot = events.some(e => e.viz?.pivot !== undefined);
-        if (hasPivot) {
-            console.log('  → Quick Sort 감지');
-            return 'quick-sort';
-        }
-
-        const hasMerge = events.some(e => e.kind === 'merge');
-        if (hasMerge) {
-            console.log('  → Merge Sort 감지');
-            return 'merge-sort';
-        }
-
-        return 'bubble-sort'; // 기본 정렬
-    }
-
-    // 🎯 기본값
-    console.log('⚠️ 특정 알고리즘 패턴 감지 실패 → variables');
     return 'variables';
 };
 
@@ -656,38 +456,27 @@ const VisualizationModal = ({
 
     const theme = getTheme(isDark);
     const animationControls = useAnimationControls(totalSteps);
-    const zoomControls = useZoomControls();
-    const animationRef = useRef(null);
 
-    // 📄 데이터 가져오기
+    // 데이터 가져오기
     const fetchVisualizationData = async () => {
-        console.log('🌐 시각화 데이터 요청:', { hasPreloaded: !!preloadedJsonData, isJsonFile });
-
         if (!code?.trim() && !preloadedJsonData) {
             setError('코드가 비어있습니다.');
             return;
         }
 
-        // JSON 데이터가 미리 로드된 경우
         if (preloadedJsonData) {
-            console.log('🗂️ 미리 로드된 JSON 사용');
             setIsLoading(true);
             setError(null);
 
             try {
                 await new Promise(resolve => setTimeout(resolve, 200));
-
                 setData({ ...preloadedJsonData, _dataSource: 'preloaded-json' });
                 const steps = preloadedJsonData.events?.length || 0;
                 setTotalSteps(steps);
                 animationControls.reset();
-
                 const detectedType = detectAlgorithmFromEvents(preloadedJsonData.events);
                 setAnimationType(detectedType);
-
-                console.log('✅ JSON 로드 완료:', { steps, detectedType });
             } catch (err) {
-                console.error('❌ JSON 처리 실패:', err);
                 setError(err.message);
             } finally {
                 setIsLoading(false);
@@ -695,27 +484,20 @@ const VisualizationModal = ({
             return;
         }
 
-        // JSON 파일인 경우 파싱
         if (isJsonFile) {
-            console.log('📄 JSON 파일 파싱');
             setIsLoading(true);
             setError(null);
 
             try {
                 await new Promise(resolve => setTimeout(resolve, 200));
                 const parsedJson = JSON.parse(code);
-
                 setData({ ...parsedJson, _dataSource: 'editor-json' });
                 const steps = parsedJson.events?.length || 0;
                 setTotalSteps(steps);
                 animationControls.reset();
-
                 const detectedType = detectAlgorithmFromEvents(parsedJson.events);
                 setAnimationType(detectedType);
-
-                console.log('✅ JSON 파싱 완료:', { steps, detectedType });
             } catch (err) {
-                console.error('❌ JSON 파싱 실패:', err);
                 setError(`JSON 파싱 오류: ${err.message}`);
             } finally {
                 setIsLoading(false);
@@ -723,38 +505,31 @@ const VisualizationModal = ({
             return;
         }
 
-        // 일반 코드 - API 호출
-        console.log('🌐 API 호출');
         setIsLoading(true);
         setError(null);
 
         try {
             const visualizationData = await ApiService.requestVisualization(code, language, input);
-
             setData(visualizationData);
             const steps = visualizationData.events?.length || 0;
             setTotalSteps(steps);
             animationControls.reset();
-
             const detectedType = detectAlgorithmFromEvents(visualizationData.events);
             setAnimationType(detectedType);
-
-            console.log('✅ API 데이터 로드 완료:', { steps, detectedType });
         } catch (err) {
-            console.error('❌ API 호출 실패:', err);
             setError(err.message);
         } finally {
             setIsLoading(false);
         }
     };
 
-    // 모달 초기화
     useEffect(() => {
         if (isOpen && !data && !isLoading) {
             fetchVisualizationData();
         }
     }, [isOpen, preloadedJsonData]);
 
+    // 모달이 닫힐 때만 초기화
     useEffect(() => {
         if (!isOpen) {
             setData(null);
@@ -764,27 +539,6 @@ const VisualizationModal = ({
         }
     }, [isOpen]);
 
-    // Ctrl + 휠로 확대/축소
-    useEffect(() => {
-        const handleWheel = (e) => {
-            if (e.ctrlKey || e.metaKey) {
-                e.preventDefault();
-                if (e.deltaY < 0) {
-                    zoomControls.zoomIn();
-                } else {
-                    zoomControls.zoomOut();
-                }
-            }
-        };
-
-        const element = animationRef.current;
-        if (element) {
-            element.addEventListener('wheel', handleWheel, { passive: false });
-            return () => element.removeEventListener('wheel', handleWheel);
-        }
-    }, [zoomControls]);
-
-    // ESC 키
     useEffect(() => {
         const handleEscape = (e) => {
             if (e.key === 'Escape' && isOpen) onClose();
@@ -883,7 +637,6 @@ const VisualizationModal = ({
                                     currentStep={animationControls.currentStep}
                                     totalSteps={totalSteps}
                                     speed={animationControls.speed}
-                                    zoom={zoomControls.zoom}
                                     onPlay={animationControls.play}
                                     onPause={animationControls.pause}
                                     onStepBack={animationControls.stepBack}
@@ -891,9 +644,6 @@ const VisualizationModal = ({
                                     onReset={animationControls.reset}
                                     onSpeedChange={animationControls.setSpeed}
                                     onStepChange={animationControls.goToStep}
-                                    onZoomIn={zoomControls.zoomIn}
-                                    onZoomOut={zoomControls.zoomOut}
-                                    onZoomReset={zoomControls.resetZoom}
                                     theme={theme}
                                 />
                             )}
@@ -941,17 +691,15 @@ const VisualizationModal = ({
                         </div>
 
                         {/* 오른쪽: 애니메이션만 */}
-                        <div
-                            ref={animationRef}
-                            style={{
-                                background: theme.colors.card,
-                                overflowY: 'auto',
-                                overflowX: 'auto',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                minHeight: 0
-                            }}
-                            className="visualization-scrollbar"
+                        <div style={{
+                            background: theme.colors.card,
+                            overflowY: 'auto',
+                            overflowX: 'auto',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            minHeight: 0
+                        }}
+                             className="visualization-scrollbar"
                         >
                             {isLoading ? (
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', gap: '20px' }}>
@@ -986,7 +734,6 @@ const VisualizationModal = ({
                                     data={data}
                                     currentStep={animationControls.currentStep}
                                     totalSteps={totalSteps}
-                                    zoom={zoomControls.zoom}
                                     animationType={animationType}
                                     isPlaying={animationControls.isPlaying}
                                     theme={theme}
