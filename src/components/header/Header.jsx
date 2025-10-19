@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import { FaMoon, FaSun, FaUserCircle, FaBell } from "react-icons/fa";
 import "./Header.css";
@@ -18,7 +18,7 @@ const Header = ({ isDark, setIsDark, isLoggedIn, nickname, onLoginModalOpen }) =
     const navigate = useNavigate();
     const location = useLocation();
 
-    const fetchNotifications = async () => {
+    const fetchNotifications = useCallback(async () => {
         if (!isLoggedIn) return;
         try {
             const token = localStorage.getItem('token');
@@ -44,19 +44,16 @@ const Header = ({ isDark, setIsDark, isLoggedIn, nickname, onLoginModalOpen }) =
         } catch (error) {
             console.error("Error fetching notifications:", error);
         }
-    };
+    }, [isLoggedIn]);
 
     useEffect(() => {
         if (isLoggedIn) {
             fetchNotifications();
-
-            const intervalId = setInterval(() => {
-                fetchNotifications();
-            }, 10000);
-
-            return () => clearInterval(intervalId);
+        } else {
+            setNotifications([]);
+            setUnreadCount(0);
         }
-    }, [isLoggedIn]);
+    }, [isLoggedIn, fetchNotifications]);
 
     const toggleNotificationMenu = () => {
         setIsNotificationMenuOpen(!isNotificationMenuOpen);

@@ -324,6 +324,12 @@ const InfoPanel = ({ data, currentStep, totalSteps, theme }) => {
     );
 
     const currentEvent = data?.events?.[currentStep];
+    const analysis = data?.analysis ?? null;
+    const complexityItems = [
+        { label: '시간 복잡도', value: analysis?.timeComplexity || '-' },
+        { label: '공간 복잡도', value: analysis?.spaceComplexity || '-' }
+    ];
+    const hasComplexityData = complexityItems.some(item => item.value && item.value !== '-');
 
     return (
         <div style={{
@@ -378,6 +384,26 @@ const InfoPanel = ({ data, currentStep, totalSteps, theme }) => {
                     ))}
                 </div>
             </InfoCard>
+
+            {hasComplexityData && (
+                <InfoCard title="알고리즘 복잡도" icon="🧠">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        {complexityItems.map((item, index) => (
+                            <div key={index} style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                padding: '6px 8px',
+                                background: theme.colors.cardSecondary,
+                                borderRadius: '6px',
+                                fontSize: '12px'
+                            }}>
+                                <span style={{ color: theme.colors.textLight }}>{item.label}:</span>
+                                <span style={{ fontWeight: '600', color: theme.colors.text }}>{item.value}</span>
+                            </div>
+                        ))}
+                    </div>
+                </InfoCard>
+            )}
         </div>
     );
 };
