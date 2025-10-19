@@ -6,6 +6,7 @@
     --primary-hover: #5339a0;
     --success: #43a047;
     --warning: #fb8c00;
+    --danger-color: #e53935; /* 🆕 삭제 색상 정의 */
     --bg: #f8f9fa;
     --element: #ffffff;
     --element-light: #f3f4f6;
@@ -16,7 +17,7 @@
     --text-medium: #4b5563;
     --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     --radius: 6px;
-    --transition: none;
+    --transition: all 0.2s ease; /* transition 속성 통일 */
     --header-height: 64px;
     --footer-height: 60px;
 }
@@ -27,6 +28,7 @@ body.dark-mode {
     --primary-hover: #5e35b1;
     --success: #4caf50;
     --warning: #ff9800;
+    --danger-color: #ff5252; /* 🆕 다크 모드 삭제 색상 정의 */
     --bg: #1e1e1e;
     --element: #252525;
     --element-light: #2d2d2d;
@@ -164,7 +166,7 @@ body {
 .sidebar-title {
     font-size: 13px !important;
     font-weight: 600 !important;
-    color: var(--text);
+    color: var(--text) !important; /* 덮어쓰기 위해 !important 추가 */
     margin: 0;
     line-height: 1.4 !important;
     display: flex;
@@ -306,6 +308,8 @@ body.dark-mode .section-icon {
     height: 26px !important;
     position: relative !important;
     min-height: 26px !important;
+    /* 🆕 삭제 버튼 공간 확보 */
+    padding-right: 32px !important;
 }
 
 .file-item:hover {
@@ -371,6 +375,65 @@ body.dark-mode .file-item.active:hover {
 .file-icon.js-icon { background-color: #f1e05a; color: #333; }
 .file-icon.json-icon { background-color: #eab308; }
 .file-icon.default-icon { background-color: var(--text-light); font-size: 8px; }
+
+/* ⛔ 뱃지(S/L) 스타일 완전히 숨기기 */
+.file-badge {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    margin: 0 !important;
+}
+/* ------------------------------------- */
+
+/* 🆕 삭제 버튼 스타일 */
+.delete-file-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-light);
+    /* 🎨 평소에는 숨기고 hover 시 나타나도록 opacity 0 */
+    opacity: 0;
+    transition: opacity 0.2s, color 0.2s;
+    padding: 4px;
+    line-height: 1;
+    position: absolute;
+    /* 뱃지 공간 확보 후 오른쪽에 위치 */
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    border-radius: 4px;
+    height: 24px;
+    width: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* 🎨 파일 아이템 호버 시 삭제 버튼 표시 */
+.file-item:hover .delete-file-button {
+    opacity: 0.7;
+}
+
+/* 🎨 삭제 버튼 자체 호버 시 색상 강조 */
+.delete-file-button:hover {
+    color: var(--danger-color);
+    background-color: rgba(229, 57, 53, 0.1); /* 라이트 모드 */
+    opacity: 1;
+}
+
+body.dark-mode .delete-file-button:hover {
+    background-color: rgba(255, 82, 82, 0.1); /* 다크 모드 */
+}
+
+.delete-file-button i[data-feather="trash-2"] {
+    width: 14px;
+    height: 14px;
+    stroke-width: 2px;
+}
+/* ------------------------------------- */
+
 
 .file-item.example-file { opacity: 0.9; }
 .file-item.example-file:hover { opacity: 1; }
@@ -1075,4 +1138,67 @@ body.dark-mode .active-file-name {
 /* 2. 다크 모드일 때만 밝은 색으로 덮어쓰기 */
 body.dark-mode .sidebar-title {
     color: #e0e0e0 !important;
+}
+
+/* --- 🆕 파일 아이템 및 삭제 버튼 최종 수정 --- */
+
+.file-item {
+    /* padding-right를 늘려 삭제 버튼 공간 확보 */
+    padding-right: 32px !important;
+}
+
+/* ⛔ 뱃지(S/L) 스타일 완전히 숨기기 */
+.file-badge {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    margin: 0 !important;
+}
+
+/* 🆕 삭제 버튼 스타일 */
+.delete-file-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-light);
+    /* 🎨 평소에는 숨기고 hover 시 나타나도록 opacity 0 */
+    opacity: 0;
+    transition: opacity 0.2s, color 0.2s, background-color 0.2s;
+    padding: 4px;
+    line-height: 1;
+    position: absolute;
+    /* 오른쪽에 위치 */
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    border-radius: 4px;
+    height: 24px;
+    width: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* 🎨 파일 아이템 호버 시 삭제 버튼 표시 */
+.file-item:hover .delete-file-button {
+    opacity: 0.7;
+}
+
+/* 🎨 삭제 버튼 자체 호버 시 색상 강조 */
+.delete-file-button:hover {
+    color: var(--danger-color);
+    background-color: rgba(229, 57, 53, 0.1);
+    opacity: 1;
+}
+
+body.dark-mode .delete-file-button:hover {
+    background-color: rgba(255, 82, 82, 0.15); /* 다크 모드 배경색을 조금 더 진하게 */
+}
+
+.delete-file-button i[data-feather="trash-2"] {
+    width: 14px;
+    height: 14px;
+    stroke-width: 2px;
 }

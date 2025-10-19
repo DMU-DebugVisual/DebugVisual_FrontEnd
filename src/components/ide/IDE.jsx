@@ -19,8 +19,6 @@ if (!document.querySelector('script[src*="feather"]')) {
     document.head.appendChild(script);
 }
 
-// ⛔ Script error 방지를 위해 applyResizeObserverFix 함수 정의 전체를 제거했습니다.
-
 const IDE = () => {
     // 🆕 더미 파일 데이터 (mockData 기반)
     const [dummyFiles] = useState(() => [...codeExampleMocks, ...jsonExampleMocks]);
@@ -210,7 +208,7 @@ const IDE = () => {
         }
     }, [toast]);
 
-    // 🔑 개선된 파일 선택 핸들러
+    // 🔑 개선된 파일 선택 핸들러 (파일 상세 보기 및 조회)
     const handleFileSelect = async (identifier, isServerFile = false) => {
         if (!isSaved) {
             const shouldSave = window.confirm('변경 사항을 저장하시겠습니까?');
@@ -269,6 +267,71 @@ const IDE = () => {
             setSelectedLanguage(langId);
         }
     };
+
+    // 🔑 파일 삭제 핸들러 (새로 추가된 기능)
+    const handleDeleteFile = async (fileUUID, fileName) => {
+        if (!isLoggedIn) {
+            toast("로그인 후 이용 가능한 기능입니다.", 'toast-error');
+            return;
+        }
+
+        if (!window.confirm(`정말로 서버 파일 "${fileName}"을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) {
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            toast("인증 토큰이 없습니다. 다시 로그인해 주세요.", 'toast-error');
+            return;
+        }
+
+        try {
+            // API 호출: 파일 삭제
+            const response = await fetch(`${config.API_BASE_URL}/api/file/${fileUUID}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                let errorMsg = `파일 삭제 실패: ${response.statusText}`;
+                if (response.status === 404) errorMsg = "삭제할 파일을 서버에서 찾을 수 없습니다.";
+                throw new Error(errorMsg);
+            }
+
+            // 1. 로컬 상태 업데이트: savedFiles에서 제거
+            setSavedFiles(prev => prev.filter(f => f.fileUUID !== fileUUID));
+
+            // 2. 현재 활성화 파일 상태 확인 및 리셋
+            if (activeFileUUID === fileUUID) {
+                const defaultLang = supportedLanguages.find(lang => lang.id === selectedLanguage) || supportedLanguages[0];
+                const newDefaultFile = {
+                    name: "untitled.py",
+                    code: defaultLang.template,
+                    type: 'code',
+                    fileUUID: null,
+                    isServerFile: false
+                };
+
+                // 삭제된 파일이 현재 편집 중이었습니다. 새 기본 파일로 상태 리셋.
+                setCode(newDefaultFile.code);
+                setFileName(newDefaultFile.name);
+                setActiveFileUUID(null);
+                setIsSaved(true);
+                setCurrentFileType(newDefaultFile.type);
+                setSelectedLanguage(getLanguageFromFileName(newDefaultFile.name));
+                toast(`삭제된 파일이 현재 편집 중이었습니다. 기본 파일로 돌아갑니다.`, 'toast-warning');
+            }
+
+            toast(`파일 "${fileName}"이(가) 성공적으로 삭제되었습니다.`);
+
+        } catch (error) {
+            console.error('❌ 파일 삭제 중 오류:', error);
+            toast(`파일 삭제 실패: ${error.message}`, 'toast-error');
+        }
+    };
+
 
     // 🆕 더미 파일 선택 핸들러 (원본 유지)
     const handleDummyFileSelect = (file) => {
@@ -770,7 +833,6 @@ const IDE = () => {
 
     // 3. 🐛 에디터 레이아웃 관련 useEffect (최종 안정화)
     useEffect(() => {
-        // applyResizeObserverFix() 제거했으므로, 브라우저 resize 이벤트에만 의존합니다.
         const updateAllEditorLayouts = () => {
             if (editorRef.current) {
                 window.requestAnimationFrame(() => {
@@ -788,7 +850,6 @@ const IDE = () => {
 
     // 4. 🐛 사이드바 접힘/펼침 상태 변경 시 에디터 레이아웃 업데이트 (간소화 유지)
     useEffect(() => {
-        // 애니메이션 완료 후 한 번만 레이아웃을 최종 업데이트
         const timeoutId = setTimeout(() => {
             if (editorRef.current) {
                 try {
@@ -802,6 +863,13 @@ const IDE = () => {
 
         return () => clearTimeout(timeoutId);
     }, [isLeftPanelCollapsed]);
+
+    // 5. 🎨 사이드바 파일 목록 업데이트 시 Feather Icons 새로고침
+    useEffect(() => {
+        if (window.feather) {
+            window.feather.replace();
+        }
+    }, [savedFiles, sidebarSections]); // 파일 목록이나 섹션 토글 시 업데이트
 
     // 🎨 다크 모드 토글 시 에디터 테마 변경 (원본 유지)
     useEffect(() => {
@@ -827,7 +895,7 @@ const IDE = () => {
         return () => { observer.disconnect(); };
     }, [isDarkMode]);
 
-    // 🆕 ModernSidebar 렌더링 함수 (원본 유지)
+    // 🆕 ModernSidebar 렌더링 함수 (삭제 버튼 추가)
     const renderModernSidebar = () => {
         const myServerFiles = savedFiles.filter(f => f.isServerFile && f.fileUUID);
         const myLocalFiles = savedFiles.filter(f => !f.isServerFile && !f.fileUUID);
@@ -875,7 +943,19 @@ const IDE = () => {
                                             >
                                                 {getFileIcon(file.name)}
                                                 <span className="file-name">{file.name}</span>
-                                                <span className="file-badge server-badge" title="서버 저장 파일">S</span>
+                                                {/* ⛔ 뱃지 제거 */}
+
+                                                {/* 🔑 파일 삭제 버튼 추가 */}
+                                                <button
+                                                    className="delete-file-button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation(); // 파일 선택 이벤트 방지
+                                                        handleDeleteFile(file.fileUUID, file.name);
+                                                    }}
+                                                    title="파일 삭제"
+                                                >
+                                                    <i data-feather="trash-2"></i>
+                                                </button>
                                             </div>
                                         ))}
 
@@ -888,7 +968,7 @@ const IDE = () => {
                                             >
                                                 {getFileIcon(file.name)}
                                                 <span className="file-name">{file.name}</span>
-                                                <span className="file-badge local-badge" title="로컬 임시 파일">L</span>
+                                                {/* ⛔ 뱃지 제거 */}
                                             </div>
                                         ))}
                                     </div>
