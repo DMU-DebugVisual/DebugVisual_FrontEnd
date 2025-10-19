@@ -108,25 +108,27 @@ const IDE = () => {
         }
     };
 
-    const toast = (message, type = 'toast-success') => {
-        const existingToasts = document.querySelectorAll('.toast');
-        existingToasts.forEach(toast => {
-            document.getElementById('toast-container')?.removeChild(toast);
-        });
+    const toast = useCallback((message, type = 'toast-success') => {
+        const containerId = 'toast-container';
+
+        document
+            .querySelectorAll('.toast')
+            .forEach(existing => {
+                document.getElementById(containerId)?.removeChild(existing);
+            });
 
         const toastElement = document.createElement('div');
         toastElement.className = `toast ${type}`;
         toastElement.textContent = message;
 
-        const container = document.getElementById('toast-container');
+        let container = document.getElementById(containerId);
         if (!container) {
-            const newContainer = document.createElement('div');
-            newContainer.id = 'toast-container';
-            document.body.appendChild(newContainer);
-            newContainer.appendChild(toastElement);
-        } else {
-            container.appendChild(toastElement);
+            container = document.createElement('div');
+            container.id = containerId;
+            document.body.appendChild(container);
         }
+
+        container.appendChild(toastElement);
 
         setTimeout(() => {
             toastElement.classList.add('show');
@@ -135,13 +137,13 @@ const IDE = () => {
         setTimeout(() => {
             toastElement.classList.remove('show');
             setTimeout(() => {
-                const container = document.getElementById('toast-container');
-                if (container && container.contains(toastElement)) {
-                    container.removeChild(toastElement);
+                const holder = document.getElementById(containerId);
+                if (holder && holder.contains(toastElement)) {
+                    holder.removeChild(toastElement);
                 }
             }, 300);
         }, 3000);
-    };
+    }, []);
 
     // 🆕 파일 아이콘 생성 함수 (원본 유지)
     const getFileIcon = (filename) => {
@@ -468,8 +470,43 @@ const IDE = () => {
             handleSave();
         });
 
-        monaco.editor.defineTheme('custom-dark', { /* ... */ });
-        monaco.editor.defineTheme('custom-light', { /* ... */ });
+        monaco.editor.defineTheme('custom-dark', {
+            base: 'vs-dark',
+            inherit: true,
+            rules: [
+                { token: '', foreground: 'D4D4D4', background: '1E1E1E' },
+                { token: 'comment', foreground: '6A9955' },
+                { token: 'string', foreground: 'CE9178' },
+                { token: 'keyword', foreground: '569CD6' },
+                { token: 'number', foreground: 'B5CEA8' }
+            ],
+            colors: {
+                'editor.background': '#1E1E1E',
+                'editorLineNumber.foreground': '#858585',
+                'editorCursor.foreground': '#AEAFAD',
+                'editor.selectionBackground': '#264F78',
+                'editor.lineHighlightBackground': '#2A2D2E'
+            }
+        });
+
+        monaco.editor.defineTheme('custom-light', {
+            base: 'vs',
+            inherit: true,
+            rules: [
+                { token: '', foreground: '2D2D2D', background: 'FFFFFF' },
+                { token: 'comment', foreground: '008000' },
+                { token: 'string', foreground: 'A31515' },
+                { token: 'keyword', foreground: '0000FF' },
+                { token: 'number', foreground: '098658' }
+            ],
+            colors: {
+                'editor.background': '#FFFFFF',
+                'editorLineNumber.foreground': '#237893',
+                'editorCursor.foreground': '#000000',
+                'editor.selectionBackground': '#ADD6FF',
+                'editor.lineHighlightBackground': '#F5F5F5'
+            }
+        });
 
         const updateEditorTheme = (monaco) => {
             if (!monaco && !editorRef.current) return;
