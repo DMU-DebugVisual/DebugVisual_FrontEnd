@@ -29,7 +29,7 @@ const IDE = () => {
     const [sidebarSections, setSidebarSections] = useState({
         myFiles: true,
         codeExamples: true,
-        jsonExamples: false
+        jsonExamples: true
     });
 
     // 파일 타입 구분을 위한 상태 (원본 유지)
