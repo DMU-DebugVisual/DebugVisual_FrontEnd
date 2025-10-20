@@ -11,6 +11,7 @@ import ChatPanel from './ChatPanel';
 import useCollabSocket from '../hooks/useCollabSocket';
 import { createSession, updateSessionStatus } from '../api/sessions';
 import { fetchMyFiles, fetchFileContent, inferLanguageFromFilename, saveFile } from '../api/files';
+import config from '../../../config';
 
 import {
     FaCheck,
@@ -28,7 +29,10 @@ import {
 async function joinRoomApi(roomId, token) {
     if (!token) throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
 
-    const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://52.79.145.160:8080';
+    const API_BASE =
+        process.env.REACT_APP_API_BASE_URL ||
+        config.API_BASE_URL ||
+        (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.host}` : '');
     const res = await fetch(`${API_BASE}/api/collab/rooms/${encodeURIComponent(roomId)}/participants`, {
         method: 'POST',
         headers: {
