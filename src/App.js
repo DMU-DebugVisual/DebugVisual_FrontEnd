@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route, useLocation } from "react-router-dom";
+import { HashRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 import Header from "./components/header/Header";
@@ -95,6 +95,7 @@ function AppContent() {
                     <Route path="setting" element={<Settings nickname={nickname} />} />
                     <Route path="shared" element={<Shared />} />
                 </Route>
+                <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
 
             {/* 👈 푸터 렌더링 조건 수정: CodecastLive 페이지가 아닐 때만 렌더링 */}
