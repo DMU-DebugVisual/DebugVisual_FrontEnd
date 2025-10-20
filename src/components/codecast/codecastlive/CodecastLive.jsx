@@ -106,6 +106,7 @@ export default function CodecastLive({ isDark }) {
 
     const [participants, setParticipants] = useState([initialMe]);
     const [currentUser, setCurrentUser] = useState(initialMe);
+    const [activeParticipantId, setActiveParticipantId] = useState(initialMe.id);
 
     // 채팅
     const [isChatOpen, setIsChatOpen] = useState(false);
@@ -143,6 +144,21 @@ export default function CodecastLive({ isDark }) {
     );
 
     const { connect, disconnect, subscribeSystem, subscribeCode, sendCodeUpdate, publish } = useCollabSocket();
+
+    useEffect(() => {
+        const exists = participants.some((p) => p.id === activeParticipantId);
+        if (!exists) {
+            const hostParticipant = participants.find((p) => p.role === 'host');
+            setActiveParticipantId(hostParticipant?.id || userId);
+        }
+    }, [participants, activeParticipantId, userId]);
+
+    const activeParticipant = useMemo(() => {
+        const target = participants.find((p) => p.id === activeParticipantId);
+        if (target) return target;
+        const selfParticipant = participants.find((p) => p.id === userId);
+        return selfParticipant || participants[0] || null;
+    }, [participants, activeParticipantId, userId]);
 
     const applyRoomStateUpdate = useCallback(
         (msg) => {
@@ -440,6 +456,7 @@ export default function CodecastLive({ isDark }) {
 
     // 에디터 변경 → 서버 publish
     const handleEditorChange = (nextText) => {
+        if (activeParticipantId !== currentUser.id) return;
         // 서버에 보내는 것은 동일
         // 로컬 상태 업데이트
         setCurrentUser((prev) => ({
@@ -533,6 +550,8 @@ export default function CodecastLive({ isDark }) {
                 stage: 'ready',
             }));
 
+            setActiveParticipantId(userId);
+
             broadcastSystemEvent('SESSION_READY', {
                 sessionId: newSessionId,
                 ownerId: currentUser.id,
@@ -585,6 +604,8 @@ export default function CodecastLive({ isDark }) {
             alert('로그인이 필요합니다. 다시 로그인 후 이용해주세요.');
             return;
         }
+
+        setActiveParticipantId(userId);
 
         const nextStage = currentUser.stage === 'editing' ? 'ready' : 'editing';
         const prevStage = currentUser.stage;
@@ -772,9 +793,38 @@ export default function CodecastLive({ isDark }) {
     const findByName = (name) => participants.find((p) => p.name === name);
     const findById = (id) => participants.find((p) => p.id === id);
 
+    const isViewingSelf = activeParticipant?.id === currentUser.id;
+    const editorReadOnly = !(isViewingSelf && currentUser.stage === 'editing' && canEdit);
+
+    const previewParticipants = useMemo(() => {
+        const editingList = participants.filter((p) => p.stage === 'editing' && p.file !== null);
+        const selfParticipant = participants.find((p) => p.id === userId);
+        if (selfParticipant && !editingList.some((p) => p.id === selfParticipant.id)) {
+            editingList.push(selfParticipant);
+        }
+        return editingList;
+    }, [participants, userId]);
+
     // 참가자가 'editing' 상태일 때만 프리뷰에 표시
     // 이제 기본 파일도 공유 가능하므로 defaultFile.id 조건은 제거합니다.
-    const isAnyParticipantSharing = participants.some(p => p.stage === 'editing' && p.file !== null);
+    const isAnyParticipantSharing = previewParticipants.some(p => p.stage === 'editing' && p.file !== null);
+
+    useEffect(() => {
+        if (!isAnyParticipantSharing && activeParticipantId !== userId) {
+            setActiveParticipantId(userId);
+        }
+    }, [isAnyParticipantSharing, activeParticipantId, userId]);
+
+    useEffect(() => {
+        if (!isViewingSelf) return;
+        if (currentUser.stage === 'editing') return;
+        const editingParticipant = participants.find(
+            (p) => p.stage === 'editing' && p.file !== null && p.id !== userId
+        );
+        if (editingParticipant && editingParticipant.id !== activeParticipantId) {
+            setActiveParticipantId(editingParticipant.id);
+        }
+    }, [isViewingSelf, currentUser.stage, participants, activeParticipantId, userId]);
 
 
     return (
@@ -876,11 +926,12 @@ export default function CodecastLive({ isDark }) {
 
                 <div className="editor-area">
                     <CodeEditor
-                        file={currentUser.file}
+                        file={activeParticipant?.file}
                         onChange={handleEditorChange}
-                        currentUser={currentUser}
+                        currentUser={activeParticipant || currentUser}
+                        readOnly={editorReadOnly}
                         isDark={isDark}
-                        selectFileAction={FileSelectButton}
+                        selectFileAction={isViewingSelf ? FileSelectButton : null}
                     />
                 </div>
 
@@ -923,11 +974,11 @@ export default function CodecastLive({ isDark }) {
                     <div className="preview-strip nochrome" aria-label="participants preview strip">
                         <div className="preview-strip-scroller">
                             <CodePreviewList
-                                participants={participants.filter(p => p.stage === 'editing')}
-                                activeName={currentUser.name}
+                                participants={previewParticipants}
+                                activeName={activeParticipant?.name || currentUser.name}
                                 onSelect={(userName) => {
                                     const pickedUser = participants.find((p) => p.name === userName);
-                                    if (pickedUser) setCurrentUser(pickedUser);
+                                    if (pickedUser) setActiveParticipantId(pickedUser.id);
                                 }}
                             />
                         </div>
