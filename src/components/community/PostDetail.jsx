@@ -48,6 +48,8 @@ export default function PostDetail() {
     // 댓글 작성 상태
     const [newComment, setNewComment] = useState("");
     const [posting, setPosting] = useState(false);
+    const [deletingPost, setDeletingPost] = useState(false);
+    const [deletingCommentId, setDeletingCommentId] = useState(null);
 
     // 대댓글 작성 상태
     const [replyTarget, setReplyTarget] = useState(null); // 대댓글을 달 댓글 ID
@@ -58,6 +60,19 @@ export default function PostDetail() {
     const authHeader = tokenRaw
         ? tokenRaw.startsWith("Bearer ") ? tokenRaw : `Bearer ${tokenRaw}`
         : null;
+    const currentUserId = useMemo(() => localStorage.getItem("userId") || "", []);
+    const currentUsername = useMemo(() => localStorage.getItem("username") || "", []);
+    const currentRole = useMemo(() => (localStorage.getItem("role") || "").toUpperCase(), []);
+    const hasManageRole = useMemo(() => ["ADMIN", "MANAGER", "ROLE_ADMIN", "ROLE_MANAGER"].includes(currentRole), [currentRole]);
+    const matchesCurrentUser = useCallback((writerName, writerId) => {
+        if (writerId && currentUserId) return String(writerId) === String(currentUserId);
+        if (writerName && currentUsername) return writerName === currentUsername;
+        return false;
+    }, [currentUserId, currentUsername]);
+    const canManageRecord = useCallback((writerName, writerId) => {
+        if (hasManageRole) return true;
+        return matchesCurrentUser(writerName, writerId);
+    }, [hasManageRole, matchesCurrentUser]);
 
     // 좋아요 수 및 내 상태 재조회
     const refreshLikeStatus = async () => {
@@ -113,7 +128,8 @@ export default function PostDetail() {
                     id: data.id,
                     title: data.title,
                     content: data.content || "",
-                    author: data.writer || "익명",
+                    author: data.writer || data.author || "익명",
+                    authorId: data.writerId ?? data.authorId ?? data.userId ?? null,
                     date: data.createdAt ? new Date(data.createdAt).toLocaleString() : "",
                     tags: Array.isArray(data.tags) ? data.tags : [],
                 });
@@ -175,6 +191,19 @@ export default function PostDetail() {
         if (!id) return;
         fetchComments();
     }, [id, authHeader, fetchComments]);
+
+    const canDeletePost = useMemo(() => {
+        if (hasManageRole) return true;
+        if (!post) return false;
+        return matchesCurrentUser(post.author, post.authorId);
+    }, [hasManageRole, post, matchesCurrentUser]);
+
+    const canDeleteComment = useCallback((comment) => {
+        if (!comment) return false;
+        const writerName = comment.writer ?? comment.author ?? comment.nickname;
+        const writerId = comment.writerId ?? comment.authorId ?? comment.userId;
+        return canManageRecord(writerName, writerId);
+    }, [canManageRecord]);
 
 
     // 좋아요 토글
@@ -304,6 +333,67 @@ export default function PostDetail() {
         }
     };
 
+    const handleDeletePost = async () => {
+        if (!authHeader) {
+            promptLogin();
+            return;
+        }
+        if (deletingPost) return;
+        if (!window.confirm("게시글을 삭제하시겠습니까?")) return;
+
+        try {
+            setDeletingPost(true);
+            const res = await fetch(`${config.API_BASE_URL}/api/posts/${id}`, {
+                method: "DELETE",
+                headers: { Authorization: authHeader, Accept: "application/json" },
+            });
+
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error(text || `게시글 삭제 실패 (${res.status})`);
+            }
+
+            alert("게시글이 삭제되었습니다.");
+            navigate("/community");
+        } catch (e) {
+            alert(e.message || "게시글 삭제에 실패했습니다.");
+        } finally {
+            setDeletingPost(false);
+        }
+    };
+
+    const handleDeleteComment = async (commentId) => {
+        if (!authHeader) {
+            promptLogin();
+            return;
+        }
+        if (!commentId || deletingCommentId === commentId) return;
+        if (!window.confirm("삭제하시겠습니까?")) return;
+
+        try {
+            setDeletingCommentId(commentId);
+            const res = await fetch(`${config.API_BASE_URL}/api/comments/${commentId}`, {
+                method: "DELETE",
+                headers: { Authorization: authHeader, Accept: "application/json" },
+            });
+
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error(text || `댓글 삭제 실패 (${res.status})`);
+            }
+
+            if (replyTarget === commentId) {
+                setReplyTarget(null);
+                setReplyContent("");
+            }
+            await fetchComments();
+        } catch (e) {
+            alert(e.message || "댓글 삭제에 실패했습니다.");
+        } finally {
+            setDeletingCommentId(null);
+        }
+    };
+
 
     if (loadingPost) {
         return <div className="post-detail-container"><div className="post-detail-left"><p>게시글을 불러오는 중입니다…</p></div></div>;
@@ -361,6 +451,15 @@ export default function PostDetail() {
                     >
                         🔗
                     </button>
+                    {canDeletePost && (
+                        <button
+                            className="delete-btn"
+                            onClick={handleDeletePost}
+                            disabled={deletingPost}
+                        >
+                            {deletingPost ? "삭제 중…" : "삭제"}
+                        </button>
+                    )}
                 </div>
 
                 <div className="section-divider" />
@@ -420,12 +519,23 @@ export default function PostDetail() {
                                     </div>
 
                                     {/* 답글 버튼 */}
-                                    <button
-                                        className="reply-toggle-btn" // ✅ 클래스 적용
-                                        onClick={() => setReplyTarget(c.id === replyTarget ? null : c.id)}
-                                    >
-                                        답글
-                                    </button>
+                                    <div className="comment-action-row">
+                                        <button
+                                            className="reply-toggle-btn"
+                                            onClick={() => setReplyTarget(c.id === replyTarget ? null : c.id)}
+                                        >
+                                            답글
+                                        </button>
+                                        {canDeleteComment(c) && (
+                                            <button
+                                                className="comment-delete-btn"
+                                                onClick={() => handleDeleteComment(c.id)}
+                                                disabled={deletingCommentId === c.id}
+                                            >
+                                                {deletingCommentId === c.id ? "삭제 중…" : "삭제"}
+                                            </button>
+                                        )}
+                                    </div>
 
                                     {/* 대댓글 입력창 */}
                                     {replyTarget === c.id && (
@@ -460,8 +570,19 @@ export default function PostDetail() {
                                         <ul className="reply-list"> {/* ✅ 클래스 적용 */}
                                             {c.replies.map((r) => (
                                                 <li key={r.id} className="reply-item"> {/* ✅ 클래스 적용 */}
-                                                    <b>{r.writer || "익명"}</b> · {r.createdAt ? new Date(r.createdAt).toLocaleString() : ""}
+                                                    <div className="reply-meta">
+                                                        <b>{r.writer || "익명"}</b> · {r.createdAt ? new Date(r.createdAt).toLocaleString() : ""}
+                                                    </div>
                                                     <div>{r.content}</div>
+                                                    {canDeleteComment(r) && (
+                                                        <button
+                                                            className="reply-delete-btn"
+                                                            onClick={() => handleDeleteComment(r.id)}
+                                                            disabled={deletingCommentId === r.id}
+                                                        >
+                                                            {deletingCommentId === r.id ? "삭제 중…" : "삭제"}
+                                                        </button>
+                                                    )}
                                                 </li>
                                             ))}
                                         </ul>
