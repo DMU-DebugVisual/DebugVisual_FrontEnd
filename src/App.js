@@ -47,6 +47,12 @@ function AppContent() {
     }, []);
 
     useEffect(() => {
+        const handleOpenLogin = () => setIsLoginModalOpen(true);
+        window.addEventListener("dv:open-login-modal", handleOpenLogin);
+        return () => window.removeEventListener("dv:open-login-modal", handleOpenLogin);
+    }, []);
+
+    useEffect(() => {
         const savedTheme = localStorage.getItem("theme");
         if (savedTheme === "dark") setIsDark(true);
     }, []);
