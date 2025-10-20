@@ -1,8 +1,30 @@
 // src/pages/PostDetail.jsx
-import React, { useEffect, useState, useMemo, useRef } from "react";
+import React, { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./PostDetail.css";
 import config from "../../config";
+import { promptLogin } from "../../utils/auth";
+
+const parseIntSafe = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+};
+
+const deriveCommentCount = (resp, data) => {
+    try {
+        const fromHeader = resp?.headers?.get?.("X-Total-Count");
+        const n = parseIntSafe(fromHeader);
+        if (n !== null) return n;
+    } catch (_) {}
+
+    if (Array.isArray(data)) return data.length;
+    if (data && typeof data === "object") {
+        if (typeof data.totalElements === "number") return data.totalElements;
+        if (typeof data.total === "number") return data.total;
+        if (Array.isArray(data.content)) return data.content.length;
+    }
+    return 0;
+};
 
 export default function PostDetail() {
     const { id } = useParams(); // /community/post/:id
@@ -36,28 +58,6 @@ export default function PostDetail() {
     const authHeader = tokenRaw
         ? tokenRaw.startsWith("Bearer ") ? tokenRaw : `Bearer ${tokenRaw}`
         : null;
-
-    // ===== helpers =====
-    const parseIntSafe = (v) => {
-        const n = Number(v);
-        return Number.isFinite(n) ? n : null;
-    };
-
-    const deriveCommentCount = (resp, data) => {
-        try {
-            const fromHeader = resp?.headers?.get?.("X-Total-Count");
-            const n = parseIntSafe(fromHeader);
-            if (n !== null) return n;
-        } catch (_) {}
-
-        if (Array.isArray(data)) return data.length;
-        if (data && typeof data === "object") {
-            if (typeof data.totalElements === "number") return data.totalElements;
-            if (typeof data.total === "number") return data.total;
-            if (Array.isArray(data.content)) return data.content.length;
-        }
-        return 0;
-    };
 
     // 좋아요 수 및 내 상태 재조회
     const refreshLikeStatus = async () => {
@@ -141,7 +141,7 @@ export default function PostDetail() {
     }, [id, authHeader]); // ✅ navigate 제거
 
     // 공통: 댓글 목록 다시 불러오기
-    const fetchComments = async () => {
+    const fetchComments = useCallback(async () => {
         try {
             setLoadingComments(true);
             const bust = Date.now();
@@ -168,20 +168,19 @@ export default function PostDetail() {
         } finally {
             setLoadingComments(false);
         }
-    };
+    }, [authHeader, id]);
 
     useEffect(() => {
         // authHeader가 있거나 없더라도 댓글은 로드 시도
         if (!id) return;
         fetchComments();
-    }, [id, authHeader]);
+    }, [id, authHeader, fetchComments]);
 
 
     // 좋아요 토글
     const handleToggleLike = async () => {
         if (!authHeader) {
-            alert("로그인이 필요합니다.");
-            navigate("/login"); // 로그인 페이지로 리다이렉트 (경로 가정)
+            promptLogin();
             return;
         }
         if (liking) return;
@@ -235,8 +234,7 @@ export default function PostDetail() {
     const handleCreateComment = async () => {
         if (!newComment.trim()) return;
         if (!authHeader) {
-            alert("로그인이 필요합니다.");
-            navigate("/login");
+            promptLogin();
             return;
         }
 
@@ -273,8 +271,7 @@ export default function PostDetail() {
     const handleCreateReply = async (parentId) => {
         if (!replyContent.trim()) return;
         if (!authHeader) {
-            alert("로그인이 필요합니다.");
-            navigate("/login");
+            promptLogin();
             return;
         }
 

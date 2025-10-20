@@ -46,6 +46,10 @@ function Login({ onClose, onLoginSuccess }) {
         }
     };
 
+    const handleComingSoon = (message) => {
+        alert(message);
+    };
+
     return (
         <div className="modal-overlay">
             <div className="modal-content">
@@ -86,7 +90,7 @@ function Login({ onClose, onLoginSuccess }) {
                 </form>
 
                 <div className="auth-links">
-                    <a href="/forgot-password">비밀번호 찾기</a>
+                    <button type="button" onClick={() => handleComingSoon('비밀번호 찾기 기능은 준비 중입니다.')}>비밀번호 찾기</button>
                     <span className="separator">|</span>
                     <span
                         className="signup-action"
@@ -98,7 +102,7 @@ function Login({ onClose, onLoginSuccess }) {
                         회원가입
                     </span>
                     <span className="separator">|</span>
-                    <a href="/forgot-password">아이디 찾기</a>
+                    <button type="button" onClick={() => handleComingSoon('아이디 찾기 기능은 준비 중입니다.')}>아이디 찾기</button>
                 </div>
 
                 <div className="divider">간편 로그인</div>
