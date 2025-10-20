@@ -1,7 +1,7 @@
 // sessions.js
 import config from "../../../config";
 
-export async function createSession({ token, roomId, fileName, language }) {
+export async function createSession({ token, roomId, sessionName }) {
     const url = `${config.API_BASE_URL}/api/collab/rooms/${roomId}/sessions`;
 
     const res = await fetch(url, {
@@ -10,7 +10,8 @@ export async function createSession({ token, roomId, fileName, language }) {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ fileName, language }),
+        credentials: "include",
+        body: JSON.stringify({ sessionName }),
     });
 
     const text = await res.text().catch(() => "");
@@ -20,6 +21,25 @@ export async function createSession({ token, roomId, fileName, language }) {
         throw err;
     }
     return text ? JSON.parse(text) : {};
+}
 
-    // return res.json(); // { sessionId, ... }
+export async function updateSessionStatus({ token, sessionId, status }) {
+    const url = `${config.API_BASE_URL}/api/collab/sessions/${sessionId}/status`;
+
+    const res = await fetch(url, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+        body: JSON.stringify({ status }),
+    });
+
+    if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        const err = new Error(`HTTP ${res.status}${text ? ` - ${text}` : ""}`);
+        err.status = res.status;
+        throw err;
+    }
 }

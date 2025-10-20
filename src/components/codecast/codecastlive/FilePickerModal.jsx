@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './FilePickerModal.css';
 
-export default function FilePickerModal({ files, onSelect, onClose }) {
+export default function FilePickerModal({ files = [], loading = false, error = '', onRefresh, onSelect, onClose }) {
     const [isNewFile, setIsNewFile] = useState(false);
     const [title, setTitle] = useState('');
     const [language, setLanguage] = useState('python');
@@ -24,6 +24,13 @@ export default function FilePickerModal({ files, onSelect, onClose }) {
         return `${baseName}${dotExt}`;
     };
 
+    const handleClose = () => {
+        setIsNewFile(false);
+        setTitle('');
+        setLanguage('python');
+        onClose();
+    };
+
     const handleCreate = () => {
         const raw = title.trim();
         if (!raw) return;
@@ -37,24 +44,62 @@ export default function FilePickerModal({ files, onSelect, onClose }) {
         });
     };
 
+    const handleRefreshClick = () => {
+        if (onRefresh) onRefresh();
+    };
+
+    const visibleFiles = Array.isArray(files) ? files : [];
+
     return (
-        <div className="fpm-backdrop" onClick={onClose}>
+        <div className="fpm-backdrop" onClick={handleClose}>
             <div className="fpm-modal" onClick={(e) => e.stopPropagation()}>
-                <h3>공유할 파일 선택</h3>
+                <div className="fpm-header">
+                    <h3>공유할 파일 선택</h3>
+                    {onRefresh && (
+                        <button
+                            type="button"
+                            className="fpm-refresh"
+                            onClick={handleRefreshClick}
+                            disabled={loading}
+                        >
+                            {loading ? '불러오는 중...' : '새로고침'}
+                        </button>
+                    )}
+                </div>
+
+                {error && <div className="fpm-error">{error}</div>}
 
                 {!isNewFile ? (
                     <>
                         <ul className="fpm-list">
                             <li
                                 className="fpm-item new-file"
-                                onClick={() => setIsNewFile(true)}
+                                onClick={() => {
+                                    setIsNewFile(true);
+                                    setTitle('');
+                                    setLanguage('python');
+                                }}
                                 title="새 파일 작성하기"
                             >
                                 <span className="fpm-name">＋ 새 파일 작성하기</span>
                                 <span className="fpm-lang">제목 & 언어 선택</span>
                             </li>
 
-                            {files.map((f) => (
+                            {loading && (
+                                <li className="fpm-item disabled">
+                                    <span className="fpm-name">파일 목록을 불러오는 중입니다...</span>
+                                    <span className="fpm-lang" />
+                                </li>
+                            )}
+
+                            {!loading && !error && visibleFiles.length === 0 && (
+                                <li className="fpm-item disabled">
+                                    <span className="fpm-name">저장된 파일이 없습니다.</span>
+                                    <span className="fpm-lang">IDE에서 파일을 저장하면 여기에서 선택할 수 있습니다.</span>
+                                </li>
+                            )}
+
+                            {!loading && visibleFiles.map((f) => (
                                 <li
                                     key={f.id}
                                     className="fpm-item"
@@ -66,7 +111,7 @@ export default function FilePickerModal({ files, onSelect, onClose }) {
                             ))}
                         </ul>
 
-                        <button className="fpm-close" onClick={onClose}>닫기</button>
+                        <button className="fpm-close" onClick={handleClose}>닫기</button>
                     </>
                 ) : (
                     <>
@@ -102,7 +147,14 @@ export default function FilePickerModal({ files, onSelect, onClose }) {
                             </div>
 
                             <div className="fpm-actions">
-                                <button className="fpm-secondary" onClick={() => setIsNewFile(false)}>
+                                <button
+                                    className="fpm-secondary"
+                                    onClick={() => {
+                                        setIsNewFile(false);
+                                        setTitle('');
+                                        setLanguage('python');
+                                    }}
+                                >
                                     ← 목록으로
                                 </button>
                                 <button className="fpm-primary" onClick={handleCreate} disabled={!title.trim()}>
@@ -111,7 +163,7 @@ export default function FilePickerModal({ files, onSelect, onClose }) {
                             </div>
                         </div>
 
-                        <button className="fpm-close" onClick={onClose}>닫기</button>
+                        <button className="fpm-close" onClick={handleClose}>닫기</button>
                     </>
                 )}
             </div>

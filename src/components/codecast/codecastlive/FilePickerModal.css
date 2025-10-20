@@ -20,11 +20,46 @@
     box-shadow: 0 10px 30px rgba(0,0,0,0.15);
 }
 
+.fpm-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    gap: 12px;
+}
+
 .fpm-modal h3 {
-    margin: 0 0 12px 0;
+    margin: 0;
     font-size: 16px;
     font-weight: 700;
     color: #222;
+}
+
+.fpm-refresh {
+    border: 1px solid #e0e0ea;
+    background: #f7f7fb;
+    color: #333;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+}
+.fpm-refresh:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+.fpm-refresh:not(:disabled):hover {
+    filter: brightness(1.03);
+}
+
+.fpm-error {
+    margin-bottom: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: #fff1f0;
+    border: 1px solid #ffdad6;
+    color: #b3261e;
+    font-size: 13px;
 }
 
 .fpm-list {
@@ -49,6 +84,15 @@
 .fpm-item:hover {
     border-color: #d7d7ec;
     background: #eef0fb;
+}
+
+.fpm-item.disabled {
+    cursor: default;
+    opacity: 0.7;
+}
+.fpm-item.disabled:hover {
+    border-color: transparent;
+    background: #f7f7fb;
 }
 
 .fpm-item.new-file {
@@ -171,12 +215,31 @@
     color: white;
 }
 
+.dark-mode .fpm-refresh {
+    background: #2a2a38;
+    color: #eee;
+    border-color: rgba(255,255,255,0.08);
+}
+.dark-mode .fpm-refresh:not(:disabled):hover {
+    filter: brightness(1.07);
+}
+
+.dark-mode .fpm-error {
+    background: rgba(255, 89, 94, 0.15);
+    border: 1px solid rgba(255, 89, 94, 0.3);
+    color: #ff9b9b;
+}
+
 .dark-mode .fpm-item {
     background: #1a1a26;
 }
 .dark-mode .fpm-item:hover {
     border-color: rgba(128,90,213,0.5);
     background: #1f1f2c;
+}
+.dark-mode .fpm-item.disabled {
+    background: #1a1a26;
+    border-color: transparent;
 }
 
 .dark-mode .fpm-item.new-file {
