@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './CodecastLive.css';
 
@@ -10,17 +10,11 @@ import CodePreviewList from './CodePreviewList';
 import ChatPanel from './ChatPanel';
 import useCollabSocket from '../hooks/useCollabSocket';
 import { createSession } from '../api/sessions';
+import { fetchMyFiles, fetchFileContent, inferLanguageFromFilename } from '../api/files';
 
 import {
-    FaCrown,
-    FaPenFancy,
-    FaEye,
-    FaUser,
-    FaEllipsisV,
     FaCheck,
-    FaComments,
     FaDesktop,
-    FaPhoneSlash
 } from 'react-icons/fa';
 
 import {
@@ -28,58 +22,6 @@ import {
     grantEditPermission,
     revokeEditPermission,
 } from '../api/roomAdmin';
-
-// 더미 파일 목록(기존 유지)
-const dummyFiles = [
-    {
-        id: 'f1',
-        name: 'BubbleSort.py',
-        language: 'python',
-        content: `# 버블 정렬 구현
-def bubble_sort(arr):
-    n = len(arr)
-    for i in range(n):
-        for j in range(0, n - i - 1):
-            if arr[j] > arr[j + 1]:
-                if arr[j] > arr[j + 1]:
-                    arr[j], arr[j + 1] = arr[j + 1], arr[j]
-    return arr
-
-array = [64, 34, 25, 12, 22, 11, 90]
-print("정렬 전:", array)
-print("정렬 후:", bubble_sort(array.copy()))`,
-    },
-    {
-        id: 'f2',
-        name: 'quickSort.js',
-        language: 'javascript',
-        content: `// 퀵 정렬 구현
-function quickSort(arr) {
-  if (arr.length <= 1) return arr;
-  const pivot = arr[0];
-  const left = arr.slice(1).filter(x => x < pivot);
-  const right = arr.slice(1).filter(x => x >= pivot);
-  return [...quickSort(left), pivot, ...quickSort(right)];
-}`,
-    },
-    {
-        id: 'f3',
-        name: 'mergeSort.js',
-        language: 'javascript',
-        content: `// 병합 정렬 구현
-function mergeSort(arr) {
-  if (arr.length <= 1) return arr;
-  const mid = Math.floor(arr.length / 2);
-  const left = mergeSort(arr.slice(0, mid));
-  const right = mergeSort(arr.slice(mid));
-  let i=0, j=0, out=[];
-  while(i<left.length && j<right.length){
-    out.push(left[i] < right[j] ? left[i++] : right[j++]);
-  }
-  return out.concat(left.slice(i)).concat(right.slice(j));
-}`,
-    },
-];
 
 // 참여 API 호출 함수
 async function joinRoomApi(roomId, token) {
@@ -167,6 +109,51 @@ export default function CodecastLive({ isDark }) {
 
     // 파일 선택 모달
     const [showPicker, setShowPicker] = useState(false);
+    const [availableFiles, setAvailableFiles] = useState([]);
+    const [isLoadingFiles, setIsLoadingFiles] = useState(false);
+    const [fileLoadError, setFileLoadError] = useState('');
+    const fileContentCacheRef = useRef(new Map());
+
+    const fetchAvailableFiles = useCallback(async () => {
+        if (!token) {
+            setAvailableFiles([]);
+            return;
+        }
+
+        setIsLoadingFiles(true);
+        setFileLoadError('');
+
+        try {
+            const list = await fetchMyFiles({ token });
+
+            const mapped = list.map((file) => ({
+                id: file.fileUUID,
+                fileUUID: file.fileUUID,
+                name: file.originalFileName,
+                language: inferLanguageFromFilename(file.originalFileName),
+                isServerFile: true,
+            }));
+
+            setAvailableFiles(mapped);
+
+            const nextCache = new Map();
+            mapped.forEach((file) => {
+                if (file.fileUUID && fileContentCacheRef.current.has(file.fileUUID)) {
+                    nextCache.set(file.fileUUID, fileContentCacheRef.current.get(file.fileUUID));
+                }
+            });
+            fileContentCacheRef.current = nextCache;
+        } catch (error) {
+            console.error('[CodecastLive] 파일 목록 로드 실패:', error);
+            setFileLoadError(error.message || '파일 목록을 가져오는 데 실패했습니다.');
+        } finally {
+            setIsLoadingFiles(false);
+        }
+    }, [token]);
+
+    useEffect(() => {
+        fetchAvailableFiles();
+    }, [fetchAvailableFiles]);
 
     const canEdit = currentUser.role === 'host' || currentUser.role === 'edit';
 
@@ -366,58 +353,80 @@ export default function CodecastLive({ isDark }) {
 
     // 파일 선택 처리
     const handlePickFile = async (picked) => {
+        if (!room?.id) {
+            alert('방 정보가 없습니다. 방을 먼저 생성하거나 참여하세요.');
+            return;
+        }
+        if (!token) {
+            alert('로그인이 필요합니다. 다시 로그인 후 이용해주세요.');
+            return;
+        }
+
         try {
+            let selectedFile;
+
             if (picked.__new) {
-                if (!room?.id) return alert('방 정보가 없습니다. 방을 먼저 생성하세요.');
-                if (!token) return alert('로그인이 필요합니다.');
-
-                const data = await createSession({
-                    token,
-                    roomId: room.id,
-                    fileName: picked.name,
+                selectedFile = {
+                    id: `new-${Date.now()}`,
+                    name: picked.name,
                     language: picked.language,
-                });
-
-                setSessionId(data.sessionId || data.id);
-
-                setParticipants((prev) =>
-                    prev.map((p) =>
-                        p.id === currentUser.id
-                            ? {
-                                ...p,
-                                file: { name: picked.name, language: picked.language, content: '' },
-                                code: '',
-                                stage: 'ready',
-                            }
-                            : p
-                    )
-                );
-                setCurrentUser((prev) => ({
-                    ...prev,
-                    file: { name: picked.name, language: picked.language, content: '' },
-                    code: '',
-                    stage: 'ready',
-                }));
+                    content: '',
+                    fileUUID: null,
+                    isServerFile: false,
+                };
             } else {
-                setParticipants((prev) =>
-                    prev.map((p) =>
-                        p.id === currentUser.id
-                            ? { ...p, file: picked, code: picked.content ?? '', stage: 'ready' }
-                            : p
-                    )
-                );
-                setCurrentUser((prev) => ({
-                    ...prev,
-                    file: picked,
-                    code: picked.content ?? '',
-                    stage: 'ready',
-                }));
+                const fileUUID = picked.fileUUID || picked.id;
+                let fileContent = fileUUID ? fileContentCacheRef.current.get(fileUUID) : null;
+
+                if (!fileContent && fileUUID) {
+                    fileContent = await fetchFileContent({ token, fileUUID });
+                    fileContentCacheRef.current.set(fileUUID, fileContent);
+                }
+
+                selectedFile = {
+                    ...picked,
+                    fileUUID,
+                    content: fileContent ?? '',
+                };
             }
 
+            const sessionResponse = await createSession({
+                token,
+                roomId: room.id,
+                sessionName: selectedFile.name,
+            });
+
+            const newSessionId = sessionResponse.sessionId || sessionResponse.id;
+            if (!newSessionId) {
+                throw new Error('세션 ID를 가져오지 못했습니다.');
+            }
+
+            setSessionId(newSessionId);
+
+            setParticipants((prev) =>
+                prev.map((p) =>
+                    p.id === currentUser.id
+                        ? {
+                            ...p,
+                            file: selectedFile,
+                            code: selectedFile.content ?? '',
+                            stage: 'ready',
+                        }
+                        : p
+                )
+            );
+
+            setCurrentUser((prev) => ({
+                ...prev,
+                file: selectedFile,
+                code: selectedFile.content ?? '',
+                stage: 'ready',
+            }));
+
             setShowPicker(false);
-        } catch (e) {
-            console.error(e);
-            alert(`세션 생성 실패: ${e.message || e}`);
+        } catch (error) {
+            console.error('[CodecastLive] 세션 준비 실패:', error);
+            alert(`세션 준비에 실패했습니다: ${error.message || error}`);
         }
     };
 
@@ -427,6 +436,11 @@ export default function CodecastLive({ isDark }) {
             alert('쓰기 권한이 없어 파일을 선택할 수 없습니다.');
             return;
         }
+        if (!token) {
+            alert('로그인이 필요합니다. 다시 로그인 후 이용해주세요.');
+            return;
+        }
+        fetchAvailableFiles();
         setShowPicker(true);
     };
 
@@ -712,7 +726,14 @@ export default function CodecastLive({ isDark }) {
             </div>
 
             {showPicker && (
-                <FilePickerModal files={dummyFiles} onSelect={handlePickFile} onClose={() => setShowPicker(false)} />
+                <FilePickerModal
+                    files={availableFiles}
+                    loading={isLoadingFiles}
+                    error={fileLoadError}
+                    onRefresh={fetchAvailableFiles}
+                    onSelect={handlePickFile}
+                    onClose={() => setShowPicker(false)}
+                />
             )}
         </div>
     );

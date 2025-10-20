@@ -1,7 +1,7 @@
 // sessions.js
 import config from "../../../config";
 
-export async function createSession({ token, roomId, fileName, language }) {
+export async function createSession({ token, roomId, sessionName }) {
     const url = `${config.API_BASE_URL}/api/collab/rooms/${roomId}/sessions`;
 
     const res = await fetch(url, {
@@ -10,7 +10,8 @@ export async function createSession({ token, roomId, fileName, language }) {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ fileName, language }),
+        credentials: "include",
+        body: JSON.stringify({ sessionName }),
     });
 
     const text = await res.text().catch(() => "");
@@ -20,6 +21,4 @@ export async function createSession({ token, roomId, fileName, language }) {
         throw err;
     }
     return text ? JSON.parse(text) : {};
-
-    // return res.json(); // { sessionId, ... }
 }
