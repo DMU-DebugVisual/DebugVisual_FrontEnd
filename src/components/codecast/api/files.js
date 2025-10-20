@@ -1,3 +1,4 @@
+// No changes to apply
 import config from "../../../config";
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL || config.API_BASE_URL;
@@ -82,4 +83,47 @@ export function inferLanguageFromFilename(filename = "") {
 
     const ext = filename.slice(lastDot + 1).toLowerCase();
     return EXTENSION_TO_LANGUAGE[ext] || "plaintext";
+}
+
+export async function saveFile({ token, filename, content = "", fileUUID }) {
+    if (!token) {
+        throw new Error("인증 토큰이 필요합니다. 다시 로그인해 주세요.");
+    }
+    if (!filename) {
+        throw new Error("파일 이름이 필요합니다.");
+    }
+
+    const fileBlob = new Blob([content], { type: "text/plain" });
+    const formData = new FormData();
+    formData.append("file", new File([fileBlob], filename));
+
+    let url = `${API_BASE}/api/file/upload`;
+    if (fileUUID) {
+        url += `?fileUUID=${encodeURIComponent(fileUUID)}`;
+    }
+
+    const res = await fetch(url, {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+        body: formData,
+    });
+
+    const text = await res.text().catch(() => "");
+    if (!res.ok) {
+        throw new Error(text || `HTTP ${res.status}`);
+    }
+
+    if (!text) {
+        throw new Error("파일 저장 응답을 해석할 수 없습니다.");
+    }
+
+    const data = JSON.parse(text);
+    if (!data?.fileUUID) {
+        throw new Error("파일 저장 결과에 fileUUID가 없습니다.");
+    }
+
+    return data;
 }

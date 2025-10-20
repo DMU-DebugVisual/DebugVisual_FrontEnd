@@ -9,12 +9,13 @@ import FilePickerModal from './FilePickerModal';
 import CodePreviewList from './CodePreviewList';
 import ChatPanel from './ChatPanel';
 import useCollabSocket from '../hooks/useCollabSocket';
-import { createSession } from '../api/sessions';
-import { fetchMyFiles, fetchFileContent, inferLanguageFromFilename } from '../api/files';
+import { createSession, updateSessionStatus } from '../api/sessions';
+import { fetchMyFiles, fetchFileContent, inferLanguageFromFilename, saveFile } from '../api/files';
 
 import {
     FaCheck,
     FaDesktop,
+    FaSave,
 } from 'react-icons/fa';
 
 import {
@@ -54,9 +55,10 @@ export default function CodecastLive({ isDark }) {
     const ridFromQuery = qs.get('rid');
 
     // 로그인 유저
-    const username = localStorage.getItem('username') || 'anonymous';
+    const storedUserId = localStorage.getItem('userId') || '';
+    const username = localStorage.getItem('username') || storedUserId || 'anonymous';
     const token = localStorage.getItem('token') || '';
-    const userId = username;
+    const userId = storedUserId || username;
 
     // 권한 기본값
     const isOwner = injected.ownerId && injected.ownerId === username;
@@ -114,6 +116,175 @@ export default function CodecastLive({ isDark }) {
     const [fileLoadError, setFileLoadError] = useState('');
     const fileContentCacheRef = useRef(new Map());
 
+    const updateParticipants = useCallback(
+        (updater) => {
+            setParticipants((prev) => {
+                const updated = updater(prev);
+                setCurrentUser((prevCurrent) => {
+                    const me = updated.find((p) => p.id === userId);
+                    if (!me) return prevCurrent;
+                    return {
+                        ...prevCurrent,
+                        ...me,
+                        code: me.code ?? prevCurrent.code,
+                        file: me.file ?? prevCurrent.file,
+                        stage: me.stage ?? prevCurrent.stage,
+                        role: me.role ?? prevCurrent.role,
+                    };
+                });
+                return updated;
+            });
+        },
+        [setParticipants, setCurrentUser, userId]
+    );
+
+    const { connect, disconnect, subscribeSystem, subscribeCode, sendCodeUpdate, publish } = useCollabSocket();
+
+    const applyRoomStateUpdate = useCallback(
+        (msg) => {
+            if (!msg) return;
+
+            updateParticipants((prev) => {
+                const prevMap = new Map(prev.map((p) => [p.id, p]));
+                const nextMap = new Map();
+
+                const upsert = (id, draft) => {
+                    const prevEntry = prevMap.get(id);
+                    nextMap.set(id, {
+                        id,
+                        name: draft.name || prevEntry?.name || id,
+                        role: draft.role || prevEntry?.role || (draft.role === 'host' ? 'host' : 'view'),
+                        code: draft.code ?? prevEntry?.code ?? '',
+                        file: draft.file ?? prevEntry?.file ?? null,
+                        stage: draft.stage || prevEntry?.stage || 'ready',
+                    });
+                };
+
+                if (msg.owner?.userId) {
+                    upsert(msg.owner.userId, {
+                        name: msg.owner.userName || msg.owner.userId,
+                        role: 'host',
+                    });
+                }
+
+                (msg.participants || []).forEach((participant) => {
+                    if (!participant?.userId) return;
+                    upsert(participant.userId, {
+                        name: participant.userName || participant.userId,
+                    });
+                });
+
+                if (!nextMap.has(userId)) {
+                    const prevSelf = prevMap.get(userId) || initialMe;
+                    nextMap.set(userId, { ...prevSelf });
+                }
+
+                const ordered = Array.from(nextMap.values()).sort((a, b) => {
+                    if (a.role === 'host' && b.role !== 'host') return -1;
+                    if (b.role === 'host' && a.role !== 'host') return 1;
+                    if (a.id === userId && b.id !== userId) return -1;
+                    if (b.id === userId && a.id !== userId) return 1;
+                    return a.name.localeCompare(b.name);
+                });
+
+                return ordered;
+            });
+        },
+        [initialMe, updateParticipants, userId]
+    );
+
+    const handleSystemEvent = useCallback(
+        (event) => {
+            if (!event?.type) return;
+            const { type, payload = {} } = event;
+
+            switch (type) {
+                case 'SESSION_READY': {
+                    const { sessionId: nextSessionId, ownerId, ownerName, file = {}, code } = payload;
+                    if (nextSessionId) {
+                        setSessionId((prev) => (prev === nextSessionId ? prev : nextSessionId));
+                    }
+
+                    if (ownerId) {
+                        updateParticipants((prev) =>
+                            prev.map((p) =>
+                                p.id === ownerId
+                                    ? {
+                                        ...p,
+                                        name: ownerName || p.name,
+                                        file: { ...p.file, ...file },
+                                        code: typeof code === 'string' ? code : file?.content ?? p.code ?? '',
+                                        stage: 'ready',
+                                    }
+                                    : p
+                            )
+                        );
+                    }
+                    break;
+                }
+                case 'SESSION_STAGE_UPDATE': {
+                    const { sessionId: nextSessionId, ownerId, stage, file, code } = payload;
+                    if (nextSessionId && ownerId !== userId) {
+                        setSessionId((prev) => (prev === nextSessionId ? prev : nextSessionId));
+                    }
+
+                    if (ownerId && stage) {
+                        updateParticipants((prev) =>
+                            prev.map((p) =>
+                                p.id === ownerId
+                                    ? {
+                                        ...p,
+                                        stage,
+                                        file: file ? { ...p.file, ...file } : p.file,
+                                        code: typeof code === 'string' ? code : p.code,
+                                    }
+                                    : p
+                            )
+                        );
+                    }
+                    break;
+                }
+                case 'PERMISSION_CHANGED': {
+                    const { targetUserId, role } = payload;
+                    if (!targetUserId || !role) break;
+                    updateParticipants((prev) =>
+                        prev.map((p) => (p.id === targetUserId ? { ...p, role } : p))
+                    );
+                    break;
+                }
+                case 'FILE_SAVED': {
+                    const { ownerId, fileUUID } = payload;
+                    if (!ownerId || !fileUUID) break;
+                    updateParticipants((prev) =>
+                        prev.map((p) =>
+                            p.id === ownerId && p.file
+                                ? { ...p, file: { ...p.file, fileUUID } }
+                                : p
+                        )
+                    );
+                    break;
+                }
+                default:
+                    break;
+            }
+        },
+        [updateParticipants, userId]
+    );
+
+    const broadcastSystemEvent = useCallback(
+        (type, payload = {}) => {
+            if (!room.id) return;
+            publish(`/topic/room/${room.id}/system`, {
+                type,
+                payload,
+                senderId: userId,
+                senderName: username,
+                timestamp: Date.now(),
+            });
+        },
+        [publish, room.id, userId, username]
+    );
+
     const fetchAvailableFiles = useCallback(async () => {
         if (!token) {
             setAvailableFiles([]);
@@ -157,9 +328,6 @@ export default function CodecastLive({ isDark }) {
 
     const canEdit = currentUser.role === 'host' || currentUser.role === 'edit';
 
-    // 소켓 훅
-    const { connect, disconnect, subscribeSystem, subscribeCode, sendCodeUpdate, sendJoin } = useCollabSocket();
-
     // 유효한 roomId 없으면 뒤로
     useEffect(() => {
         if (!room.id) {
@@ -168,14 +336,6 @@ export default function CodecastLive({ isDark }) {
         }
     }, [room.id, navigate]);
 
-    // ====== 헬퍼 ======
-    const normalizeUser = (u) => {
-        if (!u) return null;
-        const id = u.userId ?? u.id ?? u.username ?? u.userName ?? u.name;
-        const name = u.userName ?? u.name ?? id;
-        return id ? { id, name, role: u.role } : null;
-    };
-
     // ====== 연결 + 구독 ======
     useEffect(() => {
         if (!room.id) return;
@@ -183,7 +343,7 @@ export default function CodecastLive({ isDark }) {
         let unsubs = [];
         let gotSystem = false;
 
-        (async () => {
+        const setup = async () => {
             try {
                 if (token && room.id) {
                     console.log('[API] Joining room via REST API:', room.id);
@@ -198,113 +358,58 @@ export default function CodecastLive({ isDark }) {
                 unsubs.push(
                     subscribeSystem(room.id, (msg) => {
                         gotSystem = true;
-                        if (msg?.roomName) setRoom((prev) => ({ ...prev, title: msg.roomName }));
+                        if (!msg) return;
 
-                        const ownerN = normalizeUser(msg?.owner);
-                        const listN = Array.isArray(msg?.participants)
-                            ? msg.participants.map(normalizeUser).filter(Boolean)
-                            : [];
+                        if (msg.roomName) {
+                            setRoom((prev) => ({ ...prev, title: msg.roomName }));
+                        }
 
-                        setParticipants((prevParticipants) => {
-                            const prevMap = new Map(prevParticipants.map(p => [p.id, p]));
-                            const newParticipantsMap = new Map();
-
-                            if (ownerN) {
-                                const existingHost = prevMap.get(ownerN.id);
-                                newParticipantsMap.set(ownerN.id, {
-                                    id: ownerN.id,
-                                    name: ownerN.name,
-                                    role: 'host',
-                                    code: existingHost?.code || '',
-                                    file: existingHost?.file || null,
-                                    stage: existingHost?.stage || 'ready',
-                                });
+                        if (msg.type) {
+                            const type = String(msg.type).toUpperCase();
+                            if (type === 'ROOM_STATE_UPDATE' || type === 'ROOM_STATE') {
+                                const roomState = msg.payload?.roomState || msg.payload || {};
+                                applyRoomStateUpdate(roomState);
+                            } else {
+                                handleSystemEvent(msg);
                             }
+                            return;
+                        }
 
-                            listN
-                                .filter((u) => !ownerN || u.id !== ownerN.id)
-                                .forEach((u) => {
-                                    const existingP = prevMap.get(u.id);
-                                    const role = u.role || existingP?.role || 'view';
+                        if (msg.roomState) {
+                            applyRoomStateUpdate(msg.roomState);
+                            return;
+                        }
 
-                                    newParticipantsMap.set(u.id, {
-                                        id: u.id,
-                                        name: u.name,
-                                        role: role,
-                                        code: existingP?.code || '',
-                                        file: existingP?.file || null,
-                                        stage: existingP?.stage || 'ready',
-                                    });
-                                });
-
-                            const rebuilt = Array.from(newParticipantsMap.values());
-
-                            const me = rebuilt.find((u) => u.id === userId);
-                            if (me) {
-                                setCurrentUser((prev) => ({
-                                    ...prev,
-                                    id: me.id,
-                                    name: me.name,
-                                    role: me.role,
-                                    code: prev.code ?? me.code,
-                                    file: prev.file ?? me.file,
-                                    stage: prev.stage ?? me.stage,
-                                }));
-                            }
-
-                            if (!rebuilt.length) return prevParticipants.length ? prevParticipants : [initialMe];
-
-                            return rebuilt;
-                        });
+                        if (msg.owner || msg.participants) {
+                            applyRoomStateUpdate(msg);
+                        }
                     })
                 );
 
-                try {
-                    console.log('[WS] JOIN publish');
-                    sendJoin(room.id, { senderId: userId, senderName: username });
-                } catch (e) {
-                    console.warn('[WS] JOIN publish failed:', e);
-                }
-
-                // 코드 업데이트 구독은 'editing' 상태와 관계없이 항상 유지
                 if (sessionId) {
                     unsubs.push(
                         subscribeCode(room.id, sessionId, (msg) => {
-                            if (msg?.senderId === userId) return;
-                            if (typeof msg?.content === 'string') {
-                                const senderId = msg.senderId;
-                                const newContent = msg.content;
+                            if (!msg || msg.senderId === userId) return;
+                            if (typeof msg.content !== 'string') return;
 
-                                setParticipants((prev) =>
-                                    prev.map((p) => {
-                                        if (p.id === senderId) {
-                                            return {
-                                                ...p,
-                                                code: newContent,
-                                                file: p.file ? { ...p.file, content: newContent } : p.file,
-                                                stage: 'editing', // 다른 사람의 업데이트는 공유 중임을 의미
-                                            };
+                            const senderId = msg.senderId;
+                            const newContent = msg.content;
+
+                            updateParticipants((prev) =>
+                                prev.map((p) =>
+                                    p.id === senderId
+                                        ? {
+                                            ...p,
+                                            code: newContent,
+                                            file: p.file ? { ...p.file, content: newContent } : p.file,
+                                            stage: 'editing',
                                         }
-                                        return p;
-                                    })
-                                );
-
-                                setCurrentUser((prev) => {
-                                    // 현재 사용자가 받은 업데이트를 자신의 상태에 반영
-                                    if (prev.id === senderId) {
-                                        const nextFile = prev.file ? { ...prev.file, content: newContent } : prev.file;
-                                        return { ...prev, code: newContent, file: nextFile, stage: 'editing' };
-                                    }
-
-                                    const updatedParticipant = participants.find(p => p.id === prev.id);
-                                    return updatedParticipant ? updatedParticipant : prev;
-                                });
-                            }
+                                        : p
+                                )
+                            );
                         })
                     );
                 }
-
-
             } catch (error) {
                 console.error('[CodecastLive] Failed to join room or connect socket:', error.message);
             }
@@ -312,13 +417,14 @@ export default function CodecastLive({ isDark }) {
             setTimeout(() => {
                 if (!gotSystem) console.warn('[WS] WARNING: No RoomStateUpdate received after subscribe.');
             }, 1500);
-        })();
+        };
+
+        setup();
 
         return () => {
             unsubs.forEach((u) => u?.());
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [room.id, sessionId, userId]);
+    }, [room.id, sessionId, token, connect, subscribeSystem, subscribeCode, applyRoomStateUpdate, handleSystemEvent, updateParticipants, userId]);
 
     // 페이지 언마운트시에만 실제 소켓 종료
     useEffect(() => {
@@ -403,7 +509,7 @@ export default function CodecastLive({ isDark }) {
 
             setSessionId(newSessionId);
 
-            setParticipants((prev) =>
+            updateParticipants((prev) =>
                 prev.map((p) =>
                     p.id === currentUser.id
                         ? {
@@ -422,6 +528,19 @@ export default function CodecastLive({ isDark }) {
                 code: selectedFile.content ?? '',
                 stage: 'ready',
             }));
+
+            broadcastSystemEvent('SESSION_READY', {
+                sessionId: newSessionId,
+                ownerId: currentUser.id,
+                ownerName: currentUser.name,
+                file: {
+                    id: selectedFile.id,
+                    name: selectedFile.name,
+                    language: selectedFile.language,
+                    fileUUID: selectedFile.fileUUID,
+                },
+                code: selectedFile.content ?? '',
+            });
 
             setShowPicker(false);
         } catch (error) {
@@ -444,51 +563,144 @@ export default function CodecastLive({ isDark }) {
         setShowPicker(true);
     };
 
-    // ✅ 수정: 공유 시작/중지 토글 (기본 파일도 공유 가능)
-    const handleShareToggle = () => {
-
-        // 파일이 없으면 토글 불가 (기본 파일은 항상 있으므로 이 경고는 사실상 작동하지 않음)
+    // 공유 시작/중지 토글 (기본 파일도 공유 가능)
+    const handleShareToggle = async () => {
         if (!currentUser.file) {
-            alert("파일이 없습니다. 파일을 먼저 선택해주세요.");
+            alert('파일이 없습니다. 파일을 먼저 선택해주세요.');
             return;
         }
-
-        // 쓰기 권한 없으면 토글 불가
         if (!canEdit) {
             alert('쓰기 권한이 없어 공유 상태를 변경할 수 없습니다.');
             return;
         }
+        if (!sessionId) {
+            alert('세션이 아직 준비되지 않았습니다. 파일을 다시 선택해 주세요.');
+            return;
+        }
+        if (!token) {
+            alert('로그인이 필요합니다. 다시 로그인 후 이용해주세요.');
+            return;
+        }
 
-        if (currentUser.stage === 'editing') {
-            // 공유 중일 때: 공유 중지
-            setParticipants((prev) =>
-                prev.map((p) =>
-                    p.id === currentUser.id
-                        ? { ...p, stage: 'ready' } // 상태만 'ready'로 변경
-                        : p
-                )
-            );
-            setCurrentUser((prev) => ({ ...prev, stage: 'ready' }));
-            // ⚠️ TODO: 서버에 공유 중지 알림 로직 (예: sendStageChange(room.id, userId, 'ready')) 필요
-        } else {
-            // 공유 중이 아닐 때: 공유 시작
-            setParticipants((prev) =>
-                prev.map((p) =>
-                    p.id === currentUser.id
-                        ? { ...p, stage: 'editing' } // 상태를 'editing'으로 변경
-                        : p
-                )
-            );
-            setCurrentUser((prev) => ({ ...prev, stage: 'editing' }));
-            // ⚠️ TODO: 서버에 공유 시작 알림 로직 (예: sendStageChange(room.id, userId, 'editing')) 필요
+        const nextStage = currentUser.stage === 'editing' ? 'ready' : 'editing';
+        const prevStage = currentUser.stage;
+        const nextStatus = nextStage === 'editing' ? 'ACTIVE' : 'INACTIVE';
 
-            // ✅ 수정: 공유 시작 시 현재 에디터의 코드를 무조건 브로드캐스트하여 프리뷰에 즉시 반영
-            if (room.id && sessionId) {
+        updateParticipants((prev) =>
+            prev.map((p) => (p.id === currentUser.id ? { ...p, stage: nextStage } : p))
+        );
+        setCurrentUser((prev) => ({ ...prev, stage: nextStage }));
+
+        try {
+            await updateSessionStatus({ token, sessionId, status: nextStatus });
+
+            const payload = {
+                sessionId,
+                ownerId: currentUser.id,
+                ownerName: currentUser.name,
+                stage: nextStage,
+                ...(currentUser.file
+                    ? {
+                        file: {
+                            id: currentUser.file.id,
+                            name: currentUser.file.name,
+                            language: currentUser.file.language,
+                            fileUUID: currentUser.file.fileUUID,
+                        },
+                    }
+                    : {}),
+                ...(nextStage === 'editing' ? { code: currentUser.code } : {}),
+            };
+
+            broadcastSystemEvent('SESSION_STAGE_UPDATE', payload);
+
+            if (nextStage === 'editing' && room.id) {
                 sendCodeUpdate(room.id, sessionId, { senderId: userId, content: currentUser.code });
-            } else {
-                // 세션 ID가 없다면 (매우 드문 경우, 새 방 생성 직후 등)
-                console.warn("Session ID가 없어 코드 업데이트를 보낼 수 없습니다.");
             }
+        } catch (error) {
+            console.error('[CodecastLive] 세션 상태 업데이트 실패:', error);
+            updateParticipants((prev) =>
+                prev.map((p) => (p.id === currentUser.id ? { ...p, stage: prevStage } : p))
+            );
+            setCurrentUser((prev) => ({ ...prev, stage: prevStage }));
+            alert(`공유 상태 변경에 실패했습니다: ${error.message || error}`);
+        }
+    };
+
+    const handleSaveCurrentFile = async () => {
+        if (!currentUser.file) {
+            alert('저장할 파일이 없습니다.');
+            return;
+        }
+        if (!token) {
+            alert('로그인이 필요합니다. 다시 로그인 후 이용해주세요.');
+            return;
+        }
+
+        try {
+            const result = await saveFile({
+                token,
+                filename: currentUser.file.name,
+                content: currentUser.code ?? '',
+                fileUUID: currentUser.file.fileUUID,
+            });
+
+            const nextFile = {
+                ...currentUser.file,
+                id: result.fileUUID,
+                fileUUID: result.fileUUID,
+                isServerFile: true,
+                content: currentUser.code ?? '',
+            };
+
+            fileContentCacheRef.current.set(result.fileUUID, currentUser.code ?? '');
+
+            updateParticipants((prev) =>
+                prev.map((p) =>
+                    p.id === currentUser.id
+                        ? { ...p, file: nextFile, code: currentUser.code ?? p.code }
+                        : p
+                )
+            );
+
+            setCurrentUser((prev) => ({
+                ...prev,
+                file: nextFile,
+                code: currentUser.code ?? prev.code,
+            }));
+
+            setAvailableFiles((prev) => {
+                const exists = prev.some((f) => f.fileUUID === result.fileUUID);
+                if (exists) {
+                    return prev.map((f) =>
+                        f.fileUUID === result.fileUUID
+                            ? { ...f, name: nextFile.name, language: nextFile.language, isServerFile: true }
+                            : f
+                    );
+                }
+
+                return [
+                    ...prev,
+                    {
+                        id: result.fileUUID,
+                        fileUUID: result.fileUUID,
+                        name: nextFile.name,
+                        language: nextFile.language,
+                        isServerFile: true,
+                    },
+                ];
+            });
+
+            broadcastSystemEvent('FILE_SAVED', {
+                ownerId: currentUser.id,
+                fileUUID: result.fileUUID,
+            });
+
+            await fetchAvailableFiles();
+            alert('파일이 저장되었습니다.');
+        } catch (error) {
+            console.error('[CodecastLive] 파일 저장 실패:', error);
+            alert(`파일 저장에 실패했습니다: ${error.message || error}`);
         }
     };
 
@@ -612,6 +824,10 @@ export default function CodecastLive({ isDark }) {
                             } else if (nextRole === 'view') {
                                 await revokeEditPermission({ token, sessionId, targetUserId: target.id });
                             }
+                            broadcastSystemEvent('PERMISSION_CHANGED', {
+                                targetUserId: target.id,
+                                role: nextRole,
+                            });
                         } catch (e) {
                             setParticipants(prevParticipants);
                             setCurrentUser(prevCurrent);
@@ -684,6 +900,16 @@ export default function CodecastLive({ isDark }) {
                             </button>
                         </div>
                         <div className="right-controls">
+                            <button
+                                className="control-btn save-btn"
+                                onClick={handleSaveCurrentFile}
+                                title="현재 코드를 서버에 저장"
+                            >
+                                <span className="icon-wrapper">
+                                    <FaSave className="icon" />
+                                </span>
+                                <span className="text">저장하기</span>
+                            </button>
                         </div>
                     </div>
                 )}
