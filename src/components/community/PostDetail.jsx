@@ -3,6 +3,7 @@ import React, { useEffect, useState, useMemo, useRef, useCallback } from "react"
 import { useParams, useNavigate } from "react-router-dom";
 import "./PostDetail.css";
 import config from "../../config";
+import { promptLogin } from "../../utils/auth";
 
 const parseIntSafe = (v) => {
     const n = Number(v);
@@ -57,11 +58,6 @@ export default function PostDetail() {
     const authHeader = tokenRaw
         ? tokenRaw.startsWith("Bearer ") ? tokenRaw : `Bearer ${tokenRaw}`
         : null;
-
-    const requestLogin = useCallback(() => {
-        alert("로그인이 필요합니다.");
-        window.dispatchEvent(new CustomEvent("dv:open-login-modal"));
-    }, []);
 
     // 좋아요 수 및 내 상태 재조회
     const refreshLikeStatus = async () => {
@@ -184,7 +180,7 @@ export default function PostDetail() {
     // 좋아요 토글
     const handleToggleLike = async () => {
         if (!authHeader) {
-            requestLogin();
+            promptLogin();
             return;
         }
         if (liking) return;
@@ -238,7 +234,7 @@ export default function PostDetail() {
     const handleCreateComment = async () => {
         if (!newComment.trim()) return;
         if (!authHeader) {
-            requestLogin();
+            promptLogin();
             return;
         }
 
@@ -275,7 +271,7 @@ export default function PostDetail() {
     const handleCreateReply = async (parentId) => {
         if (!replyContent.trim()) return;
         if (!authHeader) {
-            requestLogin();
+            promptLogin();
             return;
         }
 

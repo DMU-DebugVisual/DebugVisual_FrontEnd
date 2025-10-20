@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
     FaBold, FaItalic, FaStrikethrough, FaLink, FaPalette, FaCode, FaQuoteRight,
@@ -6,6 +6,7 @@ import {
 } from "react-icons/fa";
 import "./CommunityWrite.css";
 import config from "../../config";
+import { promptLogin } from "../../utils/auth";
 
 // ✅ 백엔드 ENUM과 일치하는 허용 태그
 const ALLOWED_TAGS = [
@@ -47,6 +48,7 @@ function parseTagsInput(input) {
 export default function CommunityWrite() {
     const navigate = useNavigate();
     const location = useLocation();
+    const loginPromptedRef = useRef(false);
 
     const defaultGuide = `- 학습 관련 질문을 남겨주세요. 상세히 작성하면 더 좋아요!
 - 마크다운, 단축키를 이용해서 편리하게 글을 작성할 수 있어요.
@@ -61,8 +63,9 @@ export default function CommunityWrite() {
     // ✅ 비회원 접근 차단: 알림 + 커뮤니티 페이지로 이동
     useEffect(() => {
         const token = localStorage.getItem("token");
-        if (!token) {
-            alert("로그인이 필요합니다.");
+        if (!token && !loginPromptedRef.current) {
+            loginPromptedRef.current = true;
+            promptLogin();
             navigate("/community", { replace: true, state: { from: location.pathname } });
         }
     }, [navigate, location.pathname]);
@@ -77,7 +80,7 @@ export default function CommunityWrite() {
     const handleSubmit = async () => {
         const token = localStorage.getItem("token");
         if (!token) {
-            // 🚨 여기서는 다시 알림 필요 없음 → 이미 진입 차단됨
+            promptLogin();
             return;
         }
 

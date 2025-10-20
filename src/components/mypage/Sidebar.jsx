@@ -1,14 +1,13 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import './Sidebar.css';
-import { FaTachometerAlt, FaFolderOpen, FaComments, FaGlobe, FaShareAlt, FaCog } from 'react-icons/fa';
+import { FaTachometerAlt, FaFolderOpen, FaComments, FaShareAlt, FaCog } from 'react-icons/fa';
 
 const Sidebar = ({nickname}) => {
     const menuItems = [
         { label: '대시보드', path: '/mypage', icon: <FaTachometerAlt /> },
         { label: '프로젝트', path: '/mypage/project', icon: <FaFolderOpen /> },
         { label: '커뮤니티', path: '/mypage/community', icon: <FaComments /> },
-        { label: '네트워크', path: '/mypage/network', icon: <FaGlobe /> },
         { label: '공유됨', path: '/mypage/shared', icon: <FaShareAlt /> },
         { label: '설정', path: '/mypage/setting', icon: <FaCog /> },
     ];
