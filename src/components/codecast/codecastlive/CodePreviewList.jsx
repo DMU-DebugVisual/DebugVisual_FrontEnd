@@ -9,20 +9,23 @@ const RoleIcon = ({ role }) => {
     return <FaEye className="r-icon view" />;
 };
 
-export default function CodePreviewList({ participants, activeName, onSelect }) {
+export default function CodePreviewList({ participants, activeParticipantId, onSelect }) {
     return (
         <div className="preview-bar">
             <div className="preview-track">
                 {participants.map((p) => {
-                    const isEditing = p.stage === 'editing';        // ✅ 세션(파일) 선택 여부의 신뢰 가능한 기준
-                    const code = (p.code ?? '');                    // ✅ 코드의 최신 소스는 p.code로
-                    const previewText = isEditing ? code.slice(0, 120) : '파일 미선택 / 코드 없음';
+                    const isEditing = p.stage === 'editing';
+                    const code = p.code ?? '';
+                    const previewText = code
+                        ? code.slice(0, 120)
+                        : (isEditing ? '공유 중 (내용 없음)' : '파일 미선택 / 코드 없음');
+                    const isActive = p.id === activeParticipantId;
 
                     return (
                         <button
-                            key={p.name}
-                            className={`preview-card ${activeName === p.name ? 'active' : ''}`}
-                            onClick={() => onSelect(p.name)}
+                            key={p.id}
+                            className={`preview-card ${isActive ? 'active' : ''}`}
+                            onClick={() => onSelect(p.id)}
                             title={`${p.name} 열기`}
                         >
                             <div className="preview-header">

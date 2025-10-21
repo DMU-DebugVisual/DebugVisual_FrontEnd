@@ -21,27 +21,32 @@ function useClickOutside(onClose) {
     return ref;
 }
 
-/**
- * Props
- * - participants: {id, name, role, avatar?}[]
- * - currentUser: {id, name, role}
- * - sessionId?: string | null  // ✅ 세션 없으면 edit/view 토글 비활성화
- * - onChangeRole?: (name, nextRole) => void
- * - onKick?: (name) => void
- * - onOpenChat?: () => void
- */
 export default function CodecastSidebar({
-                                            participants,
-                                            currentUser,
-                                            sessionId,
-                                            onChangeRole,
-                                            onKick,
-                                            onOpenChat,
-                                        }) {
-    const [menuFor, setMenuFor] = useState(null); // 메뉴가 열린 사용자명
-
+                                             participants,
+                                             currentUserId,
+                                             roomOwnerId,
+                                             activeSession,
+                                             focusedParticipantId,
+                                             onSelectParticipant,
+                                             onChangePermission,
+                                             onKick,
+                                             onOpenChat,
+                                         }) {
+    const [menuFor, setMenuFor] = useState(null);
     const closeMenu = () => setMenuFor(null);
     const menuRef = useClickOutside(closeMenu);
+
+    const canManagePermissions =
+        !!activeSession && (activeSession.ownerId === currentUserId || roomOwnerId === currentUserId);
+    const canKick = currentUserId === roomOwnerId;
+
+    const resolveRole = (participant) => {
+        if (participant.role === 'host') return 'host';
+        if (participant.role === 'edit') return 'edit';
+        if (activeSession?.permissions?.[participant.id] === 'edit') return 'edit';
+        if (participant.role) return participant.role;
+        return participant.id === roomOwnerId ? 'host' : 'view';
+    };
 
     return (
         <aside className="codecast-sidebar">
@@ -51,6 +56,7 @@ export default function CodecastSidebar({
                 </h2>
                 <button
                     className="chat-open-btn"
+                    type="button"
                     onClick={onOpenChat}
                     aria-label="채팅 열기"
                     title="채팅 열기"
@@ -60,87 +66,95 @@ export default function CodecastSidebar({
             </div>
 
             <ul className="participant-list">
-                {participants.map((p) => {
-                    const isActive = p.name === currentUser.name;
-                    const isMenuOpen = menuFor === p.name;
+                {participants.map((participant) => {
+                    const role = resolveRole(participant);
+                    const isFocused = participant.id === focusedParticipantId;
+                    const isMenuOpen = menuFor === participant.id;
+                    const isSelf = participant.id === currentUserId;
+                    const stage = participant.stage || 'ready';
+                    const stageLabelMap = {
+                        editing: '공유 중',
+                        ready: '대기',
+                        watching: '시청 중',
+                        idle: '대기',
+                        disconnected: '오프라인',
+                    };
+                    const stageLabel = stageLabelMap[stage] || '대기';
+                    const canChangeTargetPermission =
+                        !!activeSession &&
+                        canManagePermissions &&
+                        activeSession.ownerId !== participant.id;
 
                     return (
                         <li
-                            key={p.name}
-                            className={`participant-item ${isActive ? 'active-user' : ''}`}
+                            key={participant.id}
+                            className={`participant-item ${isFocused ? 'active-user' : ''}`}
+                            onClick={() => onSelectParticipant?.(participant.id)}
                         >
-                            {/* 프로필 이미지 or 회색 원 */}
-                            {p.avatar ? (
-                                <img src={p.avatar} alt={p.name} className="avatar" />
+                            {participant.avatar ? (
+                                <img src={participant.avatar} alt={participant.name} className="avatar" />
                             ) : (
                                 <div className="avatar placeholder">
                                     <FaUser className="default-user-icon" />
                                 </div>
                             )}
 
-                            {/* 이름 */}
-                            <span className="name">{p.name}</span>
+                            <div className="participant-main">
+                                <span className="name">
+                                    {participant.name}
+                                    {isSelf && <span className="self-badge">나</span>}
+                                </span>
+                                <span className={`stage ${stage}`}>{stageLabel}</span>
+                            </div>
 
-                            {/* 권한 아이콘 */}
-                            <RoleIcon role={p.role} />
+                            <RoleIcon role={role} />
 
-                            {/* 더보기 버튼 */}
                             <button
                                 className="more-btn"
-                                aria-label={`${p.name} 더보기`}
+                                type="button"
+                                aria-label={`${participant.name} 더보기`}
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    setMenuFor(isMenuOpen ? null : p.name);
+                                    setMenuFor(isMenuOpen ? null : participant.id);
                                 }}
                             >
                                 <FaEllipsisV />
                             </button>
 
-                            {/* 팝오버 메뉴 */}
                             {isMenuOpen && (
                                 <div className="more-menu" ref={menuRef} onClick={(e) => e.stopPropagation()}>
                                     <div className="menu-group">
-                                        <div className="menu-label">권한 설정</div>
+                                        <div className="menu-label">세션 권한</div>
 
-                                        {/* host 버튼은 표시만 하고 비활성화(서버 미지원) */}
                                         <button
                                             className="menu-item"
+                                            type="button"
                                             onClick={() => {}}
                                             disabled
-                                            title="방장 권한 변경은 지원하지 않습니다."
                                         >
-                                            {p.role === 'host' && <FaCheck className="check" />}
-                                            모든 권한(Host)
+                                            {role === 'host' && <FaCheck className="check" />}
+                                            세션 소유자
                                         </button>
 
-                                        {/* edit / view 토글 */}
-                                        {['edit', 'view'].map((role) => {
-                                            const isSame = p.role === role;
-                                            const disabledByRole = currentUser.role !== 'host' && p.name !== currentUser.name; // 타인 변경은 방장만
-                                            const disabledBySession = !sessionId; // 세션 없으면 편집권한 토글 불가
-                                            const disabled = isSame || disabledByRole || disabledBySession;
+                                        {['edit', 'view'].map((nextRole) => {
+                                            const isSelected = role === nextRole;
+                                            const disabled = !canChangeTargetPermission || isSelected;
 
                                             return (
                                                 <button
-                                                    key={role}
+                                                    key={nextRole}
                                                     className="menu-item"
+                                                    type="button"
                                                     onClick={() => {
-                                                        if (!disabled) onChangeRole?.(p.name, role);
+                                                        if (!disabled) {
+                                                            onChangePermission?.(activeSession.sessionId, participant.id, nextRole);
+                                                        }
                                                         closeMenu();
                                                     }}
                                                     disabled={disabled}
-                                                    title={
-                                                        isSame
-                                                            ? '현재 권한'
-                                                            : disabledBySession
-                                                                ? '세션 시작 후에만 변경 가능합니다.'
-                                                                : disabledByRole
-                                                                    ? '방장만 다른 사람 권한을 변경할 수 있습니다.'
-                                                                    : '권한 변경'
-                                                    }
                                                 >
-                                                    {isSame && <FaCheck className="check" />}
-                                                    {role === 'edit' ? '편집(Editing)' : '보기(Read Only)'}
+                                                    {isSelected && <FaCheck className="check" />}
+                                                    {nextRole === 'edit' ? '편집 허용' : '읽기 전용'}
                                                 </button>
                                             );
                                         })}
@@ -150,18 +164,13 @@ export default function CodecastSidebar({
 
                                     <button
                                         className="menu-item danger"
+                                        type="button"
                                         onClick={() => {
-                                            onKick?.(p.name);
+                                            if (!canKick || isSelf) return;
+                                            onKick?.(participant.id);
                                             closeMenu();
                                         }}
-                                        disabled={currentUser.role !== 'host' || (p.name === currentUser.name && p.role === 'host')}
-                                        title={
-                                            currentUser.role !== 'host'
-                                                ? '방장만 강퇴 가능'
-                                                : p.name === currentUser.name && p.role === 'host'
-                                                    ? '방장은 자기 자신을 강퇴할 수 없음'
-                                                    : '강퇴하기'
-                                        }
+                                        disabled={!canKick || isSelf}
                                     >
                                         강퇴하기
                                     </button>

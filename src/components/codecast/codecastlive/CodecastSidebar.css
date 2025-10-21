@@ -62,7 +62,7 @@
     border-radius: 6px;
     margin-bottom: 6px;
     transition: background-color 0.2s ease;
-    cursor: default;
+    cursor: pointer;
     position: relative; /* 팝오버 기준 */
 }
 .participant-item:hover {
@@ -94,6 +94,53 @@
 .participant-item .name {
     flex: 1;
     min-width: 0;
+}
+
+.participant-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.participant-main .name {
+    font-weight: 500;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.participant-main .self-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 6px;
+    padding: 1px 6px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #4a2ecc;
+    background: rgba(106, 13, 173, 0.12);
+    border-radius: 999px;
+}
+
+.participant-main .stage {
+    font-size: 11px;
+    color: #777;
+}
+
+.participant-main .stage.editing {
+    color: #4a2ecc;
+    font-weight: 600;
+}
+
+.participant-main .stage.disconnected {
+    color: #c62828;
+    font-weight: 600;
+}
+
+.participant-main .stage.watching {
+    color: #3f51b5;
 }
 
 /* 역할 아이콘 */
@@ -204,6 +251,27 @@
 .dark-mode .participant-item.active-user {
     background-color: #2a2a2a;
     border-left: 3px solid #6a0dad;
+}
+
+.dark-mode .participant-main .stage {
+    color: #b5b5c7;
+}
+
+.dark-mode .participant-main .stage.editing {
+    color: #bba3ff;
+}
+
+.dark-mode .participant-main .stage.disconnected {
+    color: #ff6b6b;
+}
+
+.dark-mode .participant-main .stage.watching {
+    color: #879bff;
+}
+
+.dark-mode .participant-main .self-badge {
+    color: #d5c4ff;
+    background: rgba(136, 93, 255, 0.2);
 }
 
 .dark-mode .avatar.placeholder {
