@@ -90,6 +90,9 @@ export default function CodecastLive({ isDark }) {
         title: injected.title || '라이브 방송',
     });
     const [sessionId, setSessionId] = useState(injected.defaultSessionId || null);
+    const [sessionOwnerId, setSessionOwnerId] = useState(
+        injected.ownerId || (defaultRole === 'host' ? userId : null)
+    );
 
     // 참가자/현재 사용자
     const initialMe = useMemo(
@@ -106,6 +109,9 @@ export default function CodecastLive({ isDark }) {
 
     const [participants, setParticipants] = useState([initialMe]);
     const [currentUser, setCurrentUser] = useState(initialMe);
+    const [activeParticipantId, setActiveParticipantId] = useState(initialMe.id);
+    const [hasManualFocus, setHasManualFocus] = useState(false);
+    const [selfParticipantId, setSelfParticipantId] = useState(initialMe.id);
 
     // 채팅
     const [isChatOpen, setIsChatOpen] = useState(false);
@@ -123,30 +129,193 @@ export default function CodecastLive({ isDark }) {
     const updateParticipants = useCallback(
         (updater) => {
             setParticipants((prev) => {
-                const updated = updater(prev);
+                let nextList = updater(prev);
+                let detectedSelfId = null;
+
                 setCurrentUser((prevCurrent) => {
-                    const me = updated.find((p) => p.id === userId);
+                    const candidates = [
+                        nextList.find((p) => p.id === prevCurrent.id),
+                        nextList.find((p) => p.id === selfParticipantId),
+                        nextList.find((p) => p.id === userId),
+                        nextList.find((p) => p.name && p.name === prevCurrent.name),
+                        nextList.find((p) => p.name && p.name === username),
+                    ].filter(Boolean);
+
+                    const me = candidates[0];
                     if (!me) return prevCurrent;
+
+                    detectedSelfId = me.id || selfParticipantId;
+
                     return {
                         ...prevCurrent,
                         ...me,
+                        id: me.id ?? prevCurrent.id,
                         code: me.code ?? prevCurrent.code,
                         file: me.file ?? prevCurrent.file,
                         stage: me.stage ?? prevCurrent.stage,
                         role: me.role ?? prevCurrent.role,
                     };
                 });
-                return updated;
+
+                if (detectedSelfId && detectedSelfId !== selfParticipantId) {
+                    setSelfParticipantId(detectedSelfId);
+                }
+
+                const ensureSelfId = detectedSelfId || selfParticipantId || userId;
+                const hasSelf = nextList.some((p) => p.id === ensureSelfId);
+                if (!hasSelf) {
+                    const fallback =
+                        prev.find((p) => p.id === ensureSelfId) ||
+                        prev.find((p) => p.id === selfParticipantId) ||
+                        prev.find((p) => p.id === userId) ||
+                        prev.find((p) => p.name === username) ||
+                        null;
+                    if (fallback) {
+                        nextList = [...nextList, fallback];
+                    }
+                }
+
+                return nextList;
             });
         },
-        [setParticipants, setCurrentUser, userId]
+        [selfParticipantId, userId, username, setSelfParticipantId, setParticipants, setCurrentUser]
     );
 
     const { connect, disconnect, subscribeSystem, subscribeCode, sendCodeUpdate, publish } = useCollabSocket();
 
+    const ownParticipantId = useMemo(() => selfParticipantId || currentUser.id, [selfParticipantId, currentUser.id]);
+
+    useEffect(() => {
+        const effectiveSelfId = selfParticipantId || currentUser.id;
+        if (!effectiveSelfId) return;
+        if (!sessionOwnerId) return;
+
+        if (currentUser.stage === 'editing' && sessionOwnerId !== effectiveSelfId) {
+            setSessionOwnerId(effectiveSelfId);
+        }
+    }, [currentUser.id, currentUser.stage, selfParticipantId, sessionOwnerId]);
+
+    useEffect(() => {
+        const exists = participants.some((p) => p.id === activeParticipantId);
+        if (!exists) {
+            const ownerParticipant = participants.find((p) => p.id === sessionOwnerId);
+            const hostParticipant = participants.find((p) => p.role === 'host');
+            const fallbackId = ownerParticipant?.id || hostParticipant?.id || selfParticipantId;
+            if (fallbackId) {
+                setActiveParticipantId(fallbackId);
+            }
+            setHasManualFocus(false);
+        }
+    }, [participants, activeParticipantId, sessionOwnerId, selfParticipantId]);
+
+    const activeParticipant = useMemo(() => {
+        const target = participants.find((p) => p.id === activeParticipantId);
+        if (target) return target;
+        const selfParticipant = participants.find((p) => p.id === selfParticipantId);
+        return selfParticipant || participants[0] || null;
+    }, [participants, activeParticipantId, selfParticipantId]);
+
     const applyRoomStateUpdate = useCallback(
         (msg) => {
             if (!msg) return;
+
+            const sessionLike = msg.currentSession || msg.session || msg.activeSession;
+            const editIds = new Set();
+            let sessionOwnerPatch = null;
+            let sessionOwnerResolvedId = null;
+
+            if (sessionLike) {
+                const ownerIdFromSession =
+                    sessionLike.ownerId || sessionLike.owner?.userId || sessionLike.owner?.id || null;
+
+                if (ownerIdFromSession) {
+                    setSessionOwnerId(ownerIdFromSession);
+                    sessionOwnerResolvedId = ownerIdFromSession;
+                }
+                if (sessionLike.sessionId && sessionLike.sessionId !== sessionId) {
+                    setSessionId(sessionLike.sessionId);
+                }
+
+                const rawStage = (sessionLike.stage || '').toString().toLowerCase();
+                const sessionStatus = (sessionLike.status || sessionLike.stage || '').toString().toUpperCase();
+                const isActiveSession = ['ACTIVE', 'EDITING', 'LIVE', 'RUNNING', 'STARTED', 'ON_AIR'].includes(sessionStatus);
+                const normalizedStage = rawStage === 'editing'
+                    ? 'editing'
+                    : rawStage === 'watching'
+                        ? 'watching'
+                        : rawStage === 'ready'
+                            ? 'ready'
+                            : (isActiveSession ? 'editing' : 'ready');
+                const sessionFile = sessionLike.file || sessionLike.currentFile || null;
+                const sessionCode = sessionLike.code ?? sessionLike.content ?? sessionFile?.content;
+
+                if (ownerIdFromSession) {
+                    sessionOwnerPatch = {
+                        name: sessionLike.ownerName || sessionLike.owner?.userName || sessionLike.owner?.name,
+                        stage: normalizedStage,
+                        file: sessionFile
+                            ? {
+                                ...sessionFile,
+                                content: typeof sessionCode === 'string' ? sessionCode : sessionFile?.content,
+                            }
+                            : undefined,
+                        code: typeof sessionCode === 'string' ? sessionCode : undefined,
+                    };
+
+                    if (isActiveSession) {
+                        editIds.add(String(ownerIdFromSession));
+                    }
+                }
+
+                const candidateEditors = [
+                    sessionLike.permissions,
+                    sessionLike.editorIds,
+                    sessionLike.editors,
+                    sessionLike.editUserIds,
+                    msg.permissions,
+                    msg.editorIds,
+                    msg.editors,
+                    msg.editUserIds,
+                ];
+
+                candidateEditors.forEach((entry) => {
+                    if (!entry) return;
+                    if (Array.isArray(entry)) {
+                        entry.forEach((value) => {
+                            if (typeof value === 'string' || typeof value === 'number') {
+                                editIds.add(String(value));
+                            } else if (value && typeof value === 'object') {
+                                if (value.userId) {
+                                    editIds.add(String(value.userId));
+                                }
+                                if (value.id) {
+                                    editIds.add(String(value.id));
+                                }
+                            }
+                        });
+                    } else if (typeof entry === 'object') {
+                        Object.entries(entry).forEach(([key, value]) => {
+                            let lowered = '';
+                            if (typeof value === 'string') {
+                                lowered = value.toLowerCase();
+                            } else if (value && typeof value === 'object') {
+                                const derivedRole = value.role || value.permission || value.type;
+                                if (typeof derivedRole === 'string') {
+                                    lowered = derivedRole.toLowerCase();
+                                } else if (value.canEdit || value.write === true) {
+                                    lowered = 'edit';
+                                }
+                            } else {
+                                lowered = String(value).toLowerCase();
+                            }
+
+                            if (['edit', 'editing', 'write', 'editor', 'editable'].includes(lowered)) {
+                                editIds.add(String(key));
+                            }
+                        });
+                    }
+                });
+            }
 
             updateParticipants((prev) => {
                 const prevMap = new Map(prev.map((p) => [p.id, p]));
@@ -154,27 +323,45 @@ export default function CodecastLive({ isDark }) {
 
                 const upsert = (id, draft) => {
                     const prevEntry = prevMap.get(id);
+                    const normalizedId = String(id);
+                    const isHost = draft.role === 'host' || prevEntry?.role === 'host';
                     nextMap.set(id, {
                         id,
                         name: draft.name || prevEntry?.name || id,
-                        role: draft.role || prevEntry?.role || (draft.role === 'host' ? 'host' : 'view'),
+                        role: isHost
+                            ? 'host'
+                            : editIds.has(normalizedId)
+                                ? 'edit'
+                                : draft.role || prevEntry?.role || 'view',
                         code: draft.code ?? prevEntry?.code ?? '',
                         file: draft.file ?? prevEntry?.file ?? null,
                         stage: draft.stage || prevEntry?.stage || 'ready',
                     });
                 };
 
-                if (msg.owner?.userId) {
-                    upsert(msg.owner.userId, {
-                        name: msg.owner.userName || msg.owner.userId,
-                        role: 'host',
-                    });
+                if (sessionOwnerResolvedId && sessionOwnerPatch) {
+                    upsert(sessionOwnerResolvedId, sessionOwnerPatch);
+                }
+
+                if (msg.owner) {
+                    const ownerParticipantId = msg.owner.userId || msg.owner.id;
+                    if (ownerParticipantId) {
+                        upsert(ownerParticipantId, {
+                            name: msg.owner.userName || msg.owner.userId || msg.owner.name || ownerParticipantId,
+                            role: 'host',
+                        });
+                    }
                 }
 
                 (msg.participants || []).forEach((participant) => {
-                    if (!participant?.userId) return;
-                    upsert(participant.userId, {
-                        name: participant.userName || participant.userId,
+                    const participantId = participant?.userId || participant?.id;
+                    if (!participantId) return;
+                    upsert(participantId, {
+                        name: participant.userName || participant.userId || participant.name || participantId,
+                        stage: participant.stage,
+                        code: typeof participant.code === 'string' ? participant.code : undefined,
+                        file: participant.file,
+                        role: participant.role,
                     });
                 });
 
@@ -194,7 +381,7 @@ export default function CodecastLive({ isDark }) {
                 return ordered;
             });
         },
-        [initialMe, updateParticipants, userId]
+        [initialMe, sessionId, setSessionOwnerId, updateParticipants, userId]
     );
 
     const handleSystemEvent = useCallback(
@@ -207,6 +394,10 @@ export default function CodecastLive({ isDark }) {
                     const { sessionId: nextSessionId, ownerId, ownerName, file = {}, code } = payload;
                     if (nextSessionId) {
                         setSessionId((prev) => (prev === nextSessionId ? prev : nextSessionId));
+                    }
+
+                    if (ownerId) {
+                        setSessionOwnerId(ownerId);
                     }
 
                     if (ownerId) {
@@ -230,6 +421,10 @@ export default function CodecastLive({ isDark }) {
                     const { sessionId: nextSessionId, ownerId, stage, file, code } = payload;
                     if (nextSessionId && ownerId !== userId) {
                         setSessionId((prev) => (prev === nextSessionId ? prev : nextSessionId));
+                    }
+
+                    if (ownerId) {
+                        setSessionOwnerId(ownerId);
                     }
 
                     if (ownerId && stage) {
@@ -272,7 +467,7 @@ export default function CodecastLive({ isDark }) {
                     break;
             }
         },
-        [updateParticipants, userId]
+        [updateParticipants, userId, setSessionOwnerId]
     );
 
     const broadcastSystemEvent = useCallback(
@@ -281,13 +476,24 @@ export default function CodecastLive({ isDark }) {
             publish(`/topic/room/${room.id}/system`, {
                 type,
                 payload,
-                senderId: userId,
+                senderId: selfParticipantId || userId,
                 senderName: username,
                 timestamp: Date.now(),
             });
         },
-        [publish, room.id, userId, username]
+        [publish, room.id, selfParticipantId, userId, username]
     );
+
+    const roomStateHandlerRef = useRef(applyRoomStateUpdate);
+    const systemEventHandlerRef = useRef(handleSystemEvent);
+
+    useEffect(() => {
+        roomStateHandlerRef.current = applyRoomStateUpdate;
+    }, [applyRoomStateUpdate]);
+
+    useEffect(() => {
+        systemEventHandlerRef.current = handleSystemEvent;
+    }, [handleSystemEvent]);
 
     const fetchAvailableFiles = useCallback(async () => {
         if (!token) {
@@ -330,7 +536,6 @@ export default function CodecastLive({ isDark }) {
         fetchAvailableFiles();
     }, [fetchAvailableFiles]);
 
-    const canEdit = currentUser.role === 'host' || currentUser.role === 'edit';
 
     // 유효한 roomId 없으면 뒤로
     useEffect(() => {
@@ -372,48 +577,23 @@ export default function CodecastLive({ isDark }) {
                             const type = String(msg.type).toUpperCase();
                             if (type === 'ROOM_STATE_UPDATE' || type === 'ROOM_STATE') {
                                 const roomState = msg.payload?.roomState || msg.payload || {};
-                                applyRoomStateUpdate(roomState);
+                                roomStateHandlerRef.current?.(roomState);
                             } else {
-                                handleSystemEvent(msg);
+                                systemEventHandlerRef.current?.(msg);
                             }
                             return;
                         }
 
                         if (msg.roomState) {
-                            applyRoomStateUpdate(msg.roomState);
+                            roomStateHandlerRef.current?.(msg.roomState);
                             return;
                         }
 
                         if (msg.owner || msg.participants) {
-                            applyRoomStateUpdate(msg);
+                            roomStateHandlerRef.current?.(msg);
                         }
                     })
                 );
-
-                if (sessionId) {
-                    unsubs.push(
-                        subscribeCode(room.id, sessionId, (msg) => {
-                            if (!msg || msg.senderId === userId) return;
-                            if (typeof msg.content !== 'string') return;
-
-                            const senderId = msg.senderId;
-                            const newContent = msg.content;
-
-                            updateParticipants((prev) =>
-                                prev.map((p) =>
-                                    p.id === senderId
-                                        ? {
-                                            ...p,
-                                            code: newContent,
-                                            file: p.file ? { ...p.file, content: newContent } : p.file,
-                                            stage: 'editing',
-                                        }
-                                        : p
-                                )
-                            );
-                        })
-                    );
-                }
             } catch (error) {
                 console.error('[CodecastLive] Failed to join room or connect socket:', error.message);
             }
@@ -428,7 +608,52 @@ export default function CodecastLive({ isDark }) {
         return () => {
             unsubs.forEach((u) => u?.());
         };
-    }, [room.id, sessionId, token, connect, subscribeSystem, subscribeCode, applyRoomStateUpdate, handleSystemEvent, updateParticipants, userId]);
+    }, [room.id, token, connect, subscribeSystem]);
+
+    useEffect(() => {
+        if (!room.id || !sessionId) return;
+
+        let unsubscribe = null;
+        let cancelled = false;
+
+        const setupCodeSubscription = async () => {
+            try {
+                await connect(token);
+                if (cancelled) return;
+                unsubscribe = subscribeCode(room.id, sessionId, (msg) => {
+                    if (!msg || msg.senderId === userId) return;
+                    if (typeof msg.content !== 'string') return;
+
+                    const senderId = msg.senderId;
+                    const newContent = msg.content;
+
+                    updateParticipants((prev) =>
+                        prev.map((p) =>
+                            p.id === senderId
+                                ? {
+                                    ...p,
+                                    code: newContent,
+                                    file: p.file ? { ...p.file, content: newContent } : p.file,
+                                    stage: 'editing',
+                                }
+                                : p
+                        )
+                    );
+                });
+            } catch (error) {
+                if (!cancelled) {
+                    console.error('[CodecastLive] Failed to subscribe code channel:', error.message);
+                }
+            }
+        };
+
+        setupCodeSubscription();
+
+        return () => {
+            cancelled = true;
+            unsubscribe?.();
+        };
+    }, [room.id, sessionId, token, connect, subscribeCode, updateParticipants, userId]);
 
     // 페이지 언마운트시에만 실제 소켓 종료
     useEffect(() => {
@@ -440,6 +665,7 @@ export default function CodecastLive({ isDark }) {
 
     // 에디터 변경 → 서버 publish
     const handleEditorChange = (nextText) => {
+        if (activeParticipantId !== currentUser.id) return;
         // 서버에 보내는 것은 동일
         // 로컬 상태 업데이트
         setCurrentUser((prev) => ({
@@ -449,7 +675,7 @@ export default function CodecastLive({ isDark }) {
         }));
         setParticipants((prev) =>
             prev.map((p) =>
-                p.id === currentUser.id
+                p.id === (selfParticipantId || currentUser.id)
                     ? { ...p, code: nextText, file: p.file ? { ...p.file, content: nextText } : p.file }
                     : p
             )
@@ -457,16 +683,15 @@ export default function CodecastLive({ isDark }) {
 
         // 공유 중일 때만 업데이트를 브로드캐스트
         if (room.id && sessionId && currentUser.stage === 'editing') {
-            sendCodeUpdate(room.id, sessionId, { senderId: userId, content: nextText });
+            sendCodeUpdate(room.id, sessionId, {
+                senderId: selfParticipantId || currentUser.id,
+                content: nextText,
+            });
         }
     };
 
     // 파일 선택 처리
     const handlePickFile = async (picked) => {
-        if (!room?.id) {
-            alert('방 정보가 없습니다. 방을 먼저 생성하거나 참여하세요.');
-            return;
-        }
         if (!token) {
             alert('로그인이 필요합니다. 다시 로그인 후 이용해주세요.');
             return;
@@ -500,52 +725,7 @@ export default function CodecastLive({ isDark }) {
                 };
             }
 
-            const sessionResponse = await createSession({
-                token,
-                roomId: room.id,
-                sessionName: selectedFile.name,
-            });
-
-            const newSessionId = sessionResponse.sessionId || sessionResponse.id;
-            if (!newSessionId) {
-                throw new Error('세션 ID를 가져오지 못했습니다.');
-            }
-
-            setSessionId(newSessionId);
-
-            updateParticipants((prev) =>
-                prev.map((p) =>
-                    p.id === currentUser.id
-                        ? {
-                            ...p,
-                            file: selectedFile,
-                            code: selectedFile.content ?? '',
-                            stage: 'ready',
-                        }
-                        : p
-                )
-            );
-
-            setCurrentUser((prev) => ({
-                ...prev,
-                file: selectedFile,
-                code: selectedFile.content ?? '',
-                stage: 'ready',
-            }));
-
-            broadcastSystemEvent('SESSION_READY', {
-                sessionId: newSessionId,
-                ownerId: currentUser.id,
-                ownerName: currentUser.name,
-                file: {
-                    id: selectedFile.id,
-                    name: selectedFile.name,
-                    language: selectedFile.language,
-                    fileUUID: selectedFile.fileUUID,
-                },
-                code: selectedFile.content ?? '',
-            });
-
+            await initializeSessionWithFile(selectedFile);
             setShowPicker(false);
         } catch (error) {
             console.error('[CodecastLive] 세션 준비 실패:', error);
@@ -555,10 +735,6 @@ export default function CodecastLive({ isDark }) {
 
     // 파일 선택 모달 열기
     const handleOpenFilePicker = () => {
-        if (!canEdit) {
-            alert('쓰기 권한이 없어 파일을 선택할 수 없습니다.');
-            return;
-        }
         if (!token) {
             alert('로그인이 필요합니다. 다시 로그인 후 이용해주세요.');
             return;
@@ -569,47 +745,65 @@ export default function CodecastLive({ isDark }) {
 
     // 공유 시작/중지 토글 (기본 파일도 공유 가능)
     const handleShareToggle = async () => {
-        if (!currentUser.file) {
-            alert('파일이 없습니다. 파일을 먼저 선택해주세요.');
-            return;
-        }
-        if (!canEdit) {
-            alert('쓰기 권한이 없어 공유 상태를 변경할 수 없습니다.');
-            return;
-        }
-        if (!sessionId) {
-            alert('세션이 아직 준비되지 않았습니다. 파일을 다시 선택해 주세요.');
-            return;
-        }
         if (!token) {
             alert('로그인이 필요합니다. 다시 로그인 후 이용해주세요.');
             return;
         }
+
+        let ensuredSessionId = sessionId;
+        let preparedFile = currentUser.file;
+        const ownsCurrentSession = sessionOwnerId && (sessionOwnerId === (selfParticipantId || currentUser.id));
+        try {
+            if (!ensuredSessionId || !ownsCurrentSession) {
+                const baseFile = currentUser.file || {
+                    ...defaultFile,
+                    content: currentUser.code ?? defaultFile.content ?? '',
+                };
+                const { sessionId: createdId, file } = await initializeSessionWithFile(baseFile);
+                ensuredSessionId = createdId;
+                preparedFile = file;
+            }
+        } catch (error) {
+            console.error('[CodecastLive] 세션 준비 실패:', error);
+            alert(`세션 준비에 실패했습니다: ${error.message || error}`);
+            return;
+        }
+
+        setActiveParticipantId(selfParticipantId || currentUser.id);
+        setHasManualFocus(false);
 
         const nextStage = currentUser.stage === 'editing' ? 'ready' : 'editing';
         const prevStage = currentUser.stage;
         const nextStatus = nextStage === 'editing' ? 'ACTIVE' : 'INACTIVE';
 
         updateParticipants((prev) =>
-            prev.map((p) => (p.id === currentUser.id ? { ...p, stage: nextStage } : p))
+            prev.map((p) =>
+                p.id === (selfParticipantId || currentUser.id)
+                    ? { ...p, stage: nextStage }
+                    : p
+            )
         );
         setCurrentUser((prev) => ({ ...prev, stage: nextStage }));
 
+        if (nextStage === 'editing') {
+            setSessionOwnerId(selfParticipantId || currentUser.id);
+        }
+
         try {
-            await updateSessionStatus({ token, sessionId, status: nextStatus });
+            await updateSessionStatus({ token, sessionId: ensuredSessionId, status: nextStatus });
 
             const payload = {
-                sessionId,
-                ownerId: currentUser.id,
+                sessionId: ensuredSessionId,
+                ownerId: selfParticipantId || currentUser.id,
                 ownerName: currentUser.name,
                 stage: nextStage,
-                ...(currentUser.file
+                ...((preparedFile || currentUser.file)
                     ? {
                         file: {
-                            id: currentUser.file.id,
-                            name: currentUser.file.name,
-                            language: currentUser.file.language,
-                            fileUUID: currentUser.file.fileUUID,
+                            id: (preparedFile || currentUser.file).id,
+                            name: (preparedFile || currentUser.file).name,
+                            language: (preparedFile || currentUser.file).language,
+                            fileUUID: (preparedFile || currentUser.file).fileUUID,
                         },
                     }
                     : {}),
@@ -619,7 +813,10 @@ export default function CodecastLive({ isDark }) {
             broadcastSystemEvent('SESSION_STAGE_UPDATE', payload);
 
             if (nextStage === 'editing' && room.id) {
-                sendCodeUpdate(room.id, sessionId, { senderId: userId, content: currentUser.code });
+                sendCodeUpdate(room.id, ensuredSessionId, {
+                    senderId: selfParticipantId || currentUser.id,
+                    content: currentUser.code,
+                });
             }
         } catch (error) {
             console.error('[CodecastLive] 세션 상태 업데이트 실패:', error);
@@ -696,7 +893,7 @@ export default function CodecastLive({ isDark }) {
             });
 
             broadcastSystemEvent('FILE_SAVED', {
-                ownerId: currentUser.id,
+                ownerId: selfParticipantId || currentUser.id,
                 fileUUID: result.fileUUID,
             });
 
@@ -745,6 +942,93 @@ export default function CodecastLive({ isDark }) {
         setMessages((prev) => [...prev, { id: Date.now(), user: currentUser.name, text }]);
     };
 
+    const handleParticipantFocus = useCallback(
+        (participantId) => {
+            if (!participantId) return;
+            if (activeParticipantId === participantId && hasManualFocus) {
+                setHasManualFocus(false);
+                setActiveParticipantId(selfParticipantId || currentUser.id);
+                return;
+            }
+            setHasManualFocus(true);
+            setActiveParticipantId(participantId);
+        },
+        [activeParticipantId, currentUser.id, hasManualFocus, selfParticipantId, setActiveParticipantId, setHasManualFocus]
+    );
+
+    const initializeSessionWithFile = useCallback(
+        async (selectedFile) => {
+            if (!room?.id) {
+                throw new Error('방 정보가 없습니다. 방을 생성하거나 참여한 뒤 다시 시도하세요.');
+            }
+            if (!token) {
+                throw new Error('로그인이 필요합니다. 다시 로그인해 주세요.');
+            }
+
+            const normalizedFile = {
+                id: selectedFile.id || selectedFile.fileUUID || `local-${Date.now()}`,
+                name: selectedFile.name || `${currentUser.name || 'Untitled'}.txt`,
+                language: selectedFile.language || 'plaintext',
+                content: selectedFile.content ?? currentUser.code ?? '',
+                fileUUID: selectedFile.fileUUID ?? null,
+                isServerFile: selectedFile.isServerFile ?? false,
+            };
+
+            const sessionResponse = await createSession({
+                token,
+                roomId: room.id,
+                sessionName: normalizedFile.name,
+            });
+
+            const newSessionId = sessionResponse.sessionId || sessionResponse.id;
+            if (!newSessionId) {
+                throw new Error('세션 ID를 가져오지 못했습니다.');
+            }
+
+            setSessionId(newSessionId);
+            setSessionOwnerId(selfParticipantId || currentUser.id);
+
+            updateParticipants((prev) =>
+                prev.map((p) =>
+                    p.id === (selfParticipantId || currentUser.id)
+                        ? {
+                            ...p,
+                            file: normalizedFile,
+                            code: normalizedFile.content ?? p.code ?? '',
+                            stage: 'ready',
+                        }
+                        : p
+                )
+            );
+
+            setCurrentUser((prev) => ({
+                ...prev,
+                file: normalizedFile,
+                code: normalizedFile.content ?? prev.code,
+                stage: 'ready',
+            }));
+
+            setActiveParticipantId(selfParticipantId || currentUser.id);
+            setHasManualFocus(false);
+
+            broadcastSystemEvent('SESSION_READY', {
+                sessionId: newSessionId,
+                ownerId: selfParticipantId || currentUser.id,
+                ownerName: currentUser.name,
+                file: {
+                    id: normalizedFile.id,
+                    name: normalizedFile.name,
+                    language: normalizedFile.language,
+                    fileUUID: normalizedFile.fileUUID,
+                },
+                code: normalizedFile.content ?? '',
+            });
+
+            return { sessionId: newSessionId, file: normalizedFile };
+        },
+        [broadcastSystemEvent, currentUser.code, currentUser.id, currentUser.name, room?.id, selfParticipantId, token, updateParticipants]
+    );
+
     // 전체화면 상태 동기화
     useEffect(() => {
         const onChange = () => {
@@ -769,13 +1053,67 @@ export default function CodecastLive({ isDark }) {
         }
     };
 
-    const findByName = (name) => participants.find((p) => p.name === name);
     const findById = (id) => participants.find((p) => p.id === id);
 
-    // 참가자가 'editing' 상태일 때만 프리뷰에 표시
-    // 이제 기본 파일도 공유 가능하므로 defaultFile.id 조건은 제거합니다.
-    const isAnyParticipantSharing = participants.some(p => p.stage === 'editing' && p.file !== null);
+    const isViewingSelf = activeParticipant?.id === ownParticipantId;
 
+    const roomOwnerId = useMemo(() => {
+        const host = participants.find((p) => p.role === 'host');
+        if (host) return host.id;
+        if (currentUser.role === 'host') return currentUser.id;
+        return injected.ownerId || null;
+    }, [participants, injected.ownerId, currentUser.id, currentUser.role]);
+
+    const activeSessionMeta = useMemo(() => {
+        if (!sessionId) return null;
+        const ownerParticipant =
+            participants.find((p) => p.id === sessionOwnerId) ||
+            participants.find((p) => p.id === roomOwnerId);
+        const permissions = participants.reduce((acc, p) => {
+            if (p.role === 'edit') acc[p.id] = 'edit';
+            return acc;
+        }, {});
+
+        return {
+            sessionId,
+            ownerId: sessionOwnerId || ownerParticipant?.id || roomOwnerId || null,
+            permissions,
+        };
+    }, [sessionId, participants, roomOwnerId, sessionOwnerId]);
+
+    const hasEditPermissionOnActive = useMemo(() => {
+        if (!activeParticipant) return false;
+        if (activeParticipant.id === ownParticipantId) return true;
+        if (!activeSessionMeta) return false;
+        if (activeParticipant.stage !== 'editing') return false;
+
+        const isSessionOwner = activeSessionMeta.ownerId === ownParticipantId;
+        const isRoomOwner = roomOwnerId === ownParticipantId;
+        const hasGrantedPermission = activeSessionMeta.permissions?.[ownParticipantId] === 'edit';
+
+        return Boolean(isSessionOwner || isRoomOwner || hasGrantedPermission);
+    }, [activeParticipant, activeSessionMeta, ownParticipantId, roomOwnerId]);
+
+    const editorReadOnly = !(isViewingSelf || hasEditPermissionOnActive);
+
+    const previewParticipants = useMemo(() => {
+        const editingList = participants.filter((p) => p.stage === 'editing');
+        const selfParticipant = participants.find((p) => p.id === selfParticipantId);
+        if (selfParticipant && !editingList.some((p) => p.id === selfParticipant.id)) {
+            editingList.push(selfParticipant);
+        }
+        return editingList;
+    }, [participants, selfParticipantId]);
+
+    // 참가자가 'editing' 상태인지만 확인해 프리뷰를 노출합니다.
+    const isAnyParticipantSharing = previewParticipants.some((p) => p.stage === 'editing');
+
+    useEffect(() => {
+        if (!isAnyParticipantSharing && selfParticipantId && activeParticipantId !== selfParticipantId) {
+            setActiveParticipantId(selfParticipantId);
+            setHasManualFocus(false);
+        }
+    }, [isAnyParticipantSharing, activeParticipantId, selfParticipantId]);
 
     return (
         <div ref={wrapperRef} className="broadcast-wrapper">
@@ -791,24 +1129,34 @@ export default function CodecastLive({ isDark }) {
             <div className={`main-section ${isChatOpen ? 'with-chat' : ''}`}>
                 <Sidebar
                     participants={participants}
-                    currentUser={currentUser}
-                    sessionId={sessionId}
-                    onChangeRole={async (name, nextRole) => {
-                        const target = findByName(name);
+                    currentUserId={currentUser.id}
+                    roomOwnerId={roomOwnerId}
+                    activeSession={activeSessionMeta}
+                    focusedParticipantId={activeParticipantId}
+                    onSelectParticipant={handleParticipantFocus}
+                    onChangePermission={async (sessionUuid, participantId, nextRole) => {
+                        if (!sessionUuid) {
+                            alert('세션이 준비된 이후에만 권한을 변경할 수 있습니다.');
+                            return;
+                        }
+
+                        if (!activeSessionMeta) {
+                            alert('활성 세션 정보를 불러오지 못했습니다.');
+                            return;
+                        }
+
+                        const target = findById(participantId);
                         if (!target) return;
 
-                        if (nextRole === 'host') {
-                            alert('방장 권한 변경은 지원하지 않습니다.');
+                        const isSessionOwner = activeSessionMeta.ownerId === currentUser.id;
+                        const isRoomOwner = roomOwnerId === currentUser.id;
+                        if (!isSessionOwner && !isRoomOwner) {
+                            alert('세션 소유자 또는 방장만 권한을 변경할 수 있습니다.');
                             return;
                         }
 
-                        if (!sessionId) {
-                            alert('세션 시작 후에만 권한을 변경할 수 있습니다.');
-                            return;
-                        }
-
-                        if (currentUser.role !== 'host' && currentUser.id !== target.id) {
-                            alert('다른 사람 권한은 방장만 변경할 수 있습니다.');
+                        if (target.id === activeSessionMeta.ownerId || target.id === roomOwnerId) {
+                            alert('세션 소유자 또는 방장의 권한은 변경할 수 없습니다.');
                             return;
                         }
 
@@ -824,9 +1172,9 @@ export default function CodecastLive({ isDark }) {
 
                         try {
                             if (nextRole === 'edit') {
-                                await grantEditPermission({ token, sessionId, targetUserId: target.id });
-                            } else if (nextRole === 'view') {
-                                await revokeEditPermission({ token, sessionId, targetUserId: target.id });
+                                await grantEditPermission({ token, sessionId: sessionUuid, targetUserId: target.id });
+                            } else {
+                                await revokeEditPermission({ token, sessionId: sessionUuid, targetUserId: target.id });
                             }
                             broadcastSystemEvent('PERMISSION_CHANGED', {
                                 targetUserId: target.id,
@@ -836,14 +1184,18 @@ export default function CodecastLive({ isDark }) {
                             setParticipants(prevParticipants);
                             setCurrentUser(prevCurrent);
                             console.error(e);
-                            alert(`권한 변경 실패: ${e.message || e}`);
+                            if (String(e?.message || '').includes('403')) {
+                                alert('권한 변경 실패: 서버에서 요청을 거부했습니다. (방장 또는 세션 소유자만 변경 가능)');
+                            } else {
+                                alert(`권한 변경 실패: ${e.message || e}`);
+                            }
                         }
                     }}
-                    onKick={async (name) => {
-                        const target = findByName(name);
+                    onKick={async (participantId) => {
+                        const target = findById(participantId);
                         if (!target) return;
 
-                        if (currentUser.role !== 'host') {
+                        if (currentUser.id !== roomOwnerId) {
                             alert('강퇴는 방장만 가능합니다.');
                             return;
                         }
@@ -876,16 +1228,17 @@ export default function CodecastLive({ isDark }) {
 
                 <div className="editor-area">
                     <CodeEditor
-                        file={currentUser.file}
+                        file={activeParticipant?.file}
                         onChange={handleEditorChange}
-                        currentUser={currentUser}
+                        currentUser={activeParticipant || currentUser}
+                        readOnly={editorReadOnly}
                         isDark={isDark}
-                        selectFileAction={FileSelectButton}
+                        selectFileAction={isViewingSelf ? FileSelectButton : null}
                     />
                 </div>
 
                 {/* 하단 제어 바는 파일이 존재하고 쓰기 권한이 있을 때 표시 */}
-                {(currentUser.file && canEdit) && (
+                {currentUser.file && (
                     <div className="broadcast-controls-bar">
                         <div className="left-controls">
                             <button
@@ -923,11 +1276,10 @@ export default function CodecastLive({ isDark }) {
                     <div className="preview-strip nochrome" aria-label="participants preview strip">
                         <div className="preview-strip-scroller">
                             <CodePreviewList
-                                participants={participants.filter(p => p.stage === 'editing')}
-                                activeName={currentUser.name}
-                                onSelect={(userName) => {
-                                    const pickedUser = participants.find((p) => p.name === userName);
-                                    if (pickedUser) setCurrentUser(pickedUser);
+                                participants={previewParticipants}
+                                activeParticipantId={activeParticipantId}
+                                onSelect={(participantId) => {
+                                    handleParticipantFocus(participantId);
                                 }}
                             />
                         </div>

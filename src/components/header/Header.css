@@ -311,11 +311,13 @@
 .notification-item {
     padding: 10px 15px;
     border-bottom: 1px solid #eee;
-    cursor: pointer;
     transition: background-color 0.2s;
     font-size: 14px;
     line-height: 1.4;
     color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
     font-weight: bold;
 }
 
@@ -340,6 +342,38 @@
 .notification-message {
     flex-grow: 1;
     margin-right: 10px;
+    background: none;
+    border: none;
+    text-align: left;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    padding: 0;
+}
+
+.notification-read-btn {
+    background: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    color: #555;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.notification-read-btn:hover {
+    background-color: #6a0dad;
+    color: #fff;
+    border-color: #6a0dad;
+}
+
+.notification-read-btn:disabled,
+.notification-read-btn:disabled:hover {
+    cursor: not-allowed;
+    background-color: #f0f0f0;
+    color: #aaa;
+    border-color: #ddd;
 }
 
 .no-notifications {
@@ -406,6 +440,29 @@
 
 .dark-mode .notification-item.unread {
     background-color: #4d3319;
+}
+
+.dark-mode .notification-message {
+    color: inherit;
+}
+
+.dark-mode .notification-read-btn {
+    border-color: #666;
+    color: #ddd;
+    background-color: transparent;
+}
+
+.dark-mode .notification-read-btn:hover {
+    background-color: #b88eff;
+    color: #1e1e1e;
+    border-color: #b88eff;
+}
+
+.dark-mode .notification-read-btn:disabled,
+.dark-mode .notification-read-btn:disabled:hover {
+    background-color: #333;
+    color: #777;
+    border-color: #555;
 }
 
 .dark-mode .notification-footer {

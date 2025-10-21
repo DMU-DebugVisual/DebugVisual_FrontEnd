@@ -73,20 +73,79 @@ const Header = ({ isDark, setIsDark, isLoggedIn, nickname, onLoginModalOpen }) =
         }
     };
 
-    const handleNotificationRead = async (id) => {
-        try {
-            const token = localStorage.getItem('token');
-            await fetch(`${config.API_BASE_URL}/api/notifications/${id}/read`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`
+    const resolveNotificationId = useCallback((notification) => {
+        if (!notification) return null;
+        return (
+            notification.id ??
+            notification.notificationId ??
+            notification.notificationNo ??
+            notification.notificationSeq ??
+            null
+        );
+    }, []);
+
+    const handleNotificationRead = useCallback(
+        async (id) => {
+            if (!id) return false;
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    console.error("Error marking notification as read: missing auth token");
+                    return false;
                 }
-            });
-            fetchNotifications();
-        } catch (error) {
-            console.error("Error marking notification as read:", error);
-        }
-    };
+                const response = await fetch(`${config.API_BASE_URL}/api/notifications/${id}/read`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to mark notification as read: ${response.status}`);
+                }
+
+                let didMark = false;
+                setNotifications((prev) =>
+                    prev.map((item) => {
+                        const itemId = resolveNotificationId(item);
+                        if (itemId && itemId === id && !item.read) {
+                            didMark = true;
+                            return { ...item, read: true };
+                        }
+                        return item;
+                    })
+                );
+
+                if (didMark) {
+                    setUnreadCount((prev) => Math.max(prev - 1, 0));
+                }
+
+                return true;
+            } catch (error) {
+                console.error("Error marking notification as read:", error);
+                return false;
+            }
+        },
+        [resolveNotificationId]
+    );
+
+    const handleNotificationNavigate = useCallback(
+        async (notification) => {
+            if (!notification) return;
+
+            const notificationId = resolveNotificationId(notification);
+            await handleNotificationRead(notificationId);
+
+            if (notification.postId) {
+                navigate(`/community/post/${notification.postId}`);
+            }
+
+            setIsNotificationMenuOpen(false);
+            setIsViewAll(false);
+            setCurrentPage(1);
+        },
+        [handleNotificationRead, navigate, resolveNotificationId]
+    );
 
     const handleViewAll = () => {
         setIsViewAll(true);
@@ -162,17 +221,38 @@ const Header = ({ isDark, setIsDark, isLoggedIn, nickname, onLoginModalOpen }) =
                                         </button>
                                     )}
                                     {displayNotifications.length > 0 ? (
-                                        displayNotifications.map(notification => (
-                                            <div
-                                                key={notification.id}
-                                                className={`notification-item ${!notification.read ? 'unread' : 'read'}`}
-                                                onClick={() => handleNotificationRead(notification.id)}
-                                            >
-                                                <span className="notification-message">
-                                                    {notification.message}
-                                                </span>
-                                            </div>
-                                        ))
+                                        displayNotifications.map((notification, index) => {
+                                            const notificationId = resolveNotificationId(notification);
+                                            const key = notificationId ?? `notification-${index}`;
+                                            const isUnread = !notification.read;
+                                            const disableRead = !notificationId || !isUnread;
+
+                                            return (
+                                                <div
+                                                    key={key}
+                                                    className={`notification-item ${isUnread ? 'unread' : 'read'}`}
+                                                >
+                                                    <button
+                                                        type="button"
+                                                        className="notification-message"
+                                                        onClick={() => handleNotificationNavigate(notification)}
+                                                    >
+                                                        {notification.message}
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="notification-read-btn"
+                                                        disabled={disableRead}
+                                                        onClick={async (e) => {
+                                                            e.stopPropagation();
+                                                            await handleNotificationRead(notificationId);
+                                                        }}
+                                                    >
+                                                        읽음
+                                                    </button>
+                                                </div>
+                                            );
+                                        })
                                     ) : (
                                         <div className="no-notifications">알림이 없습니다.</div>
                                     )}
