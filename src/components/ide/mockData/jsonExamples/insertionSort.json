@@ -1,0 +1,466 @@
+{
+  "lang": "c",
+  "input": "",
+  "analysis": {
+    "timeComplexity": "O(n^2)",
+    "spaceComplexity": "O(1)",
+    "opCounts": {
+      "call": 1,
+      "return": 1,
+      "compare": 9,
+      "swap": 8,
+      "assign": 14,
+      "loopIter": 4,
+      "io": 5
+    }
+  },
+  "events": [
+    {
+      "t": 1,
+      "kind": "call",
+      "loc": {"line": 26},
+      "fn": "insertion_sort",
+      "args": [
+        {"name": "list", "value": [5, 2, 4, 6, 1]},
+        {"name": "n", "value": 5}
+      ]
+    },
+    {
+      "t": 2,
+      "kind": "loopIter",
+      "loc": {"line": 8},
+      "loop": {"type": "for", "iter": 0, "total": 4},
+      "viz": {"i": 1, "list": [5, 2, 4, 6, 1]}
+    },
+    {
+      "t": 3,
+      "kind": "assign",
+      "loc": {"line": 9},
+      "var": "key",
+      "before": null,
+      "after": 2
+    },
+    {
+      "t": 4,
+      "kind": "assign",
+      "loc": {"line": 10},
+      "var": "j",
+      "before": null,
+      "after": 0
+    },
+    {
+      "t": 5,
+      "kind": "compare",
+      "loc": {"line": 13},
+      "expr": "j >= 0 && list[j] > key",
+      "read": [
+        {"ref": "j", "value": 0},
+        {"ref": "list[0]", "value": 5},
+        {"ref": "key", "value": 2}
+      ],
+      "result": true
+    },
+    {
+      "t": 6,
+      "kind": "swap",
+      "loc": {"line": 14},
+      "target": "list",
+      "indices": [1, 0],
+      "before": [2, 5],
+      "after": [5, 2],
+      "viz": {"list": [5, 5, 4, 6, 1]}
+    },
+    {
+      "t": 7,
+      "kind": "assign",
+      "loc": {"line": 15},
+      "var": "j",
+      "before": 0,
+      "after": -1
+    },
+    {
+      "t": 8,
+      "kind": "compare",
+      "loc": {"line": 13},
+      "expr": "j >= 0 && list[j] > key",
+      "read": [
+        {"ref": "j", "value": -1}
+      ],
+      "result": false
+    },
+    {
+      "t": 9,
+      "kind": "assign",
+      "loc": {"line": 18},
+      "var": "list[0]",
+      "before": 5,
+      "after": 2,
+      "viz": {"list": [2, 5, 4, 6, 1]}
+    },
+    {
+      "t": 10,
+      "kind": "loopIter",
+      "loc": {"line": 8},
+      "loop": {"type": "for", "iter": 1, "total": 4},
+      "viz": {"i": 2, "list": [2, 5, 4, 6, 1]}
+    },
+    {
+      "t": 11,
+      "kind": "assign",
+      "loc": {"line": 9},
+      "var": "key",
+      "before": 2,
+      "after": 4
+    },
+    {
+      "t": 12,
+      "kind": "assign",
+      "loc": {"line": 10},
+      "var": "j",
+      "before": -1,
+      "after": 1
+    },
+    {
+      "t": 13,
+      "kind": "compare",
+      "loc": {"line": 13},
+      "expr": "j >= 0 && list[j] > key",
+      "read": [
+        {"ref": "j", "value": 1},
+        {"ref": "list[1]", "value": 5},
+        {"ref": "key", "value": 4}
+      ],
+      "result": true
+    },
+    {
+      "t": 14,
+      "kind": "swap",
+      "loc": {"line": 14},
+      "target": "list",
+      "indices": [2, 1],
+      "before": [4, 5],
+      "after": [5, 4],
+      "viz": {"list": [2, 5, 5, 6, 1]}
+    },
+    {
+      "t": 15,
+      "kind": "assign",
+      "loc": {"line": 15},
+      "var": "j",
+      "before": 1,
+      "after": 0
+    },
+    {
+      "t": 16,
+      "kind": "compare",
+      "loc": {"line": 13},
+      "expr": "j >= 0 && list[j] > key",
+      "read": [
+        {"ref": "j", "value": 0},
+        {"ref": "list[0]", "value": 2},
+        {"ref": "key", "value": 4}
+      ],
+      "result": false
+    },
+    {
+      "t": 17,
+      "kind": "assign",
+      "loc": {"line": 18},
+      "var": "list[1]",
+      "before": 5,
+      "after": 4,
+      "viz": {"list": [2, 4, 5, 6, 1]}
+    },
+    {
+      "t": 18,
+      "kind": "loopIter",
+      "loc": {"line": 8},
+      "loop": {"type": "for", "iter": 2, "total": 4},
+      "viz": {"i": 3, "list": [2, 4, 5, 6, 1]}
+    },
+    {
+      "t": 19,
+      "kind": "assign",
+      "loc": {"line": 9},
+      "var": "key",
+      "before": 4,
+      "after": 6
+    },
+    {
+      "t": 20,
+      "kind": "assign",
+      "loc": {"line": 10},
+      "var": "j",
+      "before": 0,
+      "after": 2
+    },
+    {
+      "t": 21,
+      "kind": "compare",
+      "loc": {"line": 13},
+      "expr": "j >= 0 && list[j] > key",
+      "read": [
+        {"ref": "j", "value": 2},
+        {"ref": "list[2]", "value": 5},
+        {"ref": "key", "value": 6}
+      ],
+      "result": false
+    },
+    {
+      "t": 22,
+      "kind": "assign",
+      "loc": {"line": 18},
+      "var": "list[3]",
+      "before": 6,
+      "after": 6,
+      "viz": {"list": [2, 4, 5, 6, 1]}
+    },
+    {
+      "t": 23,
+      "kind": "loopIter",
+      "loc": {"line": 8},
+      "loop": {"type": "for", "iter": 3, "total": 4},
+      "viz": {"i": 4, "list": [2, 4, 5, 6, 1]}
+    },
+    {
+      "t": 24,
+      "kind": "assign",
+      "loc": {"line": 9},
+      "var": "key",
+      "before": 6,
+      "after": 1
+    },
+    {
+      "t": 25,
+      "kind": "assign",
+      "loc": {"line": 10},
+      "var": "j",
+      "before": 2,
+      "after": 3
+    },
+    {
+      "t": 26,
+      "kind": "compare",
+      "loc": {"line": 13},
+      "expr": "j >= 0 && list[j] > key",
+      "read": [
+        {"ref": "j", "value": 3},
+        {"ref": "list[3]", "value": 6},
+        {"ref": "key", "value": 1}
+      ],
+      "result": true
+    },
+    {
+      "t": 27,
+      "kind": "swap",
+      "loc": {"line": 14},
+      "target": "list",
+      "indices": [4, 3],
+      "before": [1, 6],
+      "after": [6, 1],
+      "viz": {"list": [2, 4, 5, 6, 6]}
+    },
+    {
+      "t": 28,
+      "kind": "assign",
+      "loc": {"line": 15},
+      "var": "j",
+      "before": 3,
+      "after": 2
+    },
+    {
+      "t": 29,
+      "kind": "compare",
+      "loc": {"line": 13},
+      "expr": "j >= 0 && list[j] > key",
+      "read": [
+        {"ref": "j", "value": 2},
+        {"ref": "list[2]", "value": 5},
+        {"ref": "key", "value": 1}
+      ],
+      "result": true
+    },
+    {
+      "t": 30,
+      "kind": "swap",
+      "loc": {"line": 14},
+      "target": "list",
+      "indices": [3, 2],
+      "before": [6, 5],
+      "after": [5, 6],
+      "viz": {"list": [2, 4, 5, 5, 6]}
+    },
+    {
+      "t": 31,
+      "kind": "assign",
+      "loc": {"line": 15},
+      "var": "j",
+      "before": 2,
+      "after": 1
+    },
+    {
+      "t": 32,
+      "kind": "compare",
+      "loc": {"line": 13},
+      "expr": "j >= 0 && list[j] > key",
+      "read": [
+        {"ref": "j", "value": 1},
+        {"ref": "list[1]", "value": 4},
+        {"ref": "key", "value": 1}
+      ],
+      "result": true
+    },
+    {
+      "t": 33,
+      "kind": "swap",
+      "loc": {"line": 14},
+      "target": "list",
+      "indices": [2, 1],
+      "before": [5, 4],
+      "after": [4, 5],
+      "viz": {"list": [2, 4, 4, 5, 6]}
+    },
+    {
+      "t": 34,
+      "kind": "assign",
+      "loc": {"line": 15},
+      "var": "j",
+      "before": 1,
+      "after": 0
+    },
+    {
+      "t": 35,
+      "kind": "compare",
+      "loc": {"line": 13},
+      "expr": "j >= 0 && list[j] > key",
+      "read": [
+        {"ref": "j", "value": 0},
+        {"ref": "list[0]", "value": 2},
+        {"ref": "key", "value": 1}
+      ],
+      "result": true
+    },
+    {
+      "t": 36,
+      "kind": "swap",
+      "loc": {"line": 14},
+      "target": "list",
+      "indices": [1, 0],
+      "before": [4, 2],
+      "after": [2, 4],
+      "viz": {"list": [2, 2, 4, 5, 6]}
+    },
+    {
+      "t": 37,
+      "kind": "assign",
+      "loc": {"line": 15},
+      "var": "j",
+      "before": 0,
+      "after": -1
+    },
+    {
+      "t": 38,
+      "kind": "compare",
+      "loc": {"line": 13},
+      "expr": "j >= 0 && list[j] > key",
+      "read": [
+        {"ref": "j", "value": -1}
+      ],
+      "result": false
+    },
+    {
+      "t": 39,
+      "kind": "assign",
+      "loc": {"line": 18},
+      "var": "list[0]",
+      "before": 2,
+      "after": 1,
+      "viz": {"list": [1, 2, 4, 5, 6]}
+    },
+    {
+      "t": 40,
+      "kind": "return",
+      "loc": {"line": 20},
+      "fn": "insertion_sort",
+      "value": null
+    },
+    {
+      "t": 41,
+      "kind": "loopIter",
+      "loc": {"line": 29},
+      "loop": {"type": "for", "iter": 0, "total": 5}
+    },
+    {
+      "t": 42,
+      "kind": "io",
+      "loc": {"line": 30},
+      "dir": "out",
+      "channel": "stdout",
+      "data": "1 "
+    },
+    {
+      "t": 43,
+      "kind": "loopIter",
+      "loc": {"line": 29},
+      "loop": {"type": "for", "iter": 1, "total": 5}
+    },
+    {
+      "t": 44,
+      "kind": "io",
+      "loc": {"line": 30},
+      "dir": "out",
+      "channel": "stdout",
+      "data": "2 "
+    },
+    {
+      "t": 45,
+      "kind": "loopIter",
+      "loc": {"line": 29},
+      "loop": {"type": "for", "iter": 2, "total": 5}
+    },
+    {
+      "t": 46,
+      "kind": "io",
+      "loc": {"line": 30},
+      "dir": "out",
+      "channel": "stdout",
+      "data": "4 "
+    },
+    {
+      "t": 47,
+      "kind": "loopIter",
+      "loc": {"line": 29},
+      "loop": {"type": "for", "iter": 3, "total": 5}
+    },
+    {
+      "t": 48,
+      "kind": "io",
+      "loc": {"line": 30},
+      "dir": "out",
+      "channel": "stdout",
+      "data": "5 "
+    },
+    {
+      "t": 49,
+      "kind": "loopIter",
+      "loc": {"line": 29},
+      "loop": {"type": "for", "iter": 4, "total": 5}
+    },
+    {
+      "t": 50,
+      "kind": "io",
+      "loc": {"line": 30},
+      "dir": "out",
+      "channel": "stdout",
+      "data": "6 "
+    },
+    {
+      "t": 51,
+      "kind": "io",
+      "loc": {"line": 32},
+      "dir": "out",
+      "channel": "stdout",
+      "data": "\n"
+    }
+  ]
+}

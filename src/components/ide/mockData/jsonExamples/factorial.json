@@ -1,0 +1,179 @@
+{
+  "lang": "c",
+  "input": "",
+  "analysis": {
+    "timeComplexity": "O(n)",
+    "spaceComplexity": "O(n)",
+    "opCounts": {
+      "call": 6,
+      "return": 6,
+      "compare": 5,
+      "assign": 1,
+      "io": 2
+    }
+  },
+  "events": [
+    {
+      "t": 1,
+      "kind": "assign",
+      "loc": {"line": 14},
+      "var": "n",
+      "before": null,
+      "after": 5
+    },
+    {
+      "t": 2,
+      "kind": "io",
+      "loc": {"line": 17},
+      "dir": "out",
+      "channel": "stdout",
+      "data": "Input: 5\n"
+    },
+    {
+      "t": 3,
+      "kind": "call",
+      "loc": {"line": 20},
+      "fn": "factorial",
+      "args": [
+        {"name": "n", "value": 5}
+      ]
+    },
+    {
+      "t": 4,
+      "kind": "compare",
+      "loc": {"line": 6},
+      "expr": "n <= 1",
+      "read": [
+        {"ref": "n", "value": 5}
+      ],
+      "result": false
+    },
+    {
+      "t": 5,
+      "kind": "call",
+      "loc": {"line": 10},
+      "fn": "factorial",
+      "args": [
+        {"name": "n", "value": 4}
+      ]
+    },
+    {
+      "t": 6,
+      "kind": "compare",
+      "loc": {"line": 6},
+      "expr": "n <= 1",
+      "read": [
+        {"ref": "n", "value": 4}
+      ],
+      "result": false
+    },
+    {
+      "t": 7,
+      "kind": "call",
+      "loc": {"line": 10},
+      "fn": "factorial",
+      "args": [
+        {"name": "n", "value": 3}
+      ]
+    },
+    {
+      "t": 8,
+      "kind": "compare",
+      "loc": {"line": 6},
+      "expr": "n <= 1",
+      "read": [
+        {"ref": "n", "value": 3}
+      ],
+      "result": false
+    },
+    {
+      "t": 9,
+      "kind": "call",
+      "loc": {"line": 10},
+      "fn": "factorial",
+      "args": [
+        {"name": "n", "value": 2}
+      ]
+    },
+    {
+      "t": 10,
+      "kind": "compare",
+      "loc": {"line": 6},
+      "expr": "n <= 1",
+      "read": [
+        {"ref": "n", "value": 2}
+      ],
+      "result": false
+    },
+    {
+      "t": 11,
+      "kind": "call",
+      "loc": {"line": 10},
+      "fn": "factorial",
+      "args": [
+        {"name": "n", "value": 1}
+      ]
+    },
+    {
+      "t": 12,
+      "kind": "compare",
+      "loc": {"line": 6},
+      "expr": "n <= 1",
+      "read": [
+        {"ref": "n", "value": 1}
+      ],
+      "result": true
+    },
+    {
+      "t": 13,
+      "kind": "return",
+      "loc": {"line": 7},
+      "fn": "factorial",
+      "value": 1
+    },
+    {
+      "t": 14,
+      "kind": "return",
+      "loc": {"line": 10},
+      "fn": "factorial",
+      "value": 2
+    },
+    {
+      "t": 15,
+      "kind": "return",
+      "loc": {"line": 10},
+      "fn": "factorial",
+      "value": 6
+    },
+    {
+      "t": 16,
+      "kind": "return",
+      "loc": {"line": 10},
+      "fn": "factorial",
+      "value": 24
+    },
+    {
+      "t": 17,
+      "kind": "return",
+      "loc": {"line": 10},
+      "fn": "factorial",
+      "value": 120
+    },
+    {
+      "t": 18,
+      "kind": "assign",
+      "loc": {"line": 20},
+      "var": "result",
+      "before": null,
+      "after": 120
+    },
+    {
+      "t": 19,
+      "kind": "io",
+      "loc": {"line": 22},
+      "dir": "out",
+      "channel": "stdout",
+      "data": "Result: 5! = 120\n"
+    }
+  ]
+}

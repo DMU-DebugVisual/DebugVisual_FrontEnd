@@ -8,8 +8,11 @@
 
 // 코드 예제 문자열 import
 import bubbleSortCode from './codeExamples/bubbleSort';
+import selectionSortCode from './codeExamples/selectionSort';
+import insertionSortCode from './codeExamples/insertionSort';  // ✨ 추가
 import linkedListCode from './codeExamples/linkedList';
 import fibonacciCode from './codeExamples/fibonacci';
+import factorialCode from './codeExamples/factorial';  // ✨ 추가
 import binaryTreeCode from './codeExamples/binaryTree';
 import heapCode from './codeExamples/heap';
 import graphCode from './codeExamples/graph';
@@ -17,7 +20,10 @@ import graphCode from './codeExamples/graph';
 // JSON 파일들 직접 import (DV-Flow v1.3 스키마)
 import binaryTreeJson from './jsonExamples/binaryTree.json';
 import bubbleSortJson from './jsonExamples/bubbleSort.json';
+import selectionSortJson from './jsonExamples/selectionSort.json';
+import insertionSortJson from './jsonExamples/insertionSort.json';  // ✨ 추가
 import fibonacciJson from './jsonExamples/fibonacci.json';
+import factorialJson from './jsonExamples/factorial.json';  // ✨ 추가
 import graphJson from './jsonExamples/graph.json';
 import heapJson from './jsonExamples/heap.json';
 import linkedListJson from './jsonExamples/linkedList.json';
@@ -30,6 +36,16 @@ export const codeExamples = [
         code: bubbleSortCode
     },
     {
+        name: 'selection_sort.c',
+        type: 'code',
+        code: selectionSortCode
+    },
+    {
+        name: 'insertion_sort.c',  // ✨ 추가
+        type: 'code',
+        code: insertionSortCode
+    },
+    {
         name: 'linked_list.c',
         type: 'code',
         code: linkedListCode
@@ -38,6 +54,11 @@ export const codeExamples = [
         name: 'fibonacci.c',
         type: 'code',
         code: fibonacciCode
+    },
+    {
+        name: 'factorial.c',  // ✨ 추가
+        type: 'code',
+        code: factorialCode
     },
     {
         name: 'binary_tree.c',
@@ -69,9 +90,24 @@ export const jsonExamples = [
         code: JSON.stringify(bubbleSortJson, null, 2)
     },
     {
+        name: 'selectionSort.json',
+        type: 'json',
+        code: JSON.stringify(selectionSortJson, null, 2)
+    },
+    {
+        name: 'insertionSort.json',  // ✨ 추가
+        type: 'json',
+        code: JSON.stringify(insertionSortJson, null, 2)
+    },
+    {
         name: 'fibonacci.json',
         type: 'json',
         code: JSON.stringify(fibonacciJson, null, 2)
+    },
+    {
+        name: 'factorial.json',  // ✨ 추가
+        type: 'json',
+        code: JSON.stringify(factorialJson, null, 2)
     },
     {
         name: 'graph.json',
@@ -94,7 +130,10 @@ export const jsonExamples = [
 const jsonDataMap = {
     binaryTree: binaryTreeJson,
     bubbleSort: bubbleSortJson,
+    selectionSort: selectionSortJson,
+    insertionSort: insertionSortJson,  // ✨ 추가
     fibonacci: fibonacciJson,
+    factorial: factorialJson,  // ✨ 추가
     graph: graphJson,
     heap: heapJson,
     linkedList: linkedListJson
@@ -118,7 +157,17 @@ const importJsonFile = async (filename) => {
 
 export class JsonVisualizationManager {
     // 📋 현재 사용 가능한 JSON 파일들 (확장자 제외)
-    static availableJsonFiles = ['binaryTree', 'bubbleSort', 'fibonacci', 'graph', 'heap', 'linkedList'];
+    static availableJsonFiles = [
+        'binaryTree',
+        'bubbleSort',
+        'selectionSort',
+        'insertionSort',  // ✨ 추가
+        'fibonacci',
+        'factorial',  // ✨ 추가
+        'graph',
+        'heap',
+        'linkedList'
+    ];
 
     // 🗄️ 로드된 JSON 데이터 캐시
     static jsonCache = new Map();
@@ -140,7 +189,11 @@ export class JsonVisualizationManager {
 
         // 🔍 패턴 매칭으로 적절한 JSON 파일 찾기
         const patterns = {
-            bubbleSort: ['bubble', '버블', 'sort'],
+            bubbleSort: ['bubble', '버블'],
+            selectionSort: ['selection', '선택'],
+            insertionSort: ['insertion', '삽입'],  // ✨ 추가
+            fibonacci: ['fibonacci', '피보나치', 'fibo', 'fib'],  // ✨ 추가
+            factorial: ['factorial', '팩토리얼', 'fact'],  // ✨ 추가
             graph: ['graph', '그래프', 'adj', 'adjacency']
         };
 
