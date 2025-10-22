@@ -1,0 +1,468 @@
+{
+  "lang": "c",
+  "input": "",
+  "analysis": {
+    "timeComplexity": "O(n^2)",
+    "spaceComplexity": "O(1)",
+    "opCounts": {
+      "call": 1,
+      "return": 1,
+      "compare": 10,
+      "swap": 4,
+      "assign": 10,
+      "loopIter": 14,
+      "io": 5
+    }
+  },
+  "events": [
+    {
+      "t": 1,
+      "kind": "call",
+      "loc": {"line": 30},
+      "fn": "selection_sort",
+      "args": [
+        {"name": "list", "value": [64, 25, 12, 22, 11]},
+        {"name": "n", "value": 5}
+      ]
+    },
+    {
+      "t": 2,
+      "kind": "loopIter",
+      "loc": {"line": 8},
+      "loop": {"type": "for", "iter": 0, "total": 4},
+      "viz": {"i": 0, "list": [64, 25, 12, 22, 11]}
+    },
+    {
+      "t": 3,
+      "kind": "assign",
+      "loc": {"line": 10},
+      "var": "min_idx",
+      "before": null,
+      "after": 0
+    },
+    {
+      "t": 4,
+      "kind": "loopIter",
+      "loc": {"line": 12},
+      "loop": {"type": "for", "iter": 0, "total": 4},
+      "viz": {"j": 1}
+    },
+    {
+      "t": 5,
+      "kind": "compare",
+      "loc": {"line": 13},
+      "expr": "list[j] < list[min_idx]",
+      "read": [
+        {"ref": "list[1]", "value": 25},
+        {"ref": "list[0]", "value": 64}
+      ],
+      "result": true
+    },
+    {
+      "t": 6,
+      "kind": "assign",
+      "loc": {"line": 14},
+      "var": "min_idx",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "t": 7,
+      "kind": "loopIter",
+      "loc": {"line": 12},
+      "loop": {"type": "for", "iter": 1, "total": 4},
+      "viz": {"j": 2}
+    },
+    {
+      "t": 8,
+      "kind": "compare",
+      "loc": {"line": 13},
+      "expr": "list[j] < list[min_idx]",
+      "read": [
+        {"ref": "list[2]", "value": 12},
+        {"ref": "list[1]", "value": 25}
+      ],
+      "result": true
+    },
+    {
+      "t": 9,
+      "kind": "assign",
+      "loc": {"line": 14},
+      "var": "min_idx",
+      "before": 1,
+      "after": 2
+    },
+    {
+      "t": 10,
+      "kind": "loopIter",
+      "loc": {"line": 12},
+      "loop": {"type": "for", "iter": 2, "total": 4},
+      "viz": {"j": 3}
+    },
+    {
+      "t": 11,
+      "kind": "compare",
+      "loc": {"line": 13},
+      "expr": "list[j] < list[min_idx]",
+      "read": [
+        {"ref": "list[3]", "value": 22},
+        {"ref": "list[2]", "value": 12}
+      ],
+      "result": false
+    },
+    {
+      "t": 12,
+      "kind": "loopIter",
+      "loc": {"line": 12},
+      "loop": {"type": "for", "iter": 3, "total": 4},
+      "viz": {"j": 4}
+    },
+    {
+      "t": 13,
+      "kind": "compare",
+      "loc": {"line": 13},
+      "expr": "list[j] < list[min_idx]",
+      "read": [
+        {"ref": "list[4]", "value": 11},
+        {"ref": "list[2]", "value": 12}
+      ],
+      "result": true
+    },
+    {
+      "t": 14,
+      "kind": "assign",
+      "loc": {"line": 14},
+      "var": "min_idx",
+      "before": 2,
+      "after": 4
+    },
+    {
+      "t": 15,
+      "kind": "compare",
+      "loc": {"line": 18},
+      "expr": "min_idx != i",
+      "read": [
+        {"ref": "min_idx", "value": 4},
+        {"ref": "i", "value": 0}
+      ],
+      "result": true
+    },
+    {
+      "t": 16,
+      "kind": "swap",
+      "loc": {"line": 19},
+      "target": "list",
+      "indices": [0, 4],
+      "before": [64, 11],
+      "after": [11, 64],
+      "viz": {"list": [11, 25, 12, 22, 64]}
+    },
+    {
+      "t": 17,
+      "kind": "loopIter",
+      "loc": {"line": 8},
+      "loop": {"type": "for", "iter": 1, "total": 4},
+      "viz": {"i": 1, "list": [11, 25, 12, 22, 64]}
+    },
+    {
+      "t": 18,
+      "kind": "assign",
+      "loc": {"line": 10},
+      "var": "min_idx",
+      "before": 4,
+      "after": 1
+    },
+    {
+      "t": 19,
+      "kind": "loopIter",
+      "loc": {"line": 12},
+      "loop": {"type": "for", "iter": 0, "total": 3},
+      "viz": {"j": 2}
+    },
+    {
+      "t": 20,
+      "kind": "compare",
+      "loc": {"line": 13},
+      "expr": "list[j] < list[min_idx]",
+      "read": [
+        {"ref": "list[2]", "value": 12},
+        {"ref": "list[1]", "value": 25}
+      ],
+      "result": true
+    },
+    {
+      "t": 21,
+      "kind": "assign",
+      "loc": {"line": 14},
+      "var": "min_idx",
+      "before": 1,
+      "after": 2
+    },
+    {
+      "t": 22,
+      "kind": "loopIter",
+      "loc": {"line": 12},
+      "loop": {"type": "for", "iter": 1, "total": 3},
+      "viz": {"j": 3}
+    },
+    {
+      "t": 23,
+      "kind": "compare",
+      "loc": {"line": 13},
+      "expr": "list[j] < list[min_idx]",
+      "read": [
+        {"ref": "list[3]", "value": 22},
+        {"ref": "list[2]", "value": 12}
+      ],
+      "result": false
+    },
+    {
+      "t": 24,
+      "kind": "loopIter",
+      "loc": {"line": 12},
+      "loop": {"type": "for", "iter": 2, "total": 3},
+      "viz": {"j": 4}
+    },
+    {
+      "t": 25,
+      "kind": "compare",
+      "loc": {"line": 13},
+      "expr": "list[j] < list[min_idx]",
+      "read": [
+        {"ref": "list[4]", "value": 64},
+        {"ref": "list[2]", "value": 12}
+      ],
+      "result": false
+    },
+    {
+      "t": 26,
+      "kind": "compare",
+      "loc": {"line": 18},
+      "expr": "min_idx != i",
+      "read": [
+        {"ref": "min_idx", "value": 2},
+        {"ref": "i", "value": 1}
+      ],
+      "result": true
+    },
+    {
+      "t": 27,
+      "kind": "swap",
+      "loc": {"line": 19},
+      "target": "list",
+      "indices": [1, 2],
+      "before": [25, 12],
+      "after": [12, 25],
+      "viz": {"list": [11, 12, 25, 22, 64]}
+    },
+    {
+      "t": 28,
+      "kind": "loopIter",
+      "loc": {"line": 8},
+      "loop": {"type": "for", "iter": 2, "total": 4},
+      "viz": {"i": 2, "list": [11, 12, 25, 22, 64]}
+    },
+    {
+      "t": 29,
+      "kind": "assign",
+      "loc": {"line": 10},
+      "var": "min_idx",
+      "before": 2,
+      "after": 2
+    },
+    {
+      "t": 30,
+      "kind": "loopIter",
+      "loc": {"line": 12},
+      "loop": {"type": "for", "iter": 0, "total": 2},
+      "viz": {"j": 3}
+    },
+    {
+      "t": 31,
+      "kind": "compare",
+      "loc": {"line": 13},
+      "expr": "list[j] < list[min_idx]",
+      "read": [
+        {"ref": "list[3]", "value": 22},
+        {"ref": "list[2]", "value": 25}
+      ],
+      "result": true
+    },
+    {
+      "t": 32,
+      "kind": "assign",
+      "loc": {"line": 14},
+      "var": "min_idx",
+      "before": 2,
+      "after": 3
+    },
+    {
+      "t": 33,
+      "kind": "loopIter",
+      "loc": {"line": 12},
+      "loop": {"type": "for", "iter": 1, "total": 2},
+      "viz": {"j": 4}
+    },
+    {
+      "t": 34,
+      "kind": "compare",
+      "loc": {"line": 13},
+      "expr": "list[j] < list[min_idx]",
+      "read": [
+        {"ref": "list[4]", "value": 64},
+        {"ref": "list[3]", "value": 22}
+      ],
+      "result": false
+    },
+    {
+      "t": 35,
+      "kind": "compare",
+      "loc": {"line": 18},
+      "expr": "min_idx != i",
+      "read": [
+        {"ref": "min_idx", "value": 3},
+        {"ref": "i", "value": 2}
+      ],
+      "result": true
+    },
+    {
+      "t": 36,
+      "kind": "swap",
+      "loc": {"line": 19},
+      "target": "list",
+      "indices": [2, 3],
+      "before": [25, 22],
+      "after": [22, 25],
+      "viz": {"list": [11, 12, 22, 25, 64]}
+    },
+    {
+      "t": 37,
+      "kind": "loopIter",
+      "loc": {"line": 8},
+      "loop": {"type": "for", "iter": 3, "total": 4},
+      "viz": {"i": 3, "list": [11, 12, 22, 25, 64]}
+    },
+    {
+      "t": 38,
+      "kind": "assign",
+      "loc": {"line": 10},
+      "var": "min_idx",
+      "before": 3,
+      "after": 3
+    },
+    {
+      "t": 39,
+      "kind": "loopIter",
+      "loc": {"line": 12},
+      "loop": {"type": "for", "iter": 0, "total": 1},
+      "viz": {"j": 4}
+    },
+    {
+      "t": 40,
+      "kind": "compare",
+      "loc": {"line": 13},
+      "expr": "list[j] < list[min_idx]",
+      "read": [
+        {"ref": "list[4]", "value": 64},
+        {"ref": "list[3]", "value": 25}
+      ],
+      "result": false
+    },
+    {
+      "t": 41,
+      "kind": "compare",
+      "loc": {"line": 18},
+      "expr": "min_idx != i",
+      "read": [
+        {"ref": "min_idx", "value": 3},
+        {"ref": "i", "value": 3}
+      ],
+      "result": false
+    },
+    {
+      "t": 42,
+      "kind": "return",
+      "loc": {"line": 24},
+      "fn": "selection_sort",
+      "value": null
+    },
+    {
+      "t": 43,
+      "kind": "loopIter",
+      "loc": {"line": 33},
+      "loop": {"type": "for", "iter": 0, "total": 5}
+    },
+    {
+      "t": 44,
+      "kind": "io",
+      "loc": {"line": 34},
+      "dir": "out",
+      "channel": "stdout",
+      "data": "11 "
+    },
+    {
+      "t": 45,
+      "kind": "loopIter",
+      "loc": {"line": 33},
+      "loop": {"type": "for", "iter": 1, "total": 5}
+    },
+    {
+      "t": 46,
+      "kind": "io",
+      "loc": {"line": 34},
+      "dir": "out",
+      "channel": "stdout",
+      "data": "12 "
+    },
+    {
+      "t": 47,
+      "kind": "loopIter",
+      "loc": {"line": 33},
+      "loop": {"type": "for", "iter": 2, "total": 5}
+    },
+    {
+      "t": 48,
+      "kind": "io",
+      "loc": {"line": 34},
+      "dir": "out",
+      "channel": "stdout",
+      "data": "22 "
+    },
+    {
+      "t": 49,
+      "kind": "loopIter",
+      "loc": {"line": 33},
+      "loop": {"type": "for", "iter": 3, "total": 5}
+    },
+    {
+      "t": 50,
+      "kind": "io",
+      "loc": {"line": 34},
+      "dir": "out",
+      "channel": "stdout",
+      "data": "25 "
+    },
+    {
+      "t": 51,
+      "kind": "loopIter",
+      "loc": {"line": 33},
+      "loop": {"type": "for", "iter": 4, "total": 5}
+    },
+    {
+      "t": 52,
+      "kind": "io",
+      "loc": {"line": 34},
+      "dir": "out",
+      "channel": "stdout",
+      "data": "64 "
+    },
+    {
+      "t": 53,
+      "kind": "io",
+      "loc": {"line": 36},
+      "dir": "out",
+      "channel": "stdout",
+      "data": "\n"
+    }
+  ]
+}

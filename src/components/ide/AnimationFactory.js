@@ -1,7 +1,6 @@
-// AnimationFactory.js - DV-Flow v1.3 완전 대응 (key 수정)
+// AnimationFactory.js - 강화된 자동 감지 시스템
 import React from 'react';
 
-// 실제 애니메이션 컴포넌트들 import
 import SortAnimation from './animations/SortAnimation';
 import BinaryTreeAnimation from './animations/BinaryTreeAnimation';
 import GraphAnimation from './animations/GraphAnimation';
@@ -11,11 +10,11 @@ import RecursionAnimation from './animations/RecursionAnimation';
 import PlaceholderAnimation from './animations/PlaceholderAnimation';
 
 /**
- * 🏭 AnimationFactory - DV-Flow v1.3 지원
+ * 🏭 AnimationFactory - DV-Flow v1.3 지원 + 강화된 자동 감지
  */
 export class AnimationFactory {
     static animations = {
-        // ✅ 정렬 알고리즘 (SortAnimation 사용)
+        // ✅ 정렬 알고리즘
         'bubble-sort': SortAnimation,
         'selection-sort': SortAnimation,
         'insertion-sort': SortAnimation,
@@ -23,7 +22,7 @@ export class AnimationFactory {
         'quick-sort': SortAnimation,
         'sort': SortAnimation,
 
-        // ✅ 트리 구조
+        // ✅ 트리
         'binary-tree': BinaryTreeAnimation,
         'tree': BinaryTreeAnimation,
 
@@ -45,8 +44,9 @@ export class AnimationFactory {
         'recursion': RecursionAnimation,
         'fibonacci-recursion': RecursionAnimation,
         'fibonacci': RecursionAnimation,
+        'factorial': RecursionAnimation,
 
-        // 🚧 기타 (Placeholder)
+        // 🚧 기타
         'variables': PlaceholderAnimation,
         'default': PlaceholderAnimation
     };
@@ -58,22 +58,14 @@ export class AnimationFactory {
         console.log('🏭 AnimationFactory.createAnimation:', {
             type,
             hasData: !!props.data,
-            eventsCount: props.data?.events?.length || 0,
-            currentStep: props.currentStep,
-            totalSteps: props.totalSteps
+            eventsCount: props.data?.events?.length || 0
         });
 
         const normalizedType = this.normalizeType(type);
         const AnimationComponent = this.animations[normalizedType] || PlaceholderAnimation;
 
-        // DV-Flow v1.3 검증
-        if (props.data && !props.data.events) {
-            console.warn('⚠️ 구버전 JSON 구조 감지! events 필드가 없습니다.');
-        }
-
-        // ⚡ CRITICAL: Date.now() 제거! 고정된 key 사용
         return React.createElement(AnimationComponent, {
-            key: `animation-${normalizedType}`, // 타입별 고정 key
+            key: `animation-${normalizedType}`,
             animationType: normalizedType,
             ...props
         });
@@ -83,10 +75,214 @@ export class AnimationFactory {
      * 🔧 타입 정규화
      */
     static normalizeType(type) {
-        if (!type || typeof type !== 'string') {
-            return 'unknown';
-        }
+        if (!type || typeof type !== 'string') return 'unknown';
         return type.toLowerCase().trim().replace(/[\s_]+/g, '-').replace(/[^a-z0-9-]/g, '') || 'unknown';
+    }
+
+    /**
+     * 🎯 강화된 애니메이션 타입 자동 감지
+     */
+    static detectAnimationType(events) {
+        if (!events || events.length === 0) return 'variables';
+
+        // 1️⃣ viz.type 우선 확인 (명시적 지정)
+        for (let event of events) {
+            if (event.viz?.type) {
+                const vizType = event.viz.type.toLowerCase();
+                console.log('✅ viz.type 감지:', vizType);
+
+                // 정렬 타입들
+                if (['bubble-sort', 'selection-sort', 'insertion-sort', 'merge-sort', 'quick-sort'].includes(vizType)) {
+                    return vizType;
+                }
+
+                // 자료구조 타입들
+                if (vizType === 'heap') return 'heap';
+                if (vizType === 'bst' || vizType === 'tree') return 'binary-tree';
+                if (vizType === 'graph') return 'graph';
+                if (vizType === 'list' || vizType === 'linkedlist') return 'linked-list';
+                if (vizType === 'recursion' || vizType === 'recursive') return 'recursion';
+            }
+        }
+
+        // 2️⃣ ds_op의 target으로 자료구조 감지
+        const heapOp = events.find(e =>
+            e.kind === 'ds_op' &&
+            e.target &&
+            e.target.toLowerCase().includes('heap')
+        );
+        if (heapOp) {
+            console.log('✅ ds_op target으로 heap 감지');
+            return 'heap';
+        }
+
+        const listOp = events.find(e =>
+            e.kind === 'ds_op' &&
+            e.target &&
+            (e.target.toLowerCase().includes('list') ||
+                e.target.toLowerCase().includes('linkedlist') ||
+                e.target.toLowerCase().includes('node'))
+        );
+        if (listOp) {
+            console.log('✅ ds_op target으로 linked-list 감지');
+            return 'linked-list';
+        }
+
+        const graphOp = events.find(e =>
+            e.kind === 'ds_op' &&
+            e.target &&
+            (e.target.toLowerCase().includes('graph') ||
+                e.target.toLowerCase().includes('adj'))
+        );
+        if (graphOp) {
+            console.log('✅ ds_op target으로 graph 감지');
+            return 'graph';
+        }
+
+        const treeOp = events.find(e =>
+            e.kind === 'ds_op' &&
+            e.target &&
+            (e.target.toLowerCase().includes('tree') ||
+                e.target.toLowerCase().includes('bst'))
+        );
+        if (treeOp) {
+            console.log('✅ ds_op target으로 binary-tree 감지');
+            return 'binary-tree';
+        }
+
+        // 3️⃣ 재귀 패턴 감지 (call/return 분석) - 강화됨!
+        const callEvents = events.filter(e => e.kind === 'call');
+        const returnEvents = events.filter(e => e.kind === 'return');
+
+        if (callEvents.length >= 3 && returnEvents.length >= 3) {
+            // 같은 함수가 여러 번 호출되는지 확인
+            const functionCallCounts = {};
+            const functionReturnCounts = {};
+
+            callEvents.forEach(e => {
+                if (e.fn) {
+                    functionCallCounts[e.fn] = (functionCallCounts[e.fn] || 0) + 1;
+                }
+            });
+
+            returnEvents.forEach(e => {
+                if (e.fn) {
+                    functionReturnCounts[e.fn] = (functionReturnCounts[e.fn] || 0) + 1;
+                }
+            });
+
+            // 같은 함수의 call/return이 각각 3번 이상이면 재귀
+            for (const fn in functionCallCounts) {
+                const callCount = functionCallCounts[fn];
+                const returnCount = functionReturnCounts[fn] || 0;
+
+                if (callCount >= 3 && returnCount >= 3) {
+                    const ratio = returnCount / callCount;
+                    // call과 return 개수가 비슷하면 재귀
+                    if (ratio >= 0.8 && ratio <= 1.2) {
+                        console.log('✅ 재귀 패턴 감지 (call/return 균형)', {
+                            function: fn,
+                            calls: callCount,
+                            returns: returnCount,
+                            ratio: ratio
+                        });
+                        return 'recursion';
+                    }
+                }
+            }
+        }
+
+        // 4️⃣ 정렬 알고리즘 패턴 감지 (강화!)
+        const hasCompare = events.some(e => e.kind === 'compare');
+        const hasSwap = events.some(e => e.kind === 'swap');
+
+        if (hasCompare && hasSwap) {
+            // QuickSort: pivot 존재
+            const hasPivot = events.some(e =>
+                e.viz?.pivot !== undefined ||
+                (e.kind === 'assign' && e.var && e.var.includes('pivot'))
+            );
+            if (hasPivot) {
+                console.log('✅ QuickSort 감지 (pivot 발견)');
+                return 'quick-sort';
+            }
+
+            // MergeSort: merge 이벤트 존재
+            const hasMerge = events.some(e => e.kind === 'merge');
+            if (hasMerge) {
+                console.log('✅ MergeSort 감지 (merge 이벤트)');
+                return 'merge-sort';
+            }
+
+            // SelectionSort vs InsertionSort vs BubbleSort 구분
+            const sortType = this.detectSortPattern(events);
+            console.log('✅ 정렬 패턴 감지:', sortType);
+            return sortType;
+        }
+
+        // 5️⃣ 기본값
+        console.log('⚠️ 감지 실패 - variables로 처리');
+        return 'variables';
+    }
+
+    /**
+     * 🔍 정렬 알고리즘 세부 패턴 분석
+     */
+    static detectSortPattern(events) {
+        const compares = events.filter(e => e.kind === 'compare');
+        const swaps = events.filter(e => e.kind === 'swap');
+
+        if (compares.length === 0 || swaps.length === 0) {
+            return 'bubble-sort'; // 기본값
+        }
+
+        // SelectionSort 특징: 라운드당 swap이 적음 (보통 1번)
+        // compare 횟수 대비 swap이 적으면 Selection
+        const swapRatio = swaps.length / compares.length;
+
+        if (swapRatio < 0.3) {
+            console.log('📊 SelectionSort 특징: swap 비율 낮음', swapRatio);
+            return 'selection-sort';
+        }
+
+        // InsertionSort 특징: 연속된 swap (삽입 위치까지 밀어내기)
+        // swap이 연속으로 일어나는 패턴 확인
+        let consecutiveSwaps = 0;
+        let maxConsecutiveSwaps = 0;
+
+        for (let i = 1; i < events.length; i++) {
+            if (events[i].kind === 'swap' && events[i-1].kind === 'swap') {
+                consecutiveSwaps++;
+                maxConsecutiveSwaps = Math.max(maxConsecutiveSwaps, consecutiveSwaps);
+            } else if (events[i].kind === 'swap') {
+                consecutiveSwaps = 1;
+            } else {
+                consecutiveSwaps = 0;
+            }
+        }
+
+        if (maxConsecutiveSwaps >= 2) {
+            console.log('📊 InsertionSort 특징: 연속 swap 패턴', maxConsecutiveSwaps);
+            return 'insertion-sort';
+        }
+
+        // BubbleSort 특징: compare 직후 swap (인접 원소 교환)
+        let immediateSwaps = 0;
+        for (let i = 1; i < events.length; i++) {
+            if (events[i].kind === 'swap' && events[i-1].kind === 'compare') {
+                immediateSwaps++;
+            }
+        }
+
+        const immediateSwapRatio = immediateSwaps / swaps.length;
+        if (immediateSwapRatio > 0.5) {
+            console.log('📊 BubbleSort 특징: compare 직후 swap', immediateSwapRatio);
+            return 'bubble-sort';
+        }
+
+        // 기본값
+        console.log('📊 정렬 패턴 불명확 - BubbleSort 기본 처리');
+        return 'bubble-sort';
     }
 
     /**
@@ -127,8 +323,8 @@ export class AnimationFactory {
         const available = this.getAvailableTypes();
 
         return {
-            version: '2.1.0-v1.3',
-            mode: 'events-based',
+            version: '2.3.0-recursion-enhanced',
+            mode: 'smart-pattern-detection',
             jsonSchema: 'DV-Flow v1.3',
             totalAnimations: available.length,
             implementedCount: implemented.length,
@@ -136,64 +332,6 @@ export class AnimationFactory {
             implementedTypes: implemented,
             availableTypes: available
         };
-    }
-
-    /**
-     * 🔍 애니메이션 타입 자동 감지
-     */
-    static detectAnimationType(events) {
-        if (!events || events.length === 0) return 'variables';
-
-        // 정렬 패턴
-        const hasCompare = events.some(e => e.kind === 'compare');
-        const hasSwap = events.some(e => e.kind === 'swap');
-        if (hasCompare && hasSwap) {
-            const hasPivot = events.some(e => e.viz?.pivot !== undefined);
-            if (hasPivot) return 'quick-sort';
-
-            const hasMerge = events.some(e => e.kind === 'merge');
-            if (hasMerge) return 'merge-sort';
-
-            return 'bubble-sort';
-        }
-
-        // 그래프 패턴
-        const hasGraphOp = events.some(e =>
-            e.kind === 'ds_op' &&
-            e.target &&
-            (e.target.includes('adj_mat') || e.target.includes('graph'))
-        );
-        if (hasGraphOp) return 'graph';
-
-        // 트리 패턴
-        const hasTreeOp = events.some(e =>
-            e.kind === 'ds_op' &&
-            e.target &&
-            (e.target.includes('tree') || e.target.includes('node'))
-        );
-        if (hasTreeOp) return 'binary-tree';
-
-        // 힙 패턴
-        const hasHeapOp = events.some(e =>
-            e.kind === 'ds_op' &&
-            e.target &&
-            e.target.includes('heap')
-        );
-        if (hasHeapOp) return 'heap';
-
-        // 링크드 리스트 패턴
-        const hasListOp = events.some(e =>
-            e.kind === 'ds_op' &&
-            e.target &&
-            e.target.includes('list')
-        );
-        if (hasListOp) return 'linked-list';
-
-        // 재귀 패턴
-        const hasRecursiveCall = events.filter(e => e.kind === 'call').length > 3;
-        if (hasRecursiveCall) return 'recursion';
-
-        return 'variables';
     }
 }
 
@@ -210,7 +348,6 @@ export const getFactoryInfo = () =>
 export const detectAnimationType = (events) =>
     AnimationFactory.detectAnimationType(events);
 
-// 기본 export
 export default AnimationFactory;
 
-console.log('🏭 AnimationFactory (DV-Flow v1.3) 로드 완료:', AnimationFactory.getFactoryInfo());
+console.log('🏭 AnimationFactory (Enhanced) 로드 완료:', AnimationFactory.getFactoryInfo());

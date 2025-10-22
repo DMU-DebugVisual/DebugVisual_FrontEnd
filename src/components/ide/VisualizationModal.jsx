@@ -1,4 +1,4 @@
-// VisualizationModal.jsx - 확대/축소 상태 유지 버전
+// VisualizationModal.jsx - AnimationFactory 감지 로직 활용 버전
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import AnimationFactory from './AnimationFactory';
@@ -104,7 +104,7 @@ const ControlButton = ({ onClick, disabled, variant = 'default', children, title
     );
 };
 
-// 🎮 시각화 컨트롤 (확대/축소 제거)
+// 🎮 시각화 컨트롤
 const VisualizationControls = ({
                                    isPlaying, currentStep, totalSteps, speed,
                                    onPlay, onPause, onStepBack, onStepForward, onReset, onSpeedChange, onStepChange,
@@ -112,7 +112,6 @@ const VisualizationControls = ({
                                }) => {
     return (
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-            {/* 재생 컨트롤 */}
             <ControlButton
                 onClick={isPlaying ? onPause : onPlay}
                 disabled={totalSteps === 0}
@@ -135,7 +134,6 @@ const VisualizationControls = ({
                 ⏮ 처음
             </ControlButton>
 
-            {/* 단계 표시 */}
             <div style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -173,7 +171,6 @@ const VisualizationControls = ({
                 <span style={{ fontSize: '12px', color: theme.colors.textLight }}>/ {totalSteps}</span>
             </div>
 
-            {/* 속도 컨트롤 */}
             <div style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -212,7 +209,7 @@ const VisualizationControls = ({
 };
 
 // 📊 정보 패널
-const InfoPanel = ({ data, currentStep, totalSteps, theme }) => {
+const InfoPanel = ({ data, currentStep, totalSteps, animationType, theme }) => {
     const InfoCard = ({ title, icon, children }) => (
         <div style={{
             background: theme.colors.card,
@@ -243,6 +240,24 @@ const InfoPanel = ({ data, currentStep, totalSteps, theme }) => {
         { label: '공간 복잡도', value: analysis?.spaceComplexity || '-' }
     ];
     const hasComplexityData = complexityItems.some(item => item.value && item.value !== '-');
+
+    // 🎯 감지된 알고리즘 타입 표시
+    const getAlgorithmLabel = (type) => {
+        const labels = {
+            'bubble-sort': '버블 정렬',
+            'selection-sort': '선택 정렬',
+            'insertion-sort': '삽입 정렬',
+            'merge-sort': '병합 정렬',
+            'quick-sort': '퀵 정렬',
+            'binary-tree': '이진 트리',
+            'heap': '힙',
+            'graph': '그래프',
+            'linked-list': '연결 리스트',
+            'recursion': '재귀',
+            'variables': '변수'
+        };
+        return labels[type] || type;
+    };
 
     return (
         <div style={{
@@ -280,6 +295,7 @@ const InfoPanel = ({ data, currentStep, totalSteps, theme }) => {
             <InfoCard title="시각화 정보" icon="📊">
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {[
+                        { label: '알고리즘', value: getAlgorithmLabel(animationType) },
                         { label: '이벤트 수', value: `${data?.events?.length || 0}개` },
                         { label: '현재 이벤트', value: currentEvent?.kind || '-' }
                     ].map((item, index) => (
@@ -400,43 +416,6 @@ const AnimationDisplay = ({ data, currentStep, totalSteps, animationType, isPlay
     );
 };
 
-// 알고리즘 감지 (기존 로직 유지)
-const detectAlgorithmFromEvents = (events) => {
-    if (!events || events.length === 0) return 'variables';
-
-    for (let i = 0; i < events.length; i++) {
-        const event = events[i];
-        if (event.viz?.type) {
-            const vizType = event.viz.type.toLowerCase();
-            if (vizType === 'heap') return 'heap';
-            if (vizType === 'bst' || vizType === 'tree') return 'binary-tree';
-            if (vizType === 'graph') return 'graph';
-            if (vizType === 'list' || vizType === 'linkedlist') return 'linked-list';
-        }
-    }
-
-    const heapEvent = events.find(e => e.kind === 'ds_op' && e.target?.toLowerCase().includes('heap'));
-    if (heapEvent) return 'heap';
-
-    const listEvent = events.find(e => e.kind === 'ds_op' && e.target && (e.target.toLowerCase().includes('list') || e.target.toLowerCase().includes('linkedlist') || e.target.toLowerCase().includes('node')));
-    if (listEvent) return 'linked-list';
-
-    const graphEvent = events.find(e => e.kind === 'ds_op' && e.target && (e.target.toLowerCase().includes('graph') || e.target.toLowerCase().includes('adj')));
-    if (graphEvent) return 'graph';
-
-    const treeEvent = events.find(e => e.kind === 'ds_op' && e.target && (e.target.toLowerCase().includes('tree') || e.target.toLowerCase().includes('bst')));
-    if (treeEvent) return 'binary-tree';
-
-    const recursionEvents = events.filter(e => e.kind === 'call' && e.viz?.recursionDepth !== undefined);
-    if (recursionEvents.length > 0) return 'recursion';
-
-    const hasCompare = events.some(e => e.kind === 'compare');
-    const hasSwap = events.some(e => e.kind === 'swap');
-    if (hasCompare && hasSwap) return 'bubble-sort';
-
-    return 'variables';
-};
-
 // 📦 메인 모달
 const VisualizationModal = ({
                                 isOpen,
@@ -457,6 +436,24 @@ const VisualizationModal = ({
     const theme = getTheme(isDark);
     const animationControls = useAnimationControls(totalSteps);
 
+    // ✅ AnimationFactory의 감지 로직 활용 (한 번만 실행)
+    const detectAndSetAnimationType = useCallback((events) => {
+        if (!events || events.length === 0) {
+            console.log('⚠️ 이벤트가 없어 기본값 사용');
+            return 'variables';
+        }
+
+        try {
+            // 🎯 AnimationFactory의 고급 감지 로직 사용
+            const detectedType = AnimationFactory.detectAnimationType(events);
+            console.log('✅ AnimationFactory 감지 결과:', detectedType);
+            return detectedType;
+        } catch (error) {
+            console.error('❌ 알고리즘 감지 실패:', error);
+            return 'variables';
+        }
+    }, []);
+
     // 데이터 가져오기
     const fetchVisualizationData = async () => {
         if (!code?.trim() && !preloadedJsonData) {
@@ -474,7 +471,7 @@ const VisualizationModal = ({
                 const steps = preloadedJsonData.events?.length || 0;
                 setTotalSteps(steps);
                 animationControls.reset();
-                const detectedType = detectAlgorithmFromEvents(preloadedJsonData.events);
+                const detectedType = detectAndSetAnimationType(preloadedJsonData.events);
                 setAnimationType(detectedType);
             } catch (err) {
                 setError(err.message);
@@ -495,7 +492,7 @@ const VisualizationModal = ({
                 const steps = parsedJson.events?.length || 0;
                 setTotalSteps(steps);
                 animationControls.reset();
-                const detectedType = detectAlgorithmFromEvents(parsedJson.events);
+                const detectedType = detectAndSetAnimationType(parsedJson.events);
                 setAnimationType(detectedType);
             } catch (err) {
                 setError(`JSON 파싱 오류: ${err.message}`);
@@ -514,7 +511,7 @@ const VisualizationModal = ({
             const steps = visualizationData.events?.length || 0;
             setTotalSteps(steps);
             animationControls.reset();
-            const detectedType = detectAlgorithmFromEvents(visualizationData.events);
+            const detectedType = detectAndSetAnimationType(visualizationData.events);
             setAnimationType(detectedType);
         } catch (err) {
             setError(err.message);
@@ -529,7 +526,6 @@ const VisualizationModal = ({
         }
     }, [isOpen, preloadedJsonData]);
 
-    // 모달이 닫힐 때만 초기화
     useEffect(() => {
         if (!isOpen) {
             setData(null);
@@ -687,10 +683,18 @@ const VisualizationModal = ({
                             minHeight: 0
                         }}
                              className="visualization-scrollbar">
-                            {data && <InfoPanel data={data} currentStep={animationControls.currentStep} totalSteps={totalSteps} theme={theme} />}
+                            {data && (
+                                <InfoPanel
+                                    data={data}
+                                    currentStep={animationControls.currentStep}
+                                    totalSteps={totalSteps}
+                                    animationType={animationType}
+                                    theme={theme}
+                                />
+                            )}
                         </div>
 
-                        {/* 오른쪽: 애니메이션만 */}
+                        {/* 오른쪽: 애니메이션 */}
                         <div style={{
                             background: theme.colors.card,
                             overflowY: 'auto',
