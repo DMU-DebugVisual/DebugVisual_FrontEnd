@@ -621,15 +621,21 @@ export default function CodecastLive({ isDark }) {
                 await connect(token);
                 if (cancelled) return;
                 unsubscribe = subscribeCode(room.id, sessionId, (msg) => {
-                    if (!msg || msg.senderId === userId) return;
+                    if (!msg) return;
+                    const senderId = msg.senderId;
+                    if (senderId === userId) return;
                     if (typeof msg.content !== 'string') return;
 
-                    const senderId = msg.senderId;
                     const newContent = msg.content;
+                    const targetParticipantId =
+                        msg.targetParticipantId ||
+                        msg.ownerId ||
+                        msg.sessionOwnerId ||
+                        senderId;
 
                     updateParticipants((prev) =>
                         prev.map((p) =>
-                            p.id === senderId
+                            p.id === targetParticipantId
                                 ? {
                                     ...p,
                                     code: newContent,
@@ -663,28 +669,79 @@ export default function CodecastLive({ isDark }) {
         };
     }, [disconnect]);
 
+    const findById = (id) => participants.find((p) => p.id === id);
+
+    const isViewingSelf = activeParticipant?.id === ownParticipantId;
+
+    const roomOwnerId = useMemo(() => {
+        const host = participants.find((p) => p.role === 'host');
+        if (host) return host.id;
+        if (currentUser.role === 'host') return currentUser.id;
+        return injected.ownerId || null;
+    }, [participants, injected.ownerId, currentUser.id, currentUser.role]);
+
+    const activeSessionMeta = useMemo(() => {
+        if (!sessionId) return null;
+        const ownerParticipant =
+            participants.find((p) => p.id === sessionOwnerId) ||
+            participants.find((p) => p.id === roomOwnerId);
+        const permissions = participants.reduce((acc, p) => {
+            if (p.role === 'edit') acc[p.id] = 'edit';
+            return acc;
+        }, {});
+
+        return {
+            sessionId,
+            ownerId: sessionOwnerId || ownerParticipant?.id || roomOwnerId || null,
+            permissions,
+        };
+    }, [sessionId, participants, roomOwnerId, sessionOwnerId]);
+
+    const hasEditPermissionOnActive = useMemo(() => {
+        if (!activeParticipant) return false;
+        if (activeParticipant.id === ownParticipantId) return true;
+        if (!activeSessionMeta) return false;
+        if (activeParticipant.stage !== 'editing') return false;
+
+        const isSessionOwner = activeSessionMeta.ownerId === ownParticipantId;
+        const isRoomOwner = roomOwnerId === ownParticipantId;
+        const hasGrantedPermission = activeSessionMeta.permissions?.[ownParticipantId] === 'edit';
+
+        return Boolean(isSessionOwner || isRoomOwner || hasGrantedPermission);
+    }, [activeParticipant, activeSessionMeta, ownParticipantId, roomOwnerId]);
+
+    const editorReadOnly = !(isViewingSelf || hasEditPermissionOnActive);
+
     // 에디터 변경 → 서버 publish
     const handleEditorChange = (nextText) => {
-        if (activeParticipantId !== currentUser.id) return;
-        // 서버에 보내는 것은 동일
-        // 로컬 상태 업데이트
-        setCurrentUser((prev) => ({
-            ...prev,
-            code: nextText,
-            file: prev.file ? { ...prev.file, content: nextText } : prev.file,
-        }));
+        if (editorReadOnly) return;
+
+        const ownId = selfParticipantId || currentUser.id;
+        const targetParticipantId = activeParticipant?.id;
+        if (!targetParticipantId) return;
+
         setParticipants((prev) =>
             prev.map((p) =>
-                p.id === (selfParticipantId || currentUser.id)
+                p.id === targetParticipantId
                     ? { ...p, code: nextText, file: p.file ? { ...p.file, content: nextText } : p.file }
                     : p
             )
         );
 
-        // 공유 중일 때만 업데이트를 브로드캐스트
-        if (room.id && sessionId && currentUser.stage === 'editing') {
-            sendCodeUpdate(room.id, sessionId, {
-                senderId: selfParticipantId || currentUser.id,
+        if (targetParticipantId === ownId) {
+            setCurrentUser((prev) => ({
+                ...prev,
+                code: nextText,
+                file: prev.file ? { ...prev.file, content: nextText } : prev.file,
+            }));
+        }
+
+        const targetSessionId = activeSessionMeta?.sessionId || sessionId;
+
+        if (room.id && targetSessionId && activeParticipant?.stage === 'editing') {
+            sendCodeUpdate(room.id, targetSessionId, {
+                senderId: ownId,
+                targetParticipantId,
                 content: nextText,
             });
         }
@@ -747,6 +804,13 @@ export default function CodecastLive({ isDark }) {
     const handleShareToggle = async () => {
         if (!token) {
             alert('로그인이 필요합니다. 다시 로그인 후 이용해주세요.');
+            return;
+        }
+
+        const ownId = selfParticipantId || currentUser.id;
+        const viewingOwnIde = activeParticipantId === ownId;
+        if (!viewingOwnIde) {
+            alert('자신의 IDE 화면을 보고 있을 때만 방송을 시작하거나 중지할 수 있습니다.');
             return;
         }
 
@@ -1052,49 +1116,6 @@ export default function CodecastLive({ isDark }) {
             navigate('/broadcast');
         }
     };
-
-    const findById = (id) => participants.find((p) => p.id === id);
-
-    const isViewingSelf = activeParticipant?.id === ownParticipantId;
-
-    const roomOwnerId = useMemo(() => {
-        const host = participants.find((p) => p.role === 'host');
-        if (host) return host.id;
-        if (currentUser.role === 'host') return currentUser.id;
-        return injected.ownerId || null;
-    }, [participants, injected.ownerId, currentUser.id, currentUser.role]);
-
-    const activeSessionMeta = useMemo(() => {
-        if (!sessionId) return null;
-        const ownerParticipant =
-            participants.find((p) => p.id === sessionOwnerId) ||
-            participants.find((p) => p.id === roomOwnerId);
-        const permissions = participants.reduce((acc, p) => {
-            if (p.role === 'edit') acc[p.id] = 'edit';
-            return acc;
-        }, {});
-
-        return {
-            sessionId,
-            ownerId: sessionOwnerId || ownerParticipant?.id || roomOwnerId || null,
-            permissions,
-        };
-    }, [sessionId, participants, roomOwnerId, sessionOwnerId]);
-
-    const hasEditPermissionOnActive = useMemo(() => {
-        if (!activeParticipant) return false;
-        if (activeParticipant.id === ownParticipantId) return true;
-        if (!activeSessionMeta) return false;
-        if (activeParticipant.stage !== 'editing') return false;
-
-        const isSessionOwner = activeSessionMeta.ownerId === ownParticipantId;
-        const isRoomOwner = roomOwnerId === ownParticipantId;
-        const hasGrantedPermission = activeSessionMeta.permissions?.[ownParticipantId] === 'edit';
-
-        return Boolean(isSessionOwner || isRoomOwner || hasGrantedPermission);
-    }, [activeParticipant, activeSessionMeta, ownParticipantId, roomOwnerId]);
-
-    const editorReadOnly = !(isViewingSelf || hasEditPermissionOnActive);
 
     const previewParticipants = useMemo(() => {
         const editingList = participants.filter((p) => p.stage === 'editing');
