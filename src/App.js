@@ -31,8 +31,10 @@ function AppContent() {
     const isSignupPage = location.pathname === "/signup";
     const isIdePage = location.pathname.startsWith("/ide");
     const isMainPage = location.pathname === "/";
-    // ✅ CodecastLive 페이지 플래그 추가
-    const isCodecastLivePage = location.pathname === "/broadcast/live";
+    const isCommunityPage = location.pathname.startsWith("/community");
+    const isMyPage = location.pathname.startsWith("/mypage");
+    const isCodecastPage = location.pathname.startsWith("/broadcast") || location.pathname.startsWith("/startbroadcast");
+    const shouldShowFooter = isMainPage && !(isSignupPage || isIdePage || isCommunityPage || isMyPage || isCodecastPage);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -98,8 +100,7 @@ function AppContent() {
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
 
-            {/* 👈 푸터 렌더링 조건 수정: CodecastLive 페이지가 아닐 때만 렌더링 */}
-            {(!isSignupPage && !isIdePage && !isMainPage && !isCodecastLivePage) && <Footer />}
+            {shouldShowFooter && <Footer />}
 
             {isLoginModalOpen && (
                 <Login
