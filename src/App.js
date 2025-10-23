@@ -91,7 +91,7 @@ function AppContent() {
                 <Route path="/mypage" element={<MyPageLayout nickname={nickname} />}>
                     <Route index element={<Mypage nickname={nickname} />} />
                     <Route path="project" element={<MyProject />} />
-                    <Route path="community" element={<MyCommunity />} />
+                    <Route path="community" element={<MyCommunity nickname={nickname} />} />
                     <Route path="setting" element={<Settings nickname={nickname} />} />
                     <Route path="shared" element={<Shared />} />
                 </Route>
