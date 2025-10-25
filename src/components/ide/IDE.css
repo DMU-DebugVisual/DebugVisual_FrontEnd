@@ -123,6 +123,33 @@ body {
     box-shadow: none !important; /* 다른 스타일의 그림자 효과 제거 */
 }
 
+/* 💡 라이트 모드에서 파일 탐색기와 에디터 영역을 선명하게 구분 */
+body:not(.dark-mode) .sidebar {
+    background-color: #ffffff !important;
+    border-right: 1px solid #dfe3f5 !important;
+    box-shadow: 6px 0 18px rgba(24, 32, 72, 0.06) !important;
+}
+
+body:not(.dark-mode) .modern-sidebar,
+body:not(.dark-mode) .modern-sidebar-header,
+body:not(.dark-mode) .modern-sidebar-content {
+    background-color: #f8f9ff !important;
+}
+
+body:not(.dark-mode) .main-content,
+body:not(.dark-mode) .content-layout {
+    background-color: #eaedf8;
+}
+
+body:not(.dark-mode) .editor-section,
+body:not(.dark-mode) .monaco-editor-wrapper {
+    background-color: #e2e6f4;
+}
+
+body:not(.dark-mode) .right-panel {
+    background-color: #f6f7fc;
+}
+
 
 .sidebar.collapsed {
     width: 0 !important;

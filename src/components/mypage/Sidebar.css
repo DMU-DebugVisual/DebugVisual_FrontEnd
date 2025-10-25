@@ -1,129 +1,200 @@
-.sidebar {
-    width: 302px;
-    background-color: #ffffff;
-    padding: 70px 20px;
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
-}
-
-.sidebar .icon {
-    margin-right: 8px;
-    vertical-align: middle;
-    color: #a684f1;
-}
-
-.sidebar .username {
-    display: flex;
-    align-items: center;
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #ddd;
-}
-
-.avatar-small {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background-color: #bbb;
-    margin-right: 15px;
-}
-
-.user-info {
+.mypage-sidebar {
+    width: 288px;
+    padding: 38px 28px 46px;
     display: flex;
     flex-direction: column;
+    gap: 32px;
+    background: var(--mypage-elevated);
+    border-right: 1px solid var(--mypage-border);
+    box-shadow: var(--mypage-shadow);
+    backdrop-filter: blur(14px);
+    position: sticky;
+    top: 96px;
+    align-self: flex-start;
+    max-height: calc(100vh - 120px);
 }
 
-.user-info .name {
+.mypage-sidebar__profile {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+}
+
+.mypage-sidebar__avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
     font-size: 20px;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 2px;
-}
-
-.user-info .email {
-    font-size: 13px;
-    color: #888;
-}
-
-.sidebar ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.sidebar li {
-    margin-bottom: 8px;
-}
-
-.sidebar li a {
-    display: flex; /* 수평 정렬 */
-    align-items: center; /* 세로 정렬 중앙 */
-    gap: 8px; /* 아이콘과 텍스트 사이 여백 */
-    padding: 10px 12px;
-    color: #444;
-    text-decoration: none;
-    border-radius: 4px;
-    transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-
-.sidebar li a:hover {
-    background-color: #f0f0f0;
-}
-
-.sidebar li a.active {
-    background-color: #a684f1;
-    color: white;
-    font-weight: bold;
-}
-
-.sidebar li a.active .icon {
-    color: white;
-}
-
-/* 🌙 사이드바 전체 배경 및 그림자 */
-.dark-mode .sidebar {
-    background-color: #2a2a2a;
-    box-shadow: 2px 0 8px rgba(255, 255, 255, 0.03);
-}
-
-/* 🌙 사용자 이름 영역 */
-.dark-mode .sidebar .username {
-    border-bottom: 1px solid #444;
-}
-
-/* 🌙 아바타 색상 */
-.dark-mode .avatar-small {
-    background-color: #666;
-}
-
-/* 🌙 사용자 텍스트 */
-.dark-mode .user-info .name {
-    color: #f5f5f5;
-}
-
-.dark-mode .user-info .email {
-    color: #aaa;
-}
-
-/* 🌙 메뉴 링크 */
-.dark-mode .sidebar li a {
-    color: #ccc;
-}
-
-.dark-mode .sidebar li a:hover {
-    background-color: #3a3a3a;
     color: #fff;
+    background: linear-gradient(135deg, rgba(108, 92, 231, 0.95), rgba(52, 120, 246, 0.85));
+    box-shadow: 0 14px 30px -18px rgba(108, 92, 231, 0.75);
 }
 
-/* 🌙 활성 메뉴 */
-.dark-mode .sidebar li a.active {
-    background-color: #b88eff;
-    color: #1e1e1e;
-    font-weight: bold;
+.mypage-sidebar__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
-.dark-mode .sidebar li a.active .icon {
-    color: #1e1e1e;
+.mypage-sidebar__name {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--mypage-text-primary);
+}
+
+.mypage-sidebar__handle {
+    font-size: 13px;
+    color: var(--mypage-text-tertiary);
+}
+
+.mypage-sidebar__edit {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--mypage-accent);
+    background: transparent;
+}
+
+.mypage-sidebar__edit:hover {
+    text-decoration: underline;
+}
+
+.mypage-sidebar__nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.mypage-sidebar__link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--mypage-text-secondary);
+    text-decoration: none;
+    transition: transform 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.mypage-sidebar__link:hover {
+    transform: translateX(4px);
+    background: rgba(108, 92, 231, 0.12);
+    color: var(--mypage-text-primary);
+}
+
+.mypage-sidebar__link.is-active {
+    background: linear-gradient(135deg, rgba(108, 92, 231, 0.22), rgba(52, 120, 246, 0.18));
+    color: var(--mypage-text-primary);
+    box-shadow: 0 14px 28px -20px rgba(15, 23, 42, 0.55);
+}
+
+.mypage-sidebar__icon {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: rgba(108, 92, 231, 0.12);
+    color: var(--mypage-accent);
+    font-size: 14px;
+}
+
+.mypage-sidebar__link.is-active .mypage-sidebar__icon {
+    background: rgba(108, 92, 231, 0.2);
+}
+
+.mypage-sidebar__cta {
+    margin-top: auto;
+    padding: 22px 20px;
+    border-radius: 20px;
+    background: linear-gradient(150deg, rgba(108, 92, 231, 0.16), rgba(52, 120, 246, 0.1));
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    color: var(--mypage-text-secondary);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.mypage-sidebar__cta-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--mypage-accent);
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(108, 92, 231, 0.18);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.mypage-sidebar__cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 22px -18px rgba(108, 92, 231, 0.5);
+}
+
+@media (max-width: 1240px) {
+    .mypage-sidebar {
+        width: 260px;
+        padding: 32px 24px;
+    }
+}
+
+@media (max-width: 992px) {
+    .mypage-sidebar {
+        position: static;
+        max-height: none;
+        width: 100%;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .mypage-sidebar__nav ul {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .mypage-sidebar__link {
+        flex: 1 1 calc(50% - 8px);
+    }
+}
+
+.dark-mode .mypage-sidebar__avatar {
+    background: linear-gradient(135deg, rgba(167, 139, 250, 0.9), rgba(96, 165, 250, 0.78));
+    box-shadow: 0 14px 28px -16px rgba(167, 139, 250, 0.7);
+}
+
+.dark-mode .mypage-sidebar__link:hover {
+    background: rgba(167, 139, 250, 0.14);
+}
+
+.dark-mode .mypage-sidebar__link.is-active {
+    background: linear-gradient(135deg, rgba(167, 139, 250, 0.24), rgba(96, 165, 250, 0.18));
+    box-shadow: 0 16px 28px -22px rgba(13, 17, 23, 0.85);
+}
+
+.dark-mode .mypage-sidebar__icon {
+    background: rgba(167, 139, 250, 0.16);
+    color: rgba(226, 232, 240, 0.85);
+}
+
+.dark-mode .mypage-sidebar__cta-button {
+    background: rgba(31, 33, 45, 0.82);
+    color: rgba(226, 232, 240, 0.88);
 }

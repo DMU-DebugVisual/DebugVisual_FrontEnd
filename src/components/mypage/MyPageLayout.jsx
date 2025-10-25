@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import './Mypage.css';
 
 const MyPageLayout = ({nickname}) => {
     return (
