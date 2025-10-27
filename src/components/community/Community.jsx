@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Community.css";
 import config from "../../config";
@@ -12,6 +12,13 @@ export default function Community() {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+
+    const [searchInput, setSearchInput] = useState("");
+    const [tagInput, setTagInput] = useState("");
+    const [keyword, setKeyword] = useState("");
+    const [tagKeyword, setTagKeyword] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
 
     useEffect(() => {
         let ignore = false;
@@ -71,6 +78,11 @@ export default function Community() {
                 }));
 
                 setPosts(mapped);
+                setKeyword("");
+                setTagKeyword([]);
+                setSearchInput("");
+                setTagInput("");
+                setCurrentPage(1);
             } catch (e) {
                 if (!ignore) setError(e.message || "알 수 없는 오류");
             } finally {
@@ -83,6 +95,90 @@ export default function Community() {
             controller.abort();
         };
     }, []);
+
+    const filteredPosts = useMemo(() => {
+        if (!keyword && (!tagKeyword || tagKeyword.length === 0)) {
+            return posts;
+        }
+
+        const lowerKeyword = keyword.toLowerCase();
+
+        return posts.filter((post) => {
+            const matchesKeyword = lowerKeyword
+                ? [post.title, post.summary, post.author]
+                    .join(" ")
+                    .toLowerCase()
+                    .includes(lowerKeyword)
+                : true;
+
+            const matchesTags = tagKeyword.length
+                ? tagKeyword.every((token) =>
+                    (post.tags || []).some((tag) => tag.toLowerCase().includes(token))
+                )
+                : true;
+
+            return matchesKeyword && matchesTags;
+        });
+    }, [keyword, tagKeyword, posts]);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [keyword, tagKeyword]);
+
+    useEffect(() => {
+        const lastPage = Math.max(1, Math.ceil(filteredPosts.length / ITEMS_PER_PAGE));
+        setCurrentPage((prev) => {
+            const next = Math.min(prev, lastPage);
+            return next === prev ? prev : next;
+        });
+    }, [filteredPosts.length, ITEMS_PER_PAGE]);
+
+    const handleSearchSubmit = (event) => {
+        event?.preventDefault?.();
+        const trimmedKeyword = searchInput.trim();
+        const parsedTags = tagInput
+            .split(/[#,\s,]+/)
+            .map((token) => token.trim().replace(/^#/, "").toLowerCase())
+            .filter(Boolean);
+
+        setKeyword(trimmedKeyword);
+        setTagKeyword(parsedTags);
+        setCurrentPage(1);
+    };
+
+    const handleReset = () => {
+        setSearchInput("");
+        setTagInput("");
+        setKeyword("");
+        setTagKeyword([]);
+        setCurrentPage(1);
+    };
+
+    const totalPages = Math.max(1, Math.ceil(filteredPosts.length / ITEMS_PER_PAGE));
+    const hasResults = filteredPosts.length > 0;
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const visiblePosts = useMemo(
+        () => (hasResults ? filteredPosts.slice(startIndex, startIndex + ITEMS_PER_PAGE) : []),
+        [filteredPosts, hasResults, startIndex, ITEMS_PER_PAGE]
+    );
+
+    const goToPage = (page) => {
+        const next = Math.min(Math.max(page, 1), Math.max(1, totalPages));
+        setCurrentPage(next);
+    };
+
+    const goToFirst = () => goToPage(1);
+    const goToLast = () => goToPage(totalPages);
+    const goToPreviousGroup = () => goToPage(currentPage - 5);
+    const goToNextGroup = () => goToPage(currentPage + 5);
+
+    const pageNumbers = useMemo(() => {
+        const numbers = [];
+        for (let i = 1; i <= totalPages; i += 1) {
+            numbers.push(i);
+        }
+        return numbers;
+    }, [totalPages]);
 
     return (
         <div className="community-wrapper">
@@ -118,13 +214,31 @@ export default function Community() {
                     </div>
 
                     <div className="search-bar">
+                        <form className="search-row" onSubmit={handleSearchSubmit}>
+                            <input
+                                type="search"
+                                placeholder="궁금한 질문을 검색해보세요!"
+                                value={searchInput}
+                                onChange={(event) => setSearchInput(event.target.value)}
+                                aria-label="게시글 검색"
+                            />
+                            <button type="submit" className="search-btn">검색</button>
+                        </form>
                         <div className="search-row">
-                            <input type="text" placeholder="궁금한 질문을 검색해보세요!" />
-                            <button className="search-btn">검색</button>
-                        </div>
-                        <div className="search-row">
-                            <input type="text" placeholder="# 태그로 검색해보세요!" />
-                            <button className="reset-btn">초기화</button>
+                            <input
+                                type="text"
+                                placeholder="# 태그로 검색해보세요!"
+                                value={tagInput}
+                                onChange={(event) => setTagInput(event.target.value)}
+                                onKeyDown={(event) => {
+                                    if (event.key === "Enter") {
+                                        event.preventDefault();
+                                        handleSearchSubmit();
+                                    }
+                                }}
+                                aria-label="태그 검색"
+                            />
+                            <button type="button" className="reset-btn" onClick={handleReset}>초기화</button>
                         </div>
                     </div>
 
@@ -146,9 +260,13 @@ export default function Community() {
                         <div className="post-list"><p>게시글이 없습니다.</p></div>
                     )}
 
-                    {!loading && !error && posts.length > 0 && (
+                    {!loading && !error && posts.length > 0 && filteredPosts.length === 0 && (
+                        <div className="post-list"><p>검색 결과가 없습니다.</p></div>
+                    )}
+
+                    {!loading && !error && filteredPosts.length > 0 && (
                         <div className="post-list">
-                            {posts.map((post) => (
+                            {filteredPosts.map((post) => (
                                 <div
                                     key={post.id}
                                     className="post-card"
