@@ -8,13 +8,13 @@
 }
 
 .mypage {
-    --mypage-bg: #f6f7fb;
+    --mypage-bg: #f5f6ff;
     --mypage-surface: #ffffff;
     --mypage-border: rgba(15, 23, 42, 0.08);
-    --mypage-text: #1e2233;
-    --mypage-muted: #5b6275;
-    --mypage-accent: #b88eff;
-    --mypage-soft: rgba(184, 142, 255, 0.18);
+    --mypage-text: #191c2d;
+    --mypage-muted: #4d5468;
+    --mypage-accent: #7c5cff;
+    --mypage-soft: rgba(124, 92, 255, 0.2);
     flex: 1;
     display: flex;
     justify-content: center;
@@ -92,7 +92,7 @@ body.body-scroll .mypage-content {
 
 .ghost-button:hover {
     transform: translateY(-1px);
-    border-color: rgba(184, 142, 255, 0.45);
+    border-color: rgba(124, 92, 255, 0.5);
     color: var(--mypage-text);
 }
 
@@ -100,12 +100,12 @@ body.body-scroll .mypage-content {
     background: var(--mypage-accent);
     color: #ffffff;
     border: none;
-    box-shadow: 0 20px 32px -22px rgba(184, 142, 255, 0.62);
+    box-shadow: 0 20px 32px -22px rgba(124, 92, 255, 0.64);
 }
 
 .primary-button:hover {
     transform: translateY(-1px);
-    box-shadow: 0 24px 40px -24px rgba(184, 142, 255, 0.7);
+    box-shadow: 0 24px 40px -24px rgba(124, 92, 255, 0.72);
 }
 
 .section-card {
@@ -338,7 +338,7 @@ body.body-scroll .mypage-content {
 }
 
 .project-card:hover {
-    border-color: rgba(184, 142, 255, 0.35);
+    border-color: rgba(124, 92, 255, 0.4);
     transform: translateY(-3px);
 }
 
@@ -432,9 +432,9 @@ body.body-scroll .mypage-content {
     --mypage-surface: #181c2b;
     --mypage-border: rgba(255, 255, 255, 0.08);
     --mypage-text: #f2f4ff;
-    --mypage-muted: #c5c9ef;
-    --mypage-accent: #d6beff;
-    --mypage-soft: rgba(214, 188, 255, 0.28);
+    --mypage-muted: #c9cff7;
+    --mypage-accent: #b8a2ff;
+    --mypage-soft: rgba(164, 136, 255, 0.32);
 }
 
 .dark-mode .section-card,
