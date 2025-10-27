@@ -12,13 +12,13 @@ export default function Community() {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-
     const [searchInput, setSearchInput] = useState("");
     const [tagInput, setTagInput] = useState("");
     const [keyword, setKeyword] = useState("");
     const [tagKeyword, setTagKeyword] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const ITEMS_PER_PAGE = 10;
+
+    const PAGE_SIZE = 10;
 
     useEffect(() => {
         let ignore = false;
@@ -101,7 +101,7 @@ export default function Community() {
             return posts;
         }
 
-        const lowerKeyword = keyword.toLowerCase();
+    const lowerKeyword = keyword.toLowerCase();
 
         return posts.filter((post) => {
             const matchesKeyword = lowerKeyword
@@ -120,18 +120,6 @@ export default function Community() {
             return matchesKeyword && matchesTags;
         });
     }, [keyword, tagKeyword, posts]);
-
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [keyword, tagKeyword]);
-
-    useEffect(() => {
-        const lastPage = Math.max(1, Math.ceil(filteredPosts.length / ITEMS_PER_PAGE));
-        setCurrentPage((prev) => {
-            const next = Math.min(prev, lastPage);
-            return next === prev ? prev : next;
-        });
-    }, [filteredPosts.length, ITEMS_PER_PAGE]);
 
     const handleSearchSubmit = (event) => {
         event?.preventDefault?.();
@@ -154,31 +142,43 @@ export default function Community() {
         setCurrentPage(1);
     };
 
-    const totalPages = Math.max(1, Math.ceil(filteredPosts.length / ITEMS_PER_PAGE));
-    const hasResults = filteredPosts.length > 0;
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const visiblePosts = useMemo(
-        () => (hasResults ? filteredPosts.slice(startIndex, startIndex + ITEMS_PER_PAGE) : []),
-        [filteredPosts, hasResults, startIndex, ITEMS_PER_PAGE]
-    );
+    const totalPages = useMemo(() => {
+        const count = Math.ceil(filteredPosts.length / PAGE_SIZE);
+        return count > 0 ? count : 1;
+    }, [filteredPosts.length]);
 
+    useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages);
+        }
+    }, [currentPage, totalPages]);
+
+    const pageNumbers = useMemo(() => (
+        Array.from({ length: totalPages }, (_, index) => index + 1)
+    ), [totalPages]);
+
+    const paginatedPosts = useMemo(() => {
+        const start = (currentPage - 1) * PAGE_SIZE;
+        const end = start + PAGE_SIZE;
+        return filteredPosts.slice(start, end);
+    }, [filteredPosts, currentPage]);
+
+    const jumpBy = 5;
     const goToPage = (page) => {
-        const next = Math.min(Math.max(page, 1), Math.max(1, totalPages));
-        setCurrentPage(next);
+        if (page < 1 || page > totalPages) return;
+        setCurrentPage(page);
     };
 
-    const goToFirst = () => goToPage(1);
-    const goToLast = () => goToPage(totalPages);
-    const goToPreviousGroup = () => goToPage(currentPage - 5);
-    const goToNextGroup = () => goToPage(currentPage + 5);
-
-    const pageNumbers = useMemo(() => {
-        const numbers = [];
-        for (let i = 1; i <= totalPages; i += 1) {
-            numbers.push(i);
+    const handleChunkMove = (direction) => {
+        const target = currentPage + direction * jumpBy;
+        if (target < 1) {
+            setCurrentPage(1);
+        } else if (target > totalPages) {
+            setCurrentPage(totalPages);
+        } else {
+            setCurrentPage(target);
         }
-        return numbers;
-    }, [totalPages]);
+    };
 
     return (
         <div className="community-wrapper">
@@ -266,7 +266,7 @@ export default function Community() {
 
                     {!loading && !error && filteredPosts.length > 0 && (
                         <div className="post-list">
-                            {filteredPosts.map((post) => (
+                            {paginatedPosts.map((post) => (
                                 <div
                                     key={post.id}
                                     className="post-card"
@@ -304,16 +304,54 @@ export default function Community() {
                         </div>
                     )}
 
-                    <div className="pagination-wrapper">
-                        <div className="page-numbers">
-                            <button className="page-button active">1</button>
-                            <button className="page-button">2</button>
-                            <button className="page-button">3</button>
-                            <button className="page-button">4</button>
-                            <button className="page-button">5</button>
+                    {filteredPosts.length > 0 && (
+                        <div className="pagination-wrapper">
+                            <div className="page-numbers">
+                                <button
+                                    type="button"
+                                    className="page-button"
+                                    onClick={() => goToPage(1)}
+                                    disabled={currentPage === 1}
+                                >
+                                    처음
+                                </button>
+                                <button
+                                    type="button"
+                                    className="page-button"
+                                    onClick={() => handleChunkMove(-1)}
+                                    disabled={currentPage === 1}
+                                >
+                                    -5쪽
+                                </button>
+                                {pageNumbers.map((page) => (
+                                    <button
+                                        key={page}
+                                        type="button"
+                                        className={`page-button${page === currentPage ? " active" : ""}`}
+                                        onClick={() => goToPage(page)}
+                                    >
+                                        {page}
+                                    </button>
+                                ))}
+                                <button
+                                    type="button"
+                                    className="page-button"
+                                    onClick={() => handleChunkMove(1)}
+                                    disabled={currentPage === totalPages}
+                                >
+                                    +5쪽
+                                </button>
+                                <button
+                                    type="button"
+                                    className="page-button"
+                                    onClick={() => goToPage(totalPages)}
+                                    disabled={currentPage === totalPages}
+                                >
+                                    마지막
+                                </button>
+                            </div>
                         </div>
-                        <button className="next-page">다음 페이지</button>
-                    </div>
+                    )}
                 </main>
 
                 <aside className="sidebar-right">
