@@ -1,13 +1,13 @@
 /* src/components/community/PostDetail.css */
 
 .post-detail-shell {
-    --detail-bg: #f5f6ff;
+    --detail-bg: #ffffff;
     --detail-surface: #ffffff;
-    --detail-border: rgba(15, 23, 42, 0.08);
-    --detail-text: #171a2a;
-    --detail-muted: #4d5468;
+    --detail-border: rgba(15, 23, 42, 0.06);
+    --detail-text: #161829;
+    --detail-muted: #53596c;
     --detail-accent: #7c5cff;
-    --detail-soft: rgba(124, 92, 255, 0.2);
+    --detail-soft: rgba(124, 92, 255, 0.14);
     min-height: 100vh;
     background: var(--detail-bg);
     padding: 72px 0 84px;
@@ -33,7 +33,7 @@
     border: 1px solid var(--detail-border);
     border-radius: 20px;
     padding: 36px 40px;
-    box-shadow: 0 26px 48px -36px rgba(15, 23, 42, 0.4);
+    box-shadow: 0 22px 42px -34px rgba(15, 23, 42, 0.26);
 }
 
 .post-header {

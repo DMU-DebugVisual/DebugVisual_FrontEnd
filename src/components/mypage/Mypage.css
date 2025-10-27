@@ -1,24 +1,29 @@
 /* src/components/mypage/Mypage.css */
 
 .mypage-wrapper {
-    background: #f6f7fb;
+    background: #ffffff;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
 .mypage {
-    --mypage-bg: #f5f6ff;
+    --mypage-bg: #ffffff;
     --mypage-surface: #ffffff;
-    --mypage-border: rgba(15, 23, 42, 0.08);
-    --mypage-text: #191c2d;
-    --mypage-muted: #4d5468;
+    --mypage-elevated: rgba(255, 255, 255, 0.92);
+    --mypage-border: rgba(15, 23, 42, 0.06);
+    --mypage-text-primary: #161829;
+    --mypage-text-secondary: #62677a;
+    --mypage-text-tertiary: #a0a6b9;
+    --mypage-text: #161829;
+    --mypage-muted: #62677a;
     --mypage-accent: #7c5cff;
-    --mypage-soft: rgba(124, 92, 255, 0.2);
+    --mypage-soft: rgba(124, 92, 255, 0.12);
+    --mypage-shadow: 0 22px 40px -32px rgba(15, 23, 42, 0.18);
     flex: 1;
     display: flex;
     justify-content: center;
-    color: var(--mypage-text);
+    color: var(--mypage-text-primary);
     background: var(--mypage-bg);
 }
 
@@ -47,6 +52,27 @@ body.body-scroll .mypage-content {
     gap: 24px;
 }
 
+.mypage-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+}
+
+.mypage-page-header h1 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.mypage-page-header p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--mypage-text-secondary);
+}
+
 .page-heading {
     max-width: 640px;
 }
@@ -62,7 +88,7 @@ body.body-scroll .mypage-content {
     margin: 0;
     font-size: 15px;
     line-height: 1.6;
-    color: var(--mypage-muted);
+    color: var(--mypage-text-secondary);
 }
 
 .header-actions {
@@ -112,7 +138,7 @@ body.body-scroll .mypage-content {
     background: var(--mypage-surface);
     border: 1px solid var(--mypage-border);
     border-radius: 22px;
-    box-shadow: 0 28px 48px -36px rgba(15, 23, 42, 0.4);
+    box-shadow: var(--mypage-shadow);
 }
 
 .profile-card {
@@ -127,7 +153,7 @@ body.body-scroll .mypage-content {
     width: 160px;
     height: 160px;
     border-radius: 24px;
-    background: var(--mypage-soft);
+    background: linear-gradient(135deg, rgba(124, 92, 255, 0.18), rgba(124, 92, 255, 0.06));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -164,7 +190,7 @@ body.body-scroll .mypage-content {
     margin: 0;
     font-size: 15px;
     line-height: 1.7;
-    color: var(--mypage-muted);
+    color: var(--mypage-text-secondary);
 }
 
 .profile-tags {
@@ -183,13 +209,13 @@ body.body-scroll .mypage-content {
 }
 
 .profile-highlight {
-    background: var(--mypage-soft);
+    background: linear-gradient(135deg, rgba(124, 92, 255, 0.1), rgba(124, 92, 255, 0.02));
     border-radius: 18px;
     padding: 24px;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    color: var(--mypage-muted);
+    color: var(--mypage-text-secondary);
 }
 
 .profile-highlight h3 {
@@ -222,7 +248,7 @@ body.body-scroll .mypage-content {
     border-radius: 20px;
     background: var(--mypage-surface);
     border: 1px solid var(--mypage-border);
-    box-shadow: 0 24px 40px -32px rgba(15, 23, 42, 0.35);
+    box-shadow: var(--mypage-shadow);
     transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
@@ -251,7 +277,7 @@ body.body-scroll .mypage-content {
 .stat-label {
     font-size: 13px;
     font-weight: 600;
-    color: var(--mypage-muted);
+    color: var(--mypage-text-secondary);
 }
 
 .stat-value {
@@ -265,7 +291,7 @@ body.body-scroll .mypage-content {
     gap: 6px;
     font-size: 13px;
     font-weight: 600;
-    color: var(--mypage-muted);
+    color: var(--mypage-text-secondary);
 }
 
 .stat-trend.up {
@@ -308,7 +334,7 @@ body.body-scroll .mypage-content {
 .section-header p {
     margin: 4px 0 0;
     font-size: 14px;
-    color: var(--mypage-muted);
+    color: var(--mypage-text-secondary);
     line-height: 1.5;
 }
 
@@ -327,8 +353,8 @@ body.body-scroll .mypage-content {
 }
 
 .project-card {
-    background: var(--mypage-bg);
-    border: 1px solid transparent;
+    background: var(--mypage-surface);
+    border: 1px solid rgba(15, 23, 42, 0.05);
     border-radius: 18px;
     padding: 20px;
     display: flex;
@@ -391,7 +417,7 @@ body.body-scroll .mypage-content {
     margin: 0;
     font-size: 14px;
     line-height: 1.6;
-    color: var(--mypage-muted);
+    color: var(--mypage-text-secondary);
 }
 
 .activity-list {
