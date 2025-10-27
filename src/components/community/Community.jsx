@@ -6,7 +6,7 @@ import config from "../../config";
 export default function Community() {
     const navigate = useNavigate();
     const tabs = ["전체", "미해결", "해결됨"];
-    const filters = ["최신순", "정확도순", "답변많은순", "좋아요순"];
+    const filters = ["최신순", "오래된순", "좋아요순"];
 
     // ✅ 서버 데이터 상태
     const [posts, setPosts] = useState([]);
@@ -17,6 +17,7 @@ export default function Community() {
     const [keyword, setKeyword] = useState("");
     const [tagKeyword, setTagKeyword] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
+    const [lastKnownPage, setLastKnownPage] = useState(1);
 
     const PAGE_SIZE = 10;
 
@@ -65,17 +66,26 @@ export default function Community() {
                     });
 
                 // 🔄 정렬된 목록을 UI 필드로 매핑
-                const mapped = sorted.map((p) => ({
-                    id: p.id,
-                    status: p.status || "",
-                    title: p.title,
-                    summary: (p.content || "").replace(/<[^>]+>/g, "").slice(0, 120),
-                    tags: p.tags || [],
-                    author: p.writer || "익명",
-                    date: p.createdAt ? new Date(p.createdAt).toLocaleString() : "",
-                    likes: p.likeCount ?? 0,
-                    comments: p.commentCount ?? 0,
-                }));
+                const mapped = sorted.map((p) => {
+                    let createdAtMs = null;
+                    if (p.createdAt) {
+                        const parsed = new Date(p.createdAt).getTime();
+                        createdAtMs = Number.isFinite(parsed) ? parsed : null;
+                    }
+
+                    return {
+                        id: p.id,
+                        status: p.status || "",
+                        title: p.title,
+                        summary: (p.content || "").replace(/<[^>]+>/g, "").slice(0, 120),
+                        tags: p.tags || [],
+                        author: p.writer || "익명",
+                        date: p.createdAt ? new Date(p.createdAt).toLocaleString() : "",
+                        createdAtMs,
+                        likes: p.likeCount ?? 0,
+                        comments: p.commentCount ?? 0,
+                    };
+                });
 
                 setPosts(mapped);
                 setKeyword("");
@@ -83,6 +93,7 @@ export default function Community() {
                 setSearchInput("");
                 setTagInput("");
                 setCurrentPage(1);
+                setLastKnownPage(1);
             } catch (e) {
                 if (!ignore) setError(e.message || "알 수 없는 오류");
             } finally {
@@ -101,7 +112,7 @@ export default function Community() {
             return posts;
         }
 
-    const lowerKeyword = keyword.toLowerCase();
+        const lowerKeyword = keyword.toLowerCase();
 
         return posts.filter((post) => {
             const matchesKeyword = lowerKeyword
@@ -121,6 +132,46 @@ export default function Community() {
         });
     }, [keyword, tagKeyword, posts]);
 
+    const [activeFilter, setActiveFilter] = useState(filters[0]);
+
+    const sortedPosts = useMemo(() => {
+        const sorted = [...filteredPosts];
+        const ensureNumber = (value, fallback = null) => (Number.isFinite(value) ? value : fallback);
+
+        const latest = (a, b) => {
+            const aTime = ensureNumber(a.createdAtMs, null);
+            const bTime = ensureNumber(b.createdAtMs, null);
+            if (aTime !== null && bTime !== null && aTime !== bTime) return bTime - aTime;
+            if (bTime !== null) return 1;
+            if (aTime !== null) return -1;
+            return (b.id ?? 0) - (a.id ?? 0);
+        };
+
+        const oldest = (a, b) => {
+            const aTime = ensureNumber(a.createdAtMs, null);
+            const bTime = ensureNumber(b.createdAtMs, null);
+            if (aTime !== null && bTime !== null && aTime !== bTime) return aTime - bTime;
+            if (aTime !== null) return -1;
+            if (bTime !== null) return 1;
+            return (a.id ?? 0) - (b.id ?? 0);
+        };
+        const byLikes = (a, b) => (b.likes ?? 0) - (a.likes ?? 0);
+
+        switch (activeFilter) {
+            case "오래된순":
+                sorted.sort(oldest);
+                break;
+            case "좋아요순":
+                sorted.sort(byLikes);
+                break;
+            case "최신순":
+            default:
+                sorted.sort(latest);
+                break;
+        }
+        return sorted;
+    }, [filteredPosts, activeFilter]);
+
     const handleSearchSubmit = (event) => {
         event?.preventDefault?.();
         const trimmedKeyword = searchInput.trim();
@@ -132,6 +183,7 @@ export default function Community() {
         setKeyword(trimmedKeyword);
         setTagKeyword(parsedTags);
         setCurrentPage(1);
+        setLastKnownPage(1);
     };
 
     const handleReset = () => {
@@ -140,6 +192,7 @@ export default function Community() {
         setKeyword("");
         setTagKeyword([]);
         setCurrentPage(1);
+        setLastKnownPage(1);
     };
 
     const totalPages = useMemo(() => {
@@ -150,7 +203,10 @@ export default function Community() {
     useEffect(() => {
         if (currentPage > totalPages) {
             setCurrentPage(totalPages);
+            setLastKnownPage(totalPages);
+            return;
         }
+        setLastKnownPage(currentPage);
     }, [currentPage, totalPages]);
 
     const pageNumbers = useMemo(() => (
@@ -160,8 +216,8 @@ export default function Community() {
     const paginatedPosts = useMemo(() => {
         const start = (currentPage - 1) * PAGE_SIZE;
         const end = start + PAGE_SIZE;
-        return filteredPosts.slice(start, end);
-    }, [filteredPosts, currentPage]);
+        return sortedPosts.slice(start, end);
+    }, [sortedPosts, currentPage]);
 
     const jumpBy = 5;
     const goToPage = (page) => {
@@ -244,8 +300,22 @@ export default function Community() {
 
                     <div className="filter-area">
                         <div className="filter-bar">
-                            {filters.map((filter, i) => (
-                                <button key={i} className={i === 0 ? "active" : ""}>{filter}</button>
+                            {filters.map((filter) => (
+                                <button
+                                    key={filter}
+                                    type="button"
+                                    className={`filter-chip${filter === activeFilter ? " active" : ""}`}
+                                    onClick={() => {
+                                        setActiveFilter(filter);
+                                        setCurrentPage((prev) => {
+                                            const next = lastKnownPage;
+                                            if (prev !== next) return next;
+                                            return prev;
+                                        });
+                                    }}
+                                >
+                                    {filter}
+                                </button>
                             ))}
                         </div>
                         <button className="write-btn" onClick={() => navigate("/community/write")}>
