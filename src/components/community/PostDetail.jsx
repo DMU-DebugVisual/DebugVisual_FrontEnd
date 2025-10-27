@@ -63,6 +63,11 @@ export default function PostDetail() {
     const [replyTarget, setReplyTarget] = useState(null); // 대댓글을 달 댓글 ID
     const [replyContent, setReplyContent] = useState("");
 
+    // 작성자/연관 데이터
+    const [authorStats, setAuthorStats] = useState(null);
+    const [relatedPosts, setRelatedPosts] = useState([]);
+    const [loadingRelations, setLoadingRelations] = useState(false);
+
     // 토큰 및 인증 헤더 (백틱 사용 수정 반영)
     const authHeader = useMemo(() => {
         const token = authState.token;
@@ -118,6 +123,19 @@ export default function PostDetail() {
     const requestLogin = useCallback(() => {
         promptLogin(undefined, { redirectTo: redirectPath });
     }, [redirectPath]);
+
+    const formatDateTimeShort = useCallback((value) => {
+        if (!value) return "";
+        const date = value instanceof Date ? value : new Date(value);
+        if (Number.isNaN(date.getTime())) return "";
+        return new Intl.DateTimeFormat("ko-KR", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+        }).format(date);
+    }, []);
 
     // 좋아요 수 및 내 상태 재조회
     const refreshLikeStatus = async () => {
@@ -176,6 +194,7 @@ export default function PostDetail() {
                     author: data.writer || data.author || "익명",
                     authorId: data.writerId ?? data.authorId ?? data.userId ?? null,
                     date: data.createdAt ? new Date(data.createdAt).toLocaleString() : "",
+                    createdAtRaw: data.createdAt ?? null,
                     tags: Array.isArray(data.tags) ? data.tags : [],
                 });
 
@@ -200,6 +219,136 @@ export default function PostDetail() {
             controller.abort();
         };
     }, [id, authHeader]); // ✅ navigate 제거
+
+    useEffect(() => {
+        if (!post) {
+            setAuthorStats(null);
+            setRelatedPosts([]);
+            return;
+        }
+
+        let ignore = false;
+        const controller = new AbortController();
+
+        (async () => {
+            try {
+                setLoadingRelations(true);
+                const headers = { Accept: "application/json" };
+                if (authHeader) headers.Authorization = authHeader;
+
+                const res = await fetch(`${config.API_BASE_URL}/api/posts`, {
+                    method: "GET",
+                    headers,
+                    signal: controller.signal,
+                    credentials: "include",
+                });
+
+                if (!res.ok) {
+                    const text = await res.text();
+                    throw new Error(text || `연관 게시글 조회 실패 (${res.status})`);
+                }
+
+                const raw = await res.json();
+                if (ignore) return;
+
+                const list = Array.isArray(raw)
+                    ? raw
+                    : Array.isArray(raw?.content)
+                        ? raw.content
+                        : Array.isArray(raw?.data)
+                            ? raw.data
+                            : [];
+
+                const normalized = list.map((item) => ({
+                    id: item.id,
+                    title: item.title || "제목 없는 글",
+                    tags: Array.isArray(item.tags) ? item.tags : [],
+                    likeCount: item.likeCount ?? 0,
+                    commentCount: item.commentCount ?? 0,
+                    createdAt: item.createdAt || item.updatedAt || null,
+                    author: item.writer || item.author || "익명",
+                }));
+
+                const authorName = post.author;
+                const authored = authorName
+                    ? normalized.filter((entry) => entry.author === authorName)
+                    : [];
+                const includesCurrent = authored.some((entry) => entry.id === post.id);
+                const authorPostCount = authored.length + (!includesCurrent && authorName ? 1 : 0);
+                const authorLikeSum = authored.reduce((sum, entry) => sum + (entry.likeCount ?? 0), 0) + (!includesCurrent ? likeCount : 0);
+                const latestEntry = [...authored]
+                    .sort((a, b) => {
+                        const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                        const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                        return bTime - aTime;
+                    })[0];
+
+                const fallbackCreatedAt = post.createdAtRaw;
+                const latestPost = latestEntry || {
+                    id: post.id,
+                    title: post.title,
+                    createdAt: fallbackCreatedAt,
+                };
+
+                const currentPostLikes = includesCurrent
+                    ? (authored.find((entry) => entry.id === post.id)?.likeCount ?? likeCount)
+                    : likeCount;
+
+                setAuthorStats({
+                    totalPosts: authorPostCount,
+                    totalLikes: authorLikeSum,
+                    latestTitle: latestPost?.title || "",
+                    latestDate: formatDateTimeShort(latestPost?.createdAt || fallbackCreatedAt),
+                    latestId: latestPost?.id || post.id,
+                    currentPostLikes,
+                });
+
+                const tagSet = new Set((post.tags || []).map((tag) => String(tag).toLowerCase()));
+                const relatedPool = normalized.filter((entry) => {
+                    if (entry.id === post.id) return false;
+                    if (!tagSet.size) return true;
+                    return (entry.tags || []).some((tag) => tagSet.has(String(tag).toLowerCase()));
+                });
+
+                relatedPool.sort((a, b) => {
+                    const likeDiff = (b.likeCount ?? 0) - (a.likeCount ?? 0);
+                    if (likeDiff !== 0) return likeDiff;
+                    const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                    const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                    return bTime - aTime;
+                });
+
+                setRelatedPosts(relatedPool.slice(0, 3).map((entry) => ({
+                    ...entry,
+                    formattedDate: formatDateTimeShort(entry.createdAt),
+                })));
+            } catch (e) {
+                if (!ignore) {
+                    console.error("연관 게시글 정보를 불러오지 못했습니다.", e);
+                }
+            } finally {
+                if (!ignore) setLoadingRelations(false);
+            }
+        })();
+
+        return () => {
+            ignore = true;
+            controller.abort();
+        };
+    }, [post, authHeader, formatDateTimeShort, likeCount]);
+
+    useEffect(() => {
+        setAuthorStats((prev) => {
+            if (!prev) return prev;
+            const diff = likeCount - (prev.currentPostLikes ?? 0);
+            if (diff === 0) return prev;
+            return {
+                ...prev,
+                totalLikes: Math.max(0, (prev.totalLikes ?? 0) + diff),
+                currentPostLikes: likeCount,
+            };
+        });
+    }, [likeCount]);
 
     // 공통: 댓글 목록 다시 불러오기
     const fetchComments = useCallback(async () => {
@@ -596,7 +745,7 @@ export default function PostDetail() {
                                 onChange={(e) => setNewComment(e.target.value)}
                                 onKeyDown={handleCommentKeyDown}
                             />
-                            <p className="comment-tip">⌘+Enter 또는 Ctrl+Enter로 빠르게 등록할 수 있어요.</p>
+                            <span className="comment-hint">⌘+Enter 또는 Ctrl+Enter로 빠르게 등록할 수 있어요.</span>
                         </div>
                         <div className="comment-editor-actions">
                             <button type="button" className="btn-secondary" onClick={() => setNewComment("")}>
@@ -617,10 +766,10 @@ export default function PostDetail() {
                         )}
 
                         {!loadingComments && comments.length === 0 && (
-                            <div className="empty-comment">
-                                <img src="/empty-comment.png" alt="답변 없음" />
-                                <p className="comment-title">답변을 기다리고 있는 질문이에요</p>
-                                <p className="comment-sub">첫번째 답변을 남겨보세요!</p>
+                            <div className="empty-comment" role="status">
+                                <div className="empty-icon" aria-hidden="true">💬</div>
+                                <p className="comment-title">아직 답변이 없어요.</p>
+                                <p className="comment-sub">첫 번째 답변을 남겨주세요!</p>
                             </div>
                         )}
 
@@ -720,7 +869,32 @@ export default function PostDetail() {
                             <div className="profile-image">{post.author?.[0] || "U"}</div>
                             <div className="author-info">
                                 <div className="author-name">{post.author}</div>
-                                <div className="author-activity">작성한 질문수 5</div>
+                                {authorStats ? (
+                                    <ul className="author-stats-list">
+                                        <li>
+                                            <span>등록한 질문</span>
+                                            <strong>{authorStats.totalPosts ?? 0}개</strong>
+                                        </li>
+                                        <li>
+                                            <span>총 받은 좋아요</span>
+                                            <strong>{authorStats.totalLikes ?? 0}개</strong>
+                                        </li>
+                                        {authorStats.latestTitle && (
+                                            <li className="author-recent">
+                                                <span>최근 작성</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => navigate(`/community/post/${authorStats.latestId}`)}
+                                                >
+                                                    {authorStats.latestTitle}
+                                                </button>
+                                                {authorStats.latestDate && <time>{authorStats.latestDate}</time>}
+                                            </li>
+                                        )}
+                                    </ul>
+                                ) : (
+                                    <div className="author-activity">작성자 정보를 불러오는 중이에요…</div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -734,30 +908,30 @@ export default function PostDetail() {
                         </div>
 
                         <ul>
-                            <li>
-                                <div className="related-item">
-                                    <span className="related-title">시간복잡도 질문</span>
-                                    <div className="related-meta">
-                                        <span className="date">25.07.02. 13:42</span>
-                                        <div className="reactions">
-                                            <span>👍 1</span>
-                                            <span>💬 2</span>
+                            {loadingRelations && (
+                                <li className="related-empty">비슷한 질문을 불러오는 중이에요…</li>
+                            )}
+                            {!loadingRelations && relatedPosts.length === 0 && (
+                                <li className="related-empty">아직 비슷한 질문이 없어요.</li>
+                            )}
+                            {!loadingRelations && relatedPosts.map((item) => (
+                                <li key={item.id}>
+                                    <button
+                                        type="button"
+                                        className="related-item"
+                                        onClick={() => navigate(`/community/post/${item.id}`)}
+                                    >
+                                        <span className="related-title">{item.title}</span>
+                                        <div className="related-meta">
+                                            <span className="date">{item.formattedDate || "최근"}</span>
+                                            <div className="reactions">
+                                                <span>👍 {item.likeCount ?? 0}</span>
+                                                <span>💬 {item.commentCount ?? 0}</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </li>
-                            <li>
-                                <div className="related-item">
-                                    <span className="related-title">11강 질문</span>
-                                    <div className="related-meta">
-                                        <span className="date">25.07.11. 15:38</span>
-                                        <div className="reactions">
-                                            <span>👍 2</span>
-                                            <span>💬 3</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
+                                    </button>
+                                </li>
+                            ))}
                         </ul>
                     </div>
                 </aside>

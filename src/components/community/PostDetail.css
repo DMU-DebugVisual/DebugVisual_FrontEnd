@@ -267,7 +267,14 @@
 .comment-editor {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.comment-hint {
+    font-size: 11.5px;
+    color: var(--detail-muted);
+    margin-top: -6px;
 }
 
 .comment-editor textarea {
@@ -291,10 +298,6 @@
     background: var(--detail-surface);
 }
 
-.comment-tip {
-    font-size: 12px;
-    color: var(--detail-muted);
-}
 
 .comment-editor-actions {
     display: flex;
@@ -497,9 +500,18 @@
 }
 
 .empty-comment {
-    margin-top: 36px;
+    margin-top: 28px;
     text-align: center;
     color: var(--detail-muted);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.empty-icon {
+    font-size: 28px;
+    margin-bottom: 4px;
 }
 
 .comment-title {
@@ -568,6 +580,56 @@
     color: var(--detail-muted);
 }
 
+.author-stats-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--detail-muted);
+}
+
+.author-stats-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.author-stats-list li strong {
+    color: var(--detail-text);
+    font-weight: 700;
+}
+
+.author-recent {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 6px;
+}
+
+.author-recent button {
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--detail-accent);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+}
+
+.author-recent button:hover {
+    text-decoration: underline;
+}
+
+.author-recent time {
+    font-size: 12px;
+    color: var(--detail-muted);
+}
+
 .related-qna-header {
     display: flex;
     align-items: center;
@@ -603,6 +665,7 @@
 }
 
 .related-item {
+    width: 100%;
     background: var(--detail-bg);
     border: 1px solid var(--detail-border);
     border-radius: 14px;
@@ -610,6 +673,17 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    transition: border-color 0.18s ease, transform 0.18s ease;
+}
+
+.related-item:hover,
+.related-item:focus-visible {
+    border-color: rgba(124, 92, 255, 0.45);
+    transform: translateY(-2px);
+    outline: none;
 }
 
 .related-title {
@@ -631,6 +705,16 @@
 .related-meta .reactions {
     display: flex;
     gap: 8px;
+}
+
+.related-empty {
+    font-size: 13px;
+    color: var(--detail-muted);
+    padding: 10px 12px;
+    border: 1px dashed var(--detail-border);
+    border-radius: 12px;
+    text-align: center;
+    background: var(--detail-bg);
 }
 
 @media (max-width: 1080px) {
