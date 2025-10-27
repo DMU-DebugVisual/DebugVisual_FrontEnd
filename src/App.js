@@ -34,7 +34,14 @@ function AppContent() {
     const isCommunityPage = location.pathname.startsWith("/community");
     const isMyPage = location.pathname.startsWith("/mypage");
     const isCodecastPage = location.pathname.startsWith("/broadcast") || location.pathname.startsWith("/startbroadcast");
-    const shouldShowFooter = isMainPage && !(isSignupPage || isIdePage || isCommunityPage || isMyPage || isCodecastPage);
+    const shouldShowFooter = !(
+        isSignupPage ||
+        isIdePage ||
+        isCommunityPage ||
+        isMyPage ||
+        isCodecastPage ||
+        isMainPage
+    );
 
     useEffect(() => {
         const token = localStorage.getItem('token');
