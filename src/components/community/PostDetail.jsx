@@ -137,30 +137,38 @@ export default function PostDetail() {
         }).format(date);
     }, []);
 
-    // 좋아요 수 및 내 상태 재조회
-    const refreshLikeStatus = async () => {
+    const refreshLikeCount = useCallback(async () => {
         try {
-            const bust = Date.now();
-            // ✅ config.API_BASE_URL 적용, like/status 경로 유지
-            const res = await fetch(`${config.API_BASE_URL}/api/posts/${id}/like/status?t=${bust}`, {
+            const res = await fetch(`${config.API_BASE_URL}/api/posts/${id}/like`, {
                 method: "GET",
-                headers: { Accept: "application/json", Authorization: authHeader, "Cache-Control": "no-cache" },
+                headers: {
+                    Accept: "application/json",
+                    ...(authHeader ? { Authorization: authHeader } : {}),
+                    "Cache-Control": "no-cache",
+                },
                 cache: "no-store",
             });
-            if (!res.ok) return null;
-            const data = await res.json();
 
-            const count = data.likeCount ?? 0;
-            const liked = data.likedByMe ?? false;
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error(text || `좋아요 수 조회 실패 (${res.status})`);
+            }
 
-            setLikeCount(count);
-            setLikedByMe(liked);
-            prevLikeRef.current = count;
-            return { count, liked };
-        } catch {
-            return null;
+            const payload = await res.json();
+            let nextCount = typeof payload === "number" ? payload : null;
+            if (nextCount === null && payload && typeof payload === "object") {
+                nextCount = parseIntSafe(payload.likeCount);
+            }
+            if (Number.isFinite(nextCount)) {
+                setLikeCount(nextCount);
+                prevLikeRef.current = nextCount;
+                return nextCount;
+            }
+        } catch (err) {
+            console.error("좋아요 수를 불러오지 못했습니다.", err);
         }
-    };
+        return null;
+    }, [authHeader, id]);
 
     // ===== effects =====
     useEffect(() => {
@@ -439,12 +447,16 @@ export default function PostDetail() {
                 throw new Error(text || `좋아요 처리 실패 (${res.status})`);
             }
 
-            // 성공 시 상태 업데이트 확인
-            const afterStatus = await refreshLikeStatus();
-            if (afterStatus != null) {
-                // 서버로부터 받은 정확한 값으로 최종 업데이트
-                prevLikeRef.current = afterStatus.count;
+            try {
+                const body = await res.json();
+                if (typeof body === "boolean") {
+                    setLikedByMe(body);
+                }
+            } catch (_) {
+                // ignore body parse issues; fallback to optimistic state
             }
+
+            await refreshLikeCount();
 
         } catch (e) {
             alert(e.message || "좋아요 처리 실패");
