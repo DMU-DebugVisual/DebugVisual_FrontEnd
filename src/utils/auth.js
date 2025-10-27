@@ -16,7 +16,14 @@ export function promptLogin(message = "로그인이 필요합니다.", options =
         }
     }
 
-    alert(resolvedMessage);
-    window.dispatchEvent(new CustomEvent("dv:open-login-modal"));
+    window.dispatchEvent(new CustomEvent("dv:open-login-modal", {
+        detail: {
+            message: resolvedMessage,
+            redirectTo: resolvedOptions?.redirectTo || null,
+        },
+    }));
     window.dispatchEvent(new Event("dv:login-requested"));
+    if (resolvedMessage) {
+        console.info(resolvedMessage);
+    }
 }
