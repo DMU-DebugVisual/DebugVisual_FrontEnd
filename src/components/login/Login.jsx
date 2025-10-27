@@ -38,6 +38,8 @@ function Login({ onClose, onLoginSuccess }) {
             localStorage.setItem('userId', userId);
             localStorage.setItem('role', role);
 
+            window.dispatchEvent(new Event('dv:auth-updated'));
+
             onLoginSuccess();
             onClose();
         } catch (error) {

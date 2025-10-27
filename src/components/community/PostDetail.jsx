@@ -1,6 +1,6 @@
 // src/pages/PostDetail.jsx
 import React, { useEffect, useState, useMemo, useRef, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import "./PostDetail.css";
 import config from "../../config";
 import { promptLogin } from "../../utils/auth";
@@ -29,6 +29,14 @@ const deriveCommentCount = (resp, data) => {
 export default function PostDetail() {
     const { id } = useParams(); // /community/post/:id
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const [authState, setAuthState] = useState(() => ({
+        token: localStorage.getItem("token"),
+        userId: localStorage.getItem("userId"),
+        username: localStorage.getItem("username"),
+        role: localStorage.getItem("role"),
+    }));
 
     const [post, setPost] = useState(null);
     const [comments, setComments] = useState([]);
@@ -56,13 +64,15 @@ export default function PostDetail() {
     const [replyContent, setReplyContent] = useState("");
 
     // 토큰 및 인증 헤더 (백틱 사용 수정 반영)
-    const tokenRaw = useMemo(() => localStorage.getItem("token"), []);
-    const authHeader = tokenRaw
-        ? tokenRaw.startsWith("Bearer ") ? tokenRaw : `Bearer ${tokenRaw}`
-        : null;
-    const currentUserId = useMemo(() => localStorage.getItem("userId") || "", []);
-    const currentUsername = useMemo(() => localStorage.getItem("username") || "", []);
-    const currentRole = useMemo(() => (localStorage.getItem("role") || "").toUpperCase(), []);
+    const authHeader = useMemo(() => {
+        const token = authState.token;
+        if (!token) return null;
+        return token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+    }, [authState.token]);
+
+    const currentUserId = useMemo(() => authState.userId || "", [authState.userId]);
+    const currentUsername = useMemo(() => authState.username || "", [authState.username]);
+    const currentRole = useMemo(() => (authState.role || "").toUpperCase(), [authState.role]);
     const hasManageRole = useMemo(() => ["ADMIN", "MANAGER", "ROLE_ADMIN", "ROLE_MANAGER"].includes(currentRole), [currentRole]);
     const matchesCurrentUser = useCallback((writerName, writerId) => {
         if (writerId && currentUserId) return String(writerId) === String(currentUserId);
@@ -73,6 +83,41 @@ export default function PostDetail() {
         if (hasManageRole) return true;
         return matchesCurrentUser(writerName, writerId);
     }, [hasManageRole, matchesCurrentUser]);
+
+    useEffect(() => {
+        const syncAuth = () => {
+            setAuthState((prev) => {
+                const next = {
+                    token: localStorage.getItem("token"),
+                    userId: localStorage.getItem("userId"),
+                    username: localStorage.getItem("username"),
+                    role: localStorage.getItem("role"),
+                };
+                if (
+                    prev.token === next.token &&
+                    prev.userId === next.userId &&
+                    prev.username === next.username &&
+                    prev.role === next.role
+                ) {
+                    return prev;
+                }
+                return next;
+            });
+        };
+
+        window.addEventListener("storage", syncAuth);
+        window.addEventListener("dv:auth-updated", syncAuth);
+
+        return () => {
+            window.removeEventListener("storage", syncAuth);
+            window.removeEventListener("dv:auth-updated", syncAuth);
+        };
+    }, []);
+
+    const redirectPath = useMemo(() => `${location.pathname}${location.search || ""}`, [location.pathname, location.search]);
+    const requestLogin = useCallback(() => {
+        promptLogin(undefined, { redirectTo: redirectPath });
+    }, [redirectPath]);
 
     // 좋아요 수 및 내 상태 재조회
     const refreshLikeStatus = async () => {
@@ -209,7 +254,7 @@ export default function PostDetail() {
     // 좋아요 토글
     const handleToggleLike = async () => {
         if (!authHeader) {
-            promptLogin();
+            requestLogin();
             return;
         }
         if (liking) return;
@@ -263,7 +308,7 @@ export default function PostDetail() {
     const handleCreateComment = async () => {
         if (!newComment.trim()) return;
         if (!authHeader) {
-            promptLogin();
+            requestLogin();
             return;
         }
 
@@ -300,7 +345,7 @@ export default function PostDetail() {
     const handleCreateReply = async (parentId) => {
         if (!replyContent.trim()) return;
         if (!authHeader) {
-            promptLogin();
+            requestLogin();
             return;
         }
 
@@ -335,7 +380,7 @@ export default function PostDetail() {
 
     const handleDeletePost = async () => {
         if (!authHeader) {
-            promptLogin();
+            requestLogin();
             return;
         }
         if (deletingPost) return;
@@ -364,7 +409,7 @@ export default function PostDetail() {
 
     const handleDeleteComment = async (commentId) => {
         if (!authHeader) {
-            promptLogin();
+            requestLogin();
             return;
         }
         if (!commentId || deletingCommentId === commentId) return;

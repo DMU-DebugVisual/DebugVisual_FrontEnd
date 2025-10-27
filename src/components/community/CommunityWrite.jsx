@@ -87,10 +87,11 @@ export default function CommunityWrite() {
         const token = localStorage.getItem("token");
         if (!token && !loginPromptedRef.current) {
             loginPromptedRef.current = true;
-            promptLogin();
+            const redirectPath = `${location.pathname}${location.search || ""}`;
+            promptLogin(undefined, { redirectTo: redirectPath });
             navigate("/community", { replace: true, state: { from: location.pathname } });
         }
-    }, [navigate, location.pathname]);
+    }, [navigate, location.pathname, location.search]);
 
     const handleFocus = () => {
         if (content === defaultGuide) setContent("");
@@ -102,7 +103,8 @@ export default function CommunityWrite() {
     const handleSubmit = async () => {
         const token = localStorage.getItem("token");
         if (!token) {
-            promptLogin();
+            const redirectPath = `${location.pathname}${location.search || ""}`;
+            promptLogin(undefined, { redirectTo: redirectPath });
             return;
         }
 

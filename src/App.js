@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
+import { HashRouter, Routes, Route, useLocation, Navigate, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 import Header from "./components/header/Header";
@@ -23,6 +23,7 @@ import CodecastLive from "./components/codecast/codecastlive/CodecastLive";
 
 function AppContent() {
     const location = useLocation();
+    const navigate = useNavigate();
     const [isDark, setIsDark] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [nickname, setNickname] = useState('');
@@ -44,15 +45,26 @@ function AppContent() {
     );
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        const storedUsername = localStorage.getItem('username');
-        if (token && storedUsername) {
-            setIsLoggedIn(true);
-            setNickname(storedUsername);
-        } else {
-            setIsLoggedIn(false);
-            setNickname('');
-        }
+        const syncAuthState = () => {
+            const token = localStorage.getItem('token');
+            const storedUsername = localStorage.getItem('username');
+            if (token && storedUsername) {
+                setIsLoggedIn(true);
+                setNickname(storedUsername);
+            } else {
+                setIsLoggedIn(false);
+                setNickname('');
+            }
+        };
+
+        syncAuthState();
+        window.addEventListener('storage', syncAuthState);
+        window.addEventListener('dv:auth-updated', syncAuthState);
+
+        return () => {
+            window.removeEventListener('storage', syncAuthState);
+            window.removeEventListener('dv:auth-updated', syncAuthState);
+        };
     }, []);
 
     useEffect(() => {
@@ -115,6 +127,13 @@ function AppContent() {
                     onLoginSuccess={() => {
                         setIsLoggedIn(true);
                         setNickname(localStorage.getItem('username') || '');
+                        setIsLoginModalOpen(false);
+
+                        const redirectTarget = sessionStorage.getItem('dv:postLoginRedirect');
+                        if (redirectTarget) {
+                            sessionStorage.removeItem('dv:postLoginRedirect');
+                            navigate(redirectTarget, { replace: true });
+                        }
                     }}
                 />
             )}
