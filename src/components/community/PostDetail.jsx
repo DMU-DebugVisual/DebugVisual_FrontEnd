@@ -394,252 +394,329 @@ export default function PostDetail() {
         }
     };
 
+    const handleCopyLink = useCallback(async () => {
+        try {
+            await navigator.clipboard.writeText(window.location.href);
+            alert("링크가 복사되었습니다.");
+        } catch (err) {
+            console.error("링크 복사 실패", err);
+            alert("링크를 복사하지 못했습니다. 브라우저 설정을 확인해주세요.");
+        }
+    }, []);
+
+    const handleBookmark = useCallback(() => {
+        alert("즐겨찾기 기능을 준비 중입니다.");
+    }, []);
+
+    const handleCommentKeyDown = (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+            e.preventDefault();
+            handleCreateComment();
+        }
+    };
 
     if (loadingPost) {
-        return <div className="post-detail-container"><div className="post-detail-left"><p>게시글을 불러오는 중입니다…</p></div></div>;
+        return (
+            <div className="post-detail-shell">
+                <div className="post-detail-container">
+                    <div className="post-detail-left">
+                        <article className="post-surface">
+                            <p>게시글을 불러오는 중입니다…</p>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        );
     }
+
     if (error) {
-        return <div className="post-detail-container"><div className="post-detail-left"><p className="error">{error}</p></div></div>;
+        return (
+            <div className="post-detail-shell">
+                <div className="post-detail-container">
+                    <div className="post-detail-left">
+                        <article className="post-surface">
+                            <p className="error">{error}</p>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        );
     }
+
     if (!post) {
-        return <div className="post-detail-container"><div className="post-detail-left"><p>게시글이 없습니다.</p></div></div>;
+        return (
+            <div className="post-detail-shell">
+                <div className="post-detail-container">
+                    <div className="post-detail-left">
+                        <article className="post-surface">
+                            <p>게시글이 없습니다.</p>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     return (
-        <div className="post-detail-container">
-            {/* 왼쪽 질문 본문 */}
-            <div className="post-detail-left">
-                <div className="post-top-divider" />
-                <h1 className="post-title">{post.title}</h1>
-                <div className="post-subinfo">
-                    <span>{post.date} 작성</span>
-                    <span>작성자 {post.author}</span>
-                    <span>👍 {likeCount}</span>
-                    <span>💬 {commentCount}</span>
-                </div>
+        <div className="post-detail-shell">
+            <div className="post-detail-container">
+                <div className="post-detail-left">
+                    <article className="post-surface">
+                        <header className="post-header">
+                            <div className="post-header-top">
+                                <span className="post-breadcrumb">커뮤니티 · 질문</span>
+                                <div className="post-header-actions">
+                                    <button
+                                        type="button"
+                                        className="ghost-icon-btn"
+                                        onClick={handleBookmark}
+                                        title="게시글 저장"
+                                        aria-label="게시글 저장"
+                                    >
+                                        📌
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="ghost-icon-btn"
+                                        onClick={handleCopyLink}
+                                        title="링크 복사"
+                                        aria-label="링크 복사"
+                                    >
+                                        🔗
+                                    </button>
+                                    {canDeletePost && (
+                                        <button
+                                            type="button"
+                                            className="ghost-icon-btn danger"
+                                            onClick={handleDeletePost}
+                                            disabled={deletingPost}
+                                            title="게시글 삭제"
+                                            aria-label="게시글 삭제"
+                                        >
+                                            {deletingPost ? "…" : "🗑"}
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                            <h1 className="post-title">{post.title}</h1>
+                            <div className="post-meta-row">
+                                <span className="meta-chip"><strong>{post.author}</strong> 작성</span>
+                                {post.date && <span className="meta-chip">{post.date}</span>}
+                                <span className="meta-chip">👍 {likeCount}</span>
+                                <span className="meta-chip">💬 {commentCount}</span>
+                            </div>
+                        </header>
 
-                <div className="post-content">
-                    {/* XSS 방지를 위해 DOMPurify 등의 라이브러리를 사용하는 것이 좋습니다 */}
-                    {/<[a-z][\s\S]*>/i.test(post.content) ? (
-                        <div dangerouslySetInnerHTML={{ __html: post.content }} />
-                    ) : (
-                        post.content.split("\n").map((line, i) => <p key={i}>{line}</p>)
-                    )}
-                </div>
+                        <section className="post-body">
+                            {/<[a-z][\s\S]*>/i.test(post.content) ? (
+                                <div dangerouslySetInnerHTML={{ __html: post.content }} />
+                            ) : (
+                                post.content.split("\n").map((line, i) => <p key={i}>{line}</p>)
+                            )}
+                        </section>
 
-                <div className="post-actions">
-                    <button title="좋아요" onClick={handleToggleLike} disabled={liking}>
-                        {likedByMe ? "❤️ " : "👍 "} {likeCount}
-                    </button>
-                    {/* <button title="싫어요" disabled>👎 0</button> */}
-                </div>
-
-                <div className="post-tags">
-                    {post.tags.map((tag, i) => (
-                        <span key={i} className="tag">#{tag}</span>
-                    ))}
-                </div>
-
-                <div className="post-util-buttons">
-                    <button className="save-btn">📌 저장</button>
-                    <button
-                        className="link-btn"
-                        onClick={() => {
-                            navigator.clipboard.writeText(window.location.href);
-                            alert("링크가 복사되었습니다.");
-                        }}
-                    >
-                        🔗
-                    </button>
-                    {canDeletePost && (
-                        <button
-                            className="delete-btn"
-                            onClick={handleDeletePost}
-                            disabled={deletingPost}
-                        >
-                            {deletingPost ? "삭제 중…" : "삭제"}
-                        </button>
-                    )}
-                </div>
-
-                <div className="section-divider" />
-
-                {/* 답변(댓글) 영역 */}
-                <div className="answer-section">
-                    <h3 className="answer-title">답변</h3>
-
-                    <div className="answer-form">
-                        <input
-                            type="text"
-                            placeholder="답변을 작성해보세요."
-                            value={newComment}
-                            onChange={(e) => setNewComment(e.target.value)}
-                            onKeyDown={(e) => { if (e.key === "Enter") handleCreateComment(); }}
-                        />
-                        <div className="answer-form-buttons"> {/* ✅ 클래스 적용 */}
+                        <div className="post-reaction-bar">
                             <button
-                                className="comment-submit-btn" // ✅ 클래스 적용
-                                onClick={handleCreateComment}
-                                disabled={posting || !newComment.trim()} // ✅ 내용이 없을 때 비활성화 추가
+                                type="button"
+                                className={`reaction-like ${likedByMe ? "active" : ""}`}
+                                onClick={handleToggleLike}
+                                disabled={liking}
                             >
-                                {posting ? "작성 중…" : "등록"}
+                                <span aria-hidden="true">{likedByMe ? "❤️" : "👍"}</span>
+                                <span>{likedByMe ? "좋아요 취소" : "좋아요"}</span>
+                                <span>{likeCount}</span>
                             </button>
-                            <button
-                                className="comment-cancel-btn" // ✅ 클래스 적용
-                                onClick={() => setNewComment("")}
-                            >
+                            <span className="reaction-stat">💬 {commentCount}개의 답변</span>
+                        </div>
+
+                        {post.tags.length > 0 && (
+                            <div className="post-tag-group">
+                                {post.tags.map((tag, i) => (
+                                    <span key={i} className="tag-chip">#{tag}</span>
+                                ))}
+                            </div>
+                        )}
+                    </article>
+
+                    <section className="comment-card">
+                        <div className="comment-card-header">
+                            <h3>답변</h3>
+                            <span className="comment-count-badge">{commentCount}</span>
+                        </div>
+
+                        <div className="comment-editor">
+                            <textarea
+                                placeholder="답변을 작성해보세요."
+                                value={newComment}
+                                onChange={(e) => setNewComment(e.target.value)}
+                                onKeyDown={handleCommentKeyDown}
+                            />
+                            <p className="comment-tip">⌘+Enter 또는 Ctrl+Enter로 빠르게 등록할 수 있어요.</p>
+                        </div>
+                        <div className="comment-editor-actions">
+                            <button type="button" className="btn-secondary" onClick={() => setNewComment("")}>
                                 취소
                             </button>
+                            <button
+                                type="button"
+                                className="btn-primary"
+                                onClick={handleCreateComment}
+                                disabled={posting || !newComment.trim()}
+                            >
+                                {posting ? "등록 중…" : "등록"}
+                            </button>
                         </div>
-                    </div>
 
-                    {/* 댓글 리스트 */}
-                    {loadingComments && comments.length === 0 && (
-                        <div className="empty-comment"><p>댓글을 불러오는 중…</p></div>
-                    )}
+                        {loadingComments && comments.length === 0 && (
+                            <div className="empty-comment"><p>댓글을 불러오는 중…</p></div>
+                        )}
 
-                    {!loadingComments && comments.length === 0 && (
-                        <div className="empty-comment">
-                            <img src="/empty-comment.png" alt="답변 없음" />
-                            <p className="comment-title">답변을 기다리고 있는 질문이에요</p>
-                            <p className="comment-sub">첫번째 답변을 남겨보세요!</p>
-                        </div>
-                    )}
+                        {!loadingComments && comments.length === 0 && (
+                            <div className="empty-comment">
+                                <img src="/empty-comment.png" alt="답변 없음" />
+                                <p className="comment-title">답변을 기다리고 있는 질문이에요</p>
+                                <p className="comment-sub">첫번째 답변을 남겨보세요!</p>
+                            </div>
+                        )}
 
-                    {!loadingComments && comments.length > 0 && (
-                        <ul className="comment-list"> {/* ✅ 클래스 적용 */}
-                            {comments.map((c) => (
-                                <li key={c.id} className="comment-item"> {/* ✅ 클래스 적용 */}
-                                    <div className="comment-meta"> {/* ✅ 클래스 적용 */}
-                                        <b className="comment-writer">{c.writer || "익명"}</b>{" "}
-                                        · {c.createdAt ? new Date(c.createdAt).toLocaleString() : ""}
-                                    </div>
-                                    <div className="comment-content"> {/* ✅ 클래스 적용 */}
-                                        {c.content}
-                                    </div>
-
-                                    {/* 답글 버튼 */}
-                                    <div className="comment-action-row">
-                                        <button
-                                            className="reply-toggle-btn"
-                                            onClick={() => setReplyTarget(c.id === replyTarget ? null : c.id)}
-                                        >
-                                            답글
-                                        </button>
-                                        {canDeleteComment(c) && (
-                                            <button
-                                                className="comment-delete-btn"
-                                                onClick={() => handleDeleteComment(c.id)}
-                                                disabled={deletingCommentId === c.id}
-                                            >
-                                                {deletingCommentId === c.id ? "삭제 중…" : "삭제"}
-                                            </button>
-                                        )}
-                                    </div>
-
-                                    {/* 대댓글 입력창 */}
-                                    {replyTarget === c.id && (
-                                        <div className="reply-form"> {/* ✅ 클래스 적용 */}
-                                            <input
-                                                type="text"
-                                                value={replyContent}
-                                                onChange={(e) => setReplyContent(e.target.value)}
-                                                onKeyDown={(e) => { if (e.key === "Enter") handleCreateReply(c.id); }}
-                                                placeholder={`@${c.writer || "익명"}에게 답글을 입력하세요`}
-                                            />
-                                            <div className="reply-form-buttons"> {/* ✅ 클래스 적용 */}
-                                                <button
-                                                    className="reply-submit-btn" // ✅ 클래스 적용
-                                                    onClick={() => handleCreateReply(c.id)}
-                                                    disabled={!replyContent.trim()}
-                                                >
-                                                    등록
-                                                </button>
-                                                <button
-                                                    className="reply-cancel-btn" // ✅ 클래스 적용
-                                                    onClick={() => { setReplyTarget(null); setReplyContent(""); }}
-                                                >
-                                                    취소
-                                                </button>
-                                            </div>
+                        {!loadingComments && comments.length > 0 && (
+                            <ul className="comment-list">
+                                {comments.map((c) => (
+                                    <li key={c.id} className="comment-item">
+                                        <div className="comment-meta">
+                                            <b className="comment-writer">{c.writer || "익명"}</b>{" "}
+                                            · {c.createdAt ? new Date(c.createdAt).toLocaleString() : ""}
                                         </div>
-                                    )}
+                                        <div className="comment-content">
+                                            {c.content}
+                                        </div>
 
-                                    {/* 대댓글 리스트 */}
-                                    {Array.isArray(c.replies) && c.replies.length > 0 && (
-                                        <ul className="reply-list"> {/* ✅ 클래스 적용 */}
-                                            {c.replies.map((r) => (
-                                                <li key={r.id} className="reply-item"> {/* ✅ 클래스 적용 */}
-                                                    <div className="reply-meta">
-                                                        <b>{r.writer || "익명"}</b> · {r.createdAt ? new Date(r.createdAt).toLocaleString() : ""}
-                                                    </div>
-                                                    <div>{r.content}</div>
-                                                    {canDeleteComment(r) && (
-                                                        <button
-                                                            className="reply-delete-btn"
-                                                            onClick={() => handleDeleteComment(r.id)}
-                                                            disabled={deletingCommentId === r.id}
-                                                        >
-                                                            {deletingCommentId === r.id ? "삭제 중…" : "삭제"}
-                                                        </button>
-                                                    )}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                </li>
-                            ))}
+                                        <div className="comment-action-row">
+                                            <button
+                                                className="reply-toggle-btn"
+                                                type="button"
+                                                onClick={() => setReplyTarget(c.id === replyTarget ? null : c.id)}
+                                            >
+                                                답글
+                                            </button>
+                                            {canDeleteComment(c) && (
+                                                <button
+                                                    type="button"
+                                                    className="comment-delete-btn"
+                                                    onClick={() => handleDeleteComment(c.id)}
+                                                    disabled={deletingCommentId === c.id}
+                                                >
+                                                    {deletingCommentId === c.id ? "삭제 중…" : "삭제"}
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        {replyTarget === c.id && (
+                                            <div className="reply-form">
+                                                <input
+                                                    type="text"
+                                                    value={replyContent}
+                                                    onChange={(e) => setReplyContent(e.target.value)}
+                                                    onKeyDown={(e) => { if (e.key === "Enter") handleCreateReply(c.id); }}
+                                                    placeholder={`@${c.writer || "익명"}에게 답글을 입력하세요`}
+                                                />
+                                                <div className="reply-form-buttons">
+                                                    <button
+                                                        type="button"
+                                                        className="reply-submit-btn"
+                                                        onClick={() => handleCreateReply(c.id)}
+                                                        disabled={!replyContent.trim()}
+                                                    >
+                                                        등록
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="reply-cancel-btn"
+                                                        onClick={() => { setReplyTarget(null); setReplyContent(""); }}
+                                                    >
+                                                        취소
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {Array.isArray(c.replies) && c.replies.length > 0 && (
+                                            <ul className="reply-list">
+                                                {c.replies.map((r) => (
+                                                    <li key={r.id} className="reply-item">
+                                                        <div className="reply-meta">
+                                                            <b>{r.writer || "익명"}</b> · {r.createdAt ? new Date(r.createdAt).toLocaleString() : ""}
+                                                        </div>
+                                                        <div>{r.content}</div>
+                                                        {canDeleteComment(r) && (
+                                                            <button
+                                                                type="button"
+                                                                className="reply-delete-btn"
+                                                                onClick={() => handleDeleteComment(r.id)}
+                                                                disabled={deletingCommentId === r.id}
+                                                            >
+                                                                {deletingCommentId === r.id ? "삭제 중…" : "삭제"}
+                                                            </button>
+                                                        )}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </section>
+                </div>
+
+                <aside className="post-detail-right">
+                    <div className="support-card author-card">
+                        <div className="author-box">
+                            <div className="profile-image">{post.author?.[0] || "U"}</div>
+                            <div className="author-info">
+                                <div className="author-name">{post.author}</div>
+                                <div className="author-activity">작성한 질문수 5</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="support-card related-qna">
+                        <div className="related-qna-header">
+                            <h4>이 글과 비슷한 Q&amp;A</h4>
+                            <button className="view-all-btn" onClick={() => navigate("/community")}>
+                                전체 Q&amp;A
+                            </button>
+                        </div>
+
+                        <ul>
+                            <li>
+                                <div className="related-item">
+                                    <span className="related-title">시간복잡도 질문</span>
+                                    <div className="related-meta">
+                                        <span className="date">25.07.02. 13:42</span>
+                                        <div className="reactions">
+                                            <span>👍 1</span>
+                                            <span>💬 2</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div className="related-item">
+                                    <span className="related-title">11강 질문</span>
+                                    <div className="related-meta">
+                                        <span className="date">25.07.11. 15:38</span>
+                                        <div className="reactions">
+                                            <span>👍 2</span>
+                                            <span>💬 3</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
                         </ul>
-                    )}
-                </div>
+                    </div>
+                </aside>
             </div>
-
-            {/* 오른쪽 사이드 */}
-            <aside className="post-detail-right">
-                <div className="author-box">
-                    <div className="profile-image" />
-                    <div className="author-info">
-                        <div className="author-name">{post.author}</div>
-                        <div className="author-activity">작성한 질문수 5</div>
-                    </div>
-                </div>
-
-                <div className="related-qna">
-                    <div className="related-qna-header">
-                        <h4>이 글과 비슷한 Q&amp;A</h4>
-                        <button className="view-all-btn" onClick={() => navigate("/community")}>
-                            전체 Q&amp;A
-                        </button>
-                    </div>
-
-                    <ul>
-                        <li>
-                            <div className="related-item">
-                                <span className="related-title">시간복잡도 질문</span>
-                                <div className="related-meta">
-                                    <span className="date">25.07.02. 13:42</span>
-                                    <div className="reactions">
-                                        <span>👍 1</span>
-                                        <span>💬 2</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                        <li>
-                            <div className="related-item">
-                                <span className="related-title">11강 질문</span>
-                                <div className="related-meta">
-                                    <span className="date">25.07.11. 15:38</span>
-                                    <div className="reactions">
-                                        <span>👍 2</span>
-                                        <span>💬 3</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </aside>
         </div>
     );
 }
