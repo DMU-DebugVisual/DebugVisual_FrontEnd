@@ -1,5 +1,6 @@
 import { HashRouter, Routes, Route, useLocation, Navigate, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { promptLogin } from "./utils/auth";
 
 import Header from "./components/header/Header";
 import Footer from "./components/footer/Footer"; // Footer 컴포넌트 임포트 유지
@@ -83,6 +84,14 @@ function AppContent() {
         localStorage.setItem("theme", isDark ? "dark" : "light");
     }, [isDark]);
 
+    const MyPageGuard = ({ element }) => {
+        if (!isLoggedIn) {
+            promptLogin(undefined, { redirectTo: location.pathname });
+            return <Navigate to="/" replace />;
+        }
+        return element;
+    };
+
     return (
         <>
             {!isSignupPage && (
@@ -109,7 +118,12 @@ function AppContent() {
                 <Route path="/broadcast" element={<Codecast />} />
                 <Route path="/startbroadcast" element={<StartCodecast />} />
                 <Route path="/broadcast/live" element={<CodecastLive />} />
-                <Route path="/mypage" element={<MyPageLayout nickname={nickname} />}>
+                <Route
+                    path="/mypage"
+                    element={(
+                        <MyPageGuard element={<MyPageLayout nickname={nickname} />} />
+                    )}
+                >
                     <Route index element={<Mypage nickname={nickname} />} />
                     <Route path="project" element={<MyProject />} />
                     <Route path="community" element={<MyCommunity nickname={nickname} />} />

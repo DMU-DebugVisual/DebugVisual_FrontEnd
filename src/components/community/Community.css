@@ -92,6 +92,12 @@
     gap: 12px;
 }
 
+.top-writers-empty {
+    margin: 0;
+    font-size: 13px;
+    color: var(--community-muted);
+}
+
 .top-writers li {
     display: flex;
     justify-content: space-between;
@@ -457,11 +463,35 @@
     gap: 14px;
 }
 
+.popular-posts-empty {
+    margin: 0;
+    font-size: 13px;
+    color: var(--community-muted);
+}
+
 .popular-posts li {
     display: flex;
     flex-direction: column;
     gap: 4px;
     font-size: 13px;
+}
+
+.popular-posts li button {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    text-align: left;
+    color: inherit;
+}
+
+.popular-posts li button:hover .post-title {
+    color: var(--community-accent);
 }
 
 .popular-posts .post-title {
@@ -472,6 +502,11 @@
 }
 
 .popular-posts .post-author {
+    font-size: 12px;
+    color: var(--community-muted);
+}
+
+.popular-posts .post-likes {
     font-size: 12px;
     color: var(--community-muted);
 }

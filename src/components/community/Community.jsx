@@ -219,6 +219,57 @@ export default function Community() {
         return sortedPosts.slice(start, end);
     }, [sortedPosts, currentPage]);
 
+    const topWriters = useMemo(() => {
+        if (!posts.length) return [];
+
+        const counts = posts.reduce((acc, post) => {
+            const author = (post.author || "익명").trim();
+            if (!author) return acc;
+            acc[author] = (acc[author] ?? 0) + 1;
+            return acc;
+        }, {});
+
+        return Object.entries(counts)
+            .sort((a, b) => {
+                const countDiff = b[1] - a[1];
+                if (countDiff !== 0) return countDiff;
+                return a[0].localeCompare(b[0]);
+            })
+            .slice(0, 7)
+            .map(([name, count]) => ({ name, count }));
+    }, [posts]);
+
+    const weeklyPopular = useMemo(() => {
+        if (!posts.length) return [];
+
+        const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+        const withinWeek = posts.filter((post) =>
+            Number.isFinite(post.createdAtMs) && post.createdAtMs >= oneWeekAgo
+        );
+
+        const source = withinWeek.length ? withinWeek : posts;
+
+        return [...source]
+            .sort((a, b) => {
+                const likeDiff = (b.likes ?? 0) - (a.likes ?? 0);
+                if (likeDiff !== 0) return likeDiff;
+                const commentDiff = (b.comments ?? 0) - (a.comments ?? 0);
+                if (commentDiff !== 0) return commentDiff;
+                const timeA = Number.isFinite(a.createdAtMs) ? a.createdAtMs : 0;
+                const timeB = Number.isFinite(b.createdAtMs) ? b.createdAtMs : 0;
+                if (timeA !== timeB) return timeB - timeA;
+                return (b.id ?? 0) - (a.id ?? 0);
+            })
+            .slice(0, 5)
+            .map((post) => ({
+                id: post.id,
+                title: post.title,
+                author: post.author,
+                likes: post.likes ?? 0,
+                createdAt: post.date,
+            }));
+    }, [posts]);
+
     const jumpBy = 5;
     const goToPage = (page) => {
         if (page < 1 || page > totalPages) return;
@@ -250,15 +301,18 @@ export default function Community() {
                     </ul>
                     <div className="top-writers">
                         <h4>Zivorp TOP Writers</h4>
-                        <ol>
-                            <li><span>y2gcoder</span><span>10</span></li>
-                            <li><span>durams</span><span>8</span></li>
-                            <li><span>David</span><span>7</span></li>
-                            <li><span>식빵</span><span>10</span></li>
-                            <li><span>이선희</span><span>10</span></li>
-                            <li><span>찹찹이</span><span>10</span></li>
-                            <li><span>Rio song</span><span>10</span></li>
-                        </ol>
+                        {topWriters.length ? (
+                            <ol>
+                                {topWriters.map(({ name, count }) => (
+                                    <li key={name}>
+                                        <span>{name}</span>
+                                        <span>{count}</span>
+                                    </li>
+                                ))}
+                            </ol>
+                        ) : (
+                            <p className="top-writers-empty">아직 활동 기록이 없어요.</p>
+                        )}
                     </div>
                 </aside>
 
@@ -435,13 +489,26 @@ export default function Community() {
                     </div>
                     <div className="popular-posts">
                         <h4>주간 인기글</h4>
-                        <ul>
-                            <li><div className="post-title">버블 정렬 시각화 프로젝트 공유합니다</div><div className="post-author">김코딩</div></li>
-                            <li><div className="post-title">그래프 탐색 알고리즘 비교: BFS vs DFS</div><div className="post-author">이알고</div></li>
-                            <li><div className="post-title">동적 프로그래밍 문제 해결 가이드</div><div className="post-author">박코딩</div></li>
-                            <li><div className="post-title">백엔드 신입 CS 스터디 3기 모집</div><div className="post-author">김지훈</div></li>
-                            <li><div className="post-title">AI 실전 활용을 위한 4주 집중 스터디, 애사모!</div><div className="post-author">Edun</div></li>
-                        </ul>
+                        {weeklyPopular.length ? (
+                            <ul>
+                                {weeklyPopular.map((post) => (
+                                    <li key={post.id}>
+                                        <button
+                                            type="button"
+                                            onClick={() => navigate(`/community/post/${post.id}`)}
+                                        >
+                                            <div className="post-title">{post.title}</div>
+                                            <div className="post-author">{post.author || "익명"}</div>
+                                            {typeof post.likes === "number" && (
+                                                <div className="post-likes">좋아요 {post.likes}</div>
+                                            )}
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="popular-posts-empty">인기 게시글을 불러오는 중입니다.</p>
+                        )}
                     </div>
                 </aside>
             </div>
