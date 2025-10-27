@@ -59,6 +59,28 @@ export default function CommunityWrite() {
     const [tags, setTags] = useState("");
     const [content, setContent] = useState(defaultGuide);
     const [submitting, setSubmitting] = useState(false);
+    const guideItems = defaultGuide
+        .split("\n")
+        .map((line) => line.replace(/^-\s*/, "").trim())
+        .filter(Boolean);
+    const categories = ["질문", "고민있어요", "스터디", "팀 프로젝트"];
+    const toolbarButtons = [
+        { Icon: FaBold, label: "굵게" },
+        { Icon: FaItalic, label: "기울임" },
+        { Icon: FaStrikethrough, label: "취소선" },
+        { Icon: FaLink, label: "링크" },
+        { Icon: FaPalette, label: "하이라이트" },
+        { Icon: FaCode, label: "코드" },
+        { Icon: FaQuoteRight, label: "인용" },
+        { Icon: FaImage, label: "이미지" },
+        { Icon: FaHeading, label: "제목" },
+        { Icon: FaListUl, label: "목록" },
+        { Icon: FaListOl, label: "번호 목록" },
+        { Icon: FaMinus, label: "구분선" },
+    ];
+    const titleInputId = "community-write-title";
+    const tagInputId = "community-write-tag";
+    const contentInputId = "community-write-content";
 
     // ✅ 비회원 접근 차단: 알림 + 커뮤니티 페이지로 이동
     useEffect(() => {
@@ -133,58 +155,110 @@ export default function CommunityWrite() {
     };
 
     return (
-        <div className="community-write-page">
-            <div className="top-nav">
-                <span>질문</span>
-                <span>고민있어요</span>
-                <span>스터디</span>
-                <span>팀 프로젝트</span>
-            </div>
+        <div className="community-write-shell">
+            <div className="community-write-layout">
+                <section className="write-main-card">
+                    <header className="write-header">
+                        <span className="write-header-pill">Community</span>
+                        <div className="write-header-text">
+                            <h1>새 글 작성</h1>
+                            <p>배운 것과 궁금한 것을 공유해보세요.</p>
+                        </div>
+                    </header>
 
-            <input
-                type="text"
-                className="title-input"
-                placeholder="제목에 핵심 내용을 요약해보세요."
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-            />
+                    <nav className="top-nav" aria-label="글쓰기 카테고리">
+                        {categories.map((category, index) => (
+                            <button
+                                key={category}
+                                type="button"
+                                className={`top-nav-button ${index === 0 ? "active" : ""}`}
+                            >
+                                {category}
+                            </button>
+                        ))}
+                    </nav>
 
-            <input
-                type="text"
-                className="tag-input"
-                placeholder="태그(쉼표/공백/해시 구분, 예: java, oop, 빅데이터)"
-                value={tags}
-                onChange={(e) => setTags(e.target.value)}
-            />
+                    <div className="field">
+                        <label htmlFor={titleInputId}>제목</label>
+                        <input
+                            id={titleInputId}
+                            type="text"
+                            className="title-input"
+                            placeholder="제목에 핵심 내용을 요약해보세요."
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                        />
+                    </div>
 
-            <div className="markdown-toolbar">
-                <button><FaBold /></button>
-                <button><FaItalic /></button>
-                <button><FaStrikethrough /></button>
-                <button><FaLink /></button>
-                <button><FaPalette /></button>
-                <button><FaCode /></button>
-                <button><FaQuoteRight /></button>
-                <button><FaImage /></button>
-                <button><FaHeading /></button>
-                <button><FaListUl /></button>
-                <button><FaListOl /></button>
-                <button><FaMinus /></button>
-            </div>
+                    <div className="field">
+                        <label htmlFor={tagInputId}>태그</label>
+                        <input
+                            id={tagInputId}
+                            type="text"
+                            className="tag-input"
+                            placeholder="태그(쉼표/공백/해시 구분, 예: java, oop, 빅데이터)"
+                            value={tags}
+                            onChange={(e) => setTags(e.target.value)}
+                        />
+                        <p className="field-helper">최대 10개까지 선택할 수 있어요.</p>
+                    </div>
 
-            <textarea
-                className={`content-textarea ${content === defaultGuide ? "placeholder-style" : ""}`}
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-            />
+                    <div className="editor-field">
+                        <div className="editor-header">
+                            <span className="editor-title">본문</span>
+                            <span className="editor-subtitle">Markdown · 단축키 지원</span>
+                        </div>
+                        <div className="editor-surface">
+                            <div className="markdown-toolbar" role="toolbar" aria-label="마크다운 작성 도구">
+                                {toolbarButtons.map(({ Icon, label }) => (
+                                    <button type="button" key={label} title={label} aria-label={label}>
+                                        <Icon />
+                                    </button>
+                                ))}
+                            </div>
+                            <textarea
+                                id={contentInputId}
+                                className={`content-textarea ${content === defaultGuide ? "placeholder-style" : ""}`}
+                                value={content}
+                                onChange={(e) => setContent(e.target.value)}
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                                aria-label="게시글 본문"
+                            />
+                        </div>
+                    </div>
 
-            <div className="write-actions">
-                <button className="cancel-btn" onClick={() => navigate(-1)}>취소</button>
-                <button className="submit-btn" onClick={handleSubmit} disabled={submitting}>
-                    {submitting ? "등록 중..." : "등록"}
-                </button>
+                    <div className="write-actions">
+                        <button type="button" className="cancel-btn" onClick={() => navigate(-1)}>취소</button>
+                        <button type="button" className="submit-btn" onClick={handleSubmit} disabled={submitting}>
+                            {submitting ? "등록 중..." : "등록"}
+                        </button>
+                    </div>
+                </section>
+
+                <aside className="write-side-panel" aria-label="작성 가이드">
+                    <div className="side-card">
+                        <h3>작성 가이드</h3>
+                        <ul>
+                            {guideItems.map((item, index) => (
+                                <li key={index}>{item}</li>
+                            ))}
+                        </ul>
+                    </div>
+                    <div className="side-card">
+                        <h3>태그 규칙</h3>
+                        <p>아래 항목 중에서 선택할 수 있어요.</p>
+                        <div className="tag-chip-group">
+                            {ALLOWED_TAGS.map((tag) => (
+                                <span key={tag} className="tag-chip">#{tag.toLowerCase()}</span>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="side-card side-reminder">
+                        <h3>Tip</h3>
+                        <p>등록 버튼을 누르기 전까진 임시 저장되지 않아요. 중요한 내용은 별도로 백업해두세요.</p>
+                    </div>
+                </aside>
             </div>
         </div>
     );
