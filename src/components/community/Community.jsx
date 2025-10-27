@@ -3,6 +3,10 @@ import { useNavigate } from "react-router-dom";
 import "./Community.css";
 import config from "../../config";
 
+const ALLOWED_TAGS = [
+    "JAVA", "C", "CPP", "JPA", "JAVASCRIPT", "PYTHON", "OOP", "BIGDATA", "SPRING", "TYPESCRIPT", "ML"
+];
+
 export default function Community() {
     const navigate = useNavigate();
     const tabs = ["전체", "미해결", "해결됨"];
@@ -13,13 +17,15 @@ export default function Community() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [searchInput, setSearchInput] = useState("");
-    const [tagInput, setTagInput] = useState("");
     const [keyword, setKeyword] = useState("");
     const [tagKeyword, setTagKeyword] = useState([]);
+    const [selectedTagFilters, setSelectedTagFilters] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [lastKnownPage, setLastKnownPage] = useState(1);
 
     const PAGE_SIZE = 10;
+    const selectedTagCount = selectedTagFilters.length;
+    const reachedTagFilterLimit = selectedTagCount >= 10;
 
     useEffect(() => {
         let ignore = false;
@@ -90,8 +96,8 @@ export default function Community() {
                 setPosts(mapped);
                 setKeyword("");
                 setTagKeyword([]);
+                setSelectedTagFilters([]);
                 setSearchInput("");
-                setTagInput("");
                 setCurrentPage(1);
                 setLastKnownPage(1);
             } catch (e) {
@@ -175,22 +181,36 @@ export default function Community() {
     const handleSearchSubmit = (event) => {
         event?.preventDefault?.();
         const trimmedKeyword = searchInput.trim();
-        const parsedTags = tagInput
-            .split(/[#,\s,]+/)
-            .map((token) => token.trim().replace(/^#/, "").toLowerCase())
-            .filter(Boolean);
 
         setKeyword(trimmedKeyword);
-        setTagKeyword(parsedTags);
+    setTagKeyword(selectedTagFilters.map((tag) => tag.toLowerCase()));
         setCurrentPage(1);
         setLastKnownPage(1);
     };
 
     const handleReset = () => {
         setSearchInput("");
-        setTagInput("");
         setKeyword("");
+        setSelectedTagFilters([]);
         setTagKeyword([]);
+        setCurrentPage(1);
+        setLastKnownPage(1);
+    };
+
+    const toggleTagFilter = (tag) => {
+        setSelectedTagFilters((prev) => {
+            if (prev.includes(tag)) {
+                const next = prev.filter((item) => item !== tag);
+                setTagKeyword(next.map((item) => item.toLowerCase()));
+                return next;
+            }
+            if (prev.length >= 10) {
+                return prev;
+            }
+            const next = [...prev, tag];
+            setTagKeyword(next.map((item) => item.toLowerCase()));
+            return next;
+        });
         setCurrentPage(1);
         setLastKnownPage(1);
     };
@@ -334,22 +354,42 @@ export default function Community() {
                             />
                             <button type="submit" className="search-btn">검색</button>
                         </form>
-                        <div className="search-row">
-                            <input
-                                type="text"
-                                placeholder="# 태그로 검색해보세요!"
-                                value={tagInput}
-                                onChange={(event) => setTagInput(event.target.value)}
-                                onKeyDown={(event) => {
-                                    if (event.key === "Enter") {
-                                        event.preventDefault();
-                                        handleSearchSubmit();
-                                    }
-                                }}
+                        <div className="search-row tag-search-row" role="presentation">
+                            <div
+                                className="tag-search-selector"
+                                role="group"
                                 aria-label="태그 검색"
-                            />
+                            >
+                                {ALLOWED_TAGS.map((tag) => {
+                                    const isActive = selectedTagFilters.includes(tag);
+                                    const isDisabled = !isActive && reachedTagFilterLimit;
+                                    const printable = `#${tag.toLowerCase()}`;
+                                    const buttonLabel = isActive
+                                        ? `${printable} 태그 필터 제거`
+                                        : isDisabled
+                                            ? "태그 필터는 최대 10개까지 선택할 수 있어요"
+                                            : `${printable} 태그 필터 추가`;
+                                    return (
+                                        <button
+                                            key={tag}
+                                            type="button"
+                                            className={`tag-search-option ${isActive ? "is-active" : ""}`.trim()}
+                                            onClick={() => toggleTagFilter(tag)}
+                                            aria-pressed={isActive}
+                                            disabled={isDisabled}
+                                            title={buttonLabel}
+                                        >
+                                            {printable}
+                                        </button>
+                                    );
+                                })}
+                            </div>
                             <button type="button" className="reset-btn" onClick={handleReset}>초기화</button>
                         </div>
+                        <p className="tag-search-helper" aria-live="polite">
+                            태그는 클릭해서 추가하거나 제거할 수 있어요. 선택 {selectedTagCount}개
+                            {reachedTagFilterLimit ? " (최대 10개 선택됨)" : ""}
+                        </p>
                     </div>
 
                     <div className="filter-area">

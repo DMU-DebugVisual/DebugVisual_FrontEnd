@@ -141,10 +141,67 @@
     box-shadow: 0 18px 40px -30px rgba(124, 92, 255, 0.5);
 }
 
+.tag-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.tag-option {
+    padding: 10px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(124, 92, 255, 0.22);
+    background: rgba(124, 92, 255, 0.08);
+    color: var(--write-muted);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+
+.tag-option:hover:not(:disabled) {
+    transform: translateY(-1px);
+    background: rgba(124, 92, 255, 0.16);
+    border-color: rgba(124, 92, 255, 0.34);
+    color: var(--write-text);
+    box-shadow: 0 14px 24px -20px rgba(124, 92, 255, 0.4);
+}
+
+.tag-option.is-active {
+    background: var(--write-accent);
+    border-color: var(--write-accent);
+    color: #ffffff;
+    box-shadow: 0 16px 32px -24px rgba(124, 92, 255, 0.6);
+}
+
+.tag-option:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+    box-shadow: none;
+}
+
 .field-helper {
     margin: 0;
     font-size: 12px;
     color: var(--write-muted);
+}
+
+.tag-helper-count {
+    margin-left: 8px;
+    font-weight: 600;
+    color: var(--write-accent);
+}
+
+.tag-limit-notice {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 4px 0 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--write-accent);
 }
 
 .editor-field {
@@ -338,10 +395,41 @@
     align-items: center;
     padding: 6px 12px;
     border-radius: 999px;
+    border: 1px solid transparent;
     background: var(--write-soft);
     color: var(--write-accent);
     font-size: 13px;
     font-weight: 600;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+
+.tag-chip:hover:not(:disabled) {
+    transform: translateY(-1px);
+    background: rgba(124, 92, 255, 0.16);
+    border-color: rgba(124, 92, 255, 0.32);
+    color: var(--write-text);
+}
+
+.tag-chip.is-active {
+    background: var(--write-accent);
+    border-color: var(--write-accent);
+    color: #ffffff;
+    box-shadow: 0 16px 32px -26px rgba(124, 92, 255, 0.6);
+}
+
+.tag-chip:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.tag-option:focus-visible,
+.tag-chip:focus-visible {
+    outline: 2px solid rgba(124, 92, 255, 0.55);
+    outline-offset: 2px;
 }
 
 .side-reminder {
