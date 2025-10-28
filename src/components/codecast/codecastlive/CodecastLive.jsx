@@ -12,6 +12,7 @@ import useCollabSocket from '../hooks/useCollabSocket';
 import { createSession, updateSessionStatus } from '../api/sessions';
 import { fetchMyFiles, fetchFileContent, inferLanguageFromFilename, saveFile } from '../api/files';
 import config from '../../../config';
+import { promptLogin } from '../../../utils/auth';
 
 import {
     FaCheck,
@@ -70,6 +71,13 @@ export default function CodecastLive({ isDark }) {
     const storedUserId = localStorage.getItem('userId') || '';
     const username = localStorage.getItem('username') || storedUserId || 'anonymous';
     const token = localStorage.getItem('token') || '';
+    useEffect(() => {
+        if (!token) {
+            promptLogin('방송에 참여하려면 로그인이 필요합니다.', { redirectTo: '/broadcast' });
+            navigate('/broadcast', { replace: true });
+        }
+    }, [token, navigate]);
+
     const userId = storedUserId || username;
 
     // 권한 기본값
