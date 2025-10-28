@@ -1,5 +1,7 @@
 // src/api/globalFetch.js
 
+import { promptLogin } from "../utils/auth";
+
 // 1. 기존의 window.fetch 함수를 백업해둡니다.
 const originalFetch = window.fetch;
 
@@ -9,17 +11,16 @@ window.fetch = async (...args) => {
     const response = await originalFetch(...args);
 
     // 4. 응답을 받은 후, 인증 실패(401/403)가 발생했다면
-    if (response.status === 401 || response.status === 403) {
-        // 이전에 localStorage에 저장된 토큰이 있을 때만 로그아웃 처리
-        if (localStorage.getItem('token')) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('username');
+    if ((response.status === 401 || response.status === 403) && localStorage.getItem("token")) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("username");
+        localStorage.removeItem("userId");
+        localStorage.removeItem("role");
 
-            alert('세션이 만료되었습니다. 다시 로그인해 주세요.');
-            // 현재 페이지를 새로고침하여 로그인 상태를 갱신합니다.
-            // 로그인 페이지로 강제 이동시키는 것보다 사용자 경험이 더 나을 수 있습니다.
-            window.location.reload();
-        }
+        window.dispatchEvent(new Event("dv:auth-updated"));
+
+        const redirectTo = window.location.hash ? window.location.hash.replace(/^#/, "") || "/" : window.location.pathname || "/";
+        promptLogin("세션이 만료되었습니다. 다시 로그인해 주세요.", { redirectTo });
     }
 
     // 5. 원래 API를 호출했던 곳에 응답을 그대로 돌려줍니다.

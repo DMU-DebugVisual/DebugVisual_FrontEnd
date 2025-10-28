@@ -92,6 +92,7 @@ const MyCommunity = ({ nickname = '' }) => {
     const [loadingPosts, setLoadingPosts] = useState(false);
     const [loadingComments, setLoadingComments] = useState(false);
     const [error, setError] = useState('');
+    const [allPosts, setAllPosts] = useState([]);
     const [userPosts, setUserPosts] = useState([]);
     const [userComments, setUserComments] = useState([]);
     const [commentsLoaded, setCommentsLoaded] = useState(false);
@@ -128,6 +129,7 @@ const MyCommunity = ({ nickname = '' }) => {
     const fetchPosts = useCallback(async (signal) => {
         if (!normalizedUser) {
             if (!signal.aborted) {
+                setAllPosts([]);
                 setUserPosts([]);
                 setUserComments([]);
                 setCommentsLoaded(false);
@@ -166,6 +168,7 @@ const MyCommunity = ({ nickname = '' }) => {
 
             if (res.status === 204) {
                 if (!signal.aborted) {
+                    setAllPosts([]);
                     setUserPosts([]);
                     setCommentsLoaded(false);
                     setUserComments([]);
@@ -176,6 +179,7 @@ const MyCommunity = ({ nickname = '' }) => {
             const raw = await res.text();
             if (!raw) {
                 if (!signal.aborted) {
+                    setAllPosts([]);
                     setUserPosts([]);
                     setCommentsLoaded(false);
                     setUserComments([]);
@@ -189,6 +193,7 @@ const MyCommunity = ({ nickname = '' }) => {
             } catch (err) {
                 console.error('Unexpected posts payload', err);
                 if (!signal.aborted) {
+                    setAllPosts([]);
                     setUserPosts([]);
                     setCommentsLoaded(false);
                     setUserComments([]);
@@ -207,6 +212,7 @@ const MyCommunity = ({ nickname = '' }) => {
             const mapped = list.map(mapPost);
             const mine = mapped.filter((post) => normalizeComparable(post.writer) === normalizedUser);
             if (!signal.aborted) {
+                setAllPosts(mapped);
                 setUserPosts(mine);
                 setCommentsLoaded(false);
                 setUserComments([]);
@@ -215,6 +221,7 @@ const MyCommunity = ({ nickname = '' }) => {
             if (!signal.aborted) {
                 console.error('Failed to fetch posts', err);
                 setError(err.message || '게시글을 불러오는 중 오류가 발생했습니다.');
+                setAllPosts([]);
                 setUserPosts([]);
                 setCommentsLoaded(false);
                 setUserComments([]);
@@ -248,7 +255,9 @@ const MyCommunity = ({ nickname = '' }) => {
         const headers = { Accept: 'application/json' };
         if (token) headers.Authorization = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
 
-        const requests = posts.map((post) => (async () => {
+        const requests = posts
+            .filter((post) => post?.id)
+            .map((post) => (async () => {
             try {
                 const res = await fetch(`${config.API_BASE_URL}/api/comments/${post.id}`, {
                     method: 'GET',
@@ -294,6 +303,15 @@ const MyCommunity = ({ nickname = '' }) => {
             }
         })());
 
+        if (!requests.length) {
+            if (!signal.aborted) {
+                setUserComments([]);
+                setCommentsLoaded(true);
+                setLoadingComments(false);
+            }
+            return;
+        }
+
         try {
             const results = await Promise.all(requests);
             if (signal.aborted) return;
@@ -319,16 +337,16 @@ const MyCommunity = ({ nickname = '' }) => {
 
     useEffect(() => {
         if (commentsLoaded) return;
-        if (!userPosts.length) {
+        if (!allPosts.length) {
             setUserComments([]);
             setCommentsLoaded(true);
             return;
         }
 
         const controller = new AbortController();
-        fetchCommentsForPosts(userPosts, controller.signal);
+        fetchCommentsForPosts(allPosts, controller.signal);
         return () => controller.abort();
-    }, [commentsLoaded, fetchCommentsForPosts, userPosts]);
+    }, [allPosts, commentsLoaded, fetchCommentsForPosts]);
 
     const filteredPosts = useMemo(() => {
         if (!keywordLower) return userPosts;

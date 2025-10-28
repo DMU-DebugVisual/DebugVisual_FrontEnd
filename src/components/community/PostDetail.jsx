@@ -1,20 +1,20 @@
 // src/pages/PostDetail.jsx
 import React, { useEffect, useState, useMemo, useRef, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import "./PostDetail.css";
 import config from "../../config";
 import { promptLogin } from "../../utils/auth";
 
-const parseIntSafe = (v) => {
-    const n = Number(v);
-    return Number.isFinite(n) ? n : null;
+const parseIntSafe = (value) => {
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? numeric : null;
 };
 
 const deriveCommentCount = (resp, data) => {
     try {
         const fromHeader = resp?.headers?.get?.("X-Total-Count");
-        const n = parseIntSafe(fromHeader);
-        if (n !== null) return n;
+        const headerValue = parseIntSafe(fromHeader);
+        if (headerValue !== null) return headerValue;
     } catch (_) {}
 
     if (Array.isArray(data)) return data.length;
@@ -27,8 +27,16 @@ const deriveCommentCount = (resp, data) => {
 };
 
 export default function PostDetail() {
-    const { id } = useParams(); // /community/post/:id
+    const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const [authState, setAuthState] = useState(() => ({
+        token: localStorage.getItem("token"),
+        userId: localStorage.getItem("userId"),
+        username: localStorage.getItem("username"),
+        role: localStorage.getItem("role"),
+    }));
 
     const [post, setPost] = useState(null);
     const [comments, setComments] = useState([]);
@@ -36,70 +44,134 @@ export default function PostDetail() {
     const [loadingComments, setLoadingComments] = useState(true);
     const [error, setError] = useState("");
 
-    // 좋아요 상태
     const [likeCount, setLikeCount] = useState(0);
-    const [likedByMe, setLikedByMe] = useState(false); // ✅ 추가: 내가 좋아요를 눌렀는지 여부
     const [liking, setLiking] = useState(false);
     const prevLikeRef = useRef(0);
 
-    // 댓글 수 상태
     const [commentCount, setCommentCount] = useState(0);
 
-    // 댓글 작성 상태
     const [newComment, setNewComment] = useState("");
     const [posting, setPosting] = useState(false);
     const [deletingPost, setDeletingPost] = useState(false);
     const [deletingCommentId, setDeletingCommentId] = useState(null);
 
-    // 대댓글 작성 상태
-    const [replyTarget, setReplyTarget] = useState(null); // 대댓글을 달 댓글 ID
+    const [replyTarget, setReplyTarget] = useState(null);
     const [replyContent, setReplyContent] = useState("");
 
-    // 토큰 및 인증 헤더 (백틱 사용 수정 반영)
-    const tokenRaw = useMemo(() => localStorage.getItem("token"), []);
-    const authHeader = tokenRaw
-        ? tokenRaw.startsWith("Bearer ") ? tokenRaw : `Bearer ${tokenRaw}`
-        : null;
-    const currentUserId = useMemo(() => localStorage.getItem("userId") || "", []);
-    const currentUsername = useMemo(() => localStorage.getItem("username") || "", []);
-    const currentRole = useMemo(() => (localStorage.getItem("role") || "").toUpperCase(), []);
-    const hasManageRole = useMemo(() => ["ADMIN", "MANAGER", "ROLE_ADMIN", "ROLE_MANAGER"].includes(currentRole), [currentRole]);
+    const [authorStats, setAuthorStats] = useState(null);
+    const [relatedPosts, setRelatedPosts] = useState([]);
+    const [loadingRelations, setLoadingRelations] = useState(false);
+
+    const authHeader = useMemo(() => {
+        const token = authState.token;
+        if (!token) return null;
+        return token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+    }, [authState.token]);
+
+    const currentUserId = useMemo(() => authState.userId || "", [authState.userId]);
+    const currentUsername = useMemo(() => authState.username || "", [authState.username]);
+    const currentRole = useMemo(() => (authState.role || "").toUpperCase(), [authState.role]);
+    const hasManageRole = useMemo(
+        () => ["ADMIN", "MANAGER", "ROLE_ADMIN", "ROLE_MANAGER"].includes(currentRole),
+        [currentRole],
+    );
+
     const matchesCurrentUser = useCallback((writerName, writerId) => {
         if (writerId && currentUserId) return String(writerId) === String(currentUserId);
         if (writerName && currentUsername) return writerName === currentUsername;
         return false;
     }, [currentUserId, currentUsername]);
+
     const canManageRecord = useCallback((writerName, writerId) => {
         if (hasManageRole) return true;
         return matchesCurrentUser(writerName, writerId);
     }, [hasManageRole, matchesCurrentUser]);
 
-    // 좋아요 수 및 내 상태 재조회
-    const refreshLikeStatus = async () => {
+    useEffect(() => {
+        const syncAuth = () => {
+            setAuthState((prev) => {
+                const next = {
+                    token: localStorage.getItem("token"),
+                    userId: localStorage.getItem("userId"),
+                    username: localStorage.getItem("username"),
+                    role: localStorage.getItem("role"),
+                };
+                if (
+                    prev.token === next.token &&
+                    prev.userId === next.userId &&
+                    prev.username === next.username &&
+                    prev.role === next.role
+                ) {
+                    return prev;
+                }
+                return next;
+            });
+        };
+
+        window.addEventListener("storage", syncAuth);
+        window.addEventListener("dv:auth-updated", syncAuth);
+
+        return () => {
+            window.removeEventListener("storage", syncAuth);
+            window.removeEventListener("dv:auth-updated", syncAuth);
+        };
+    }, []);
+
+    const redirectPath = useMemo(
+        () => `${location.pathname}${location.search || ""}`,
+        [location.pathname, location.search],
+    );
+
+    const requestLogin = useCallback(() => {
+        promptLogin(undefined, { redirectTo: redirectPath });
+    }, [redirectPath]);
+
+    const formatDateTimeShort = useCallback((value) => {
+        if (!value) return "";
+        const date = value instanceof Date ? value : new Date(value);
+        if (Number.isNaN(date.getTime())) return "";
+        return new Intl.DateTimeFormat("ko-KR", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+        }).format(date);
+    }, []);
+
+    const refreshLikeCount = useCallback(async () => {
         try {
-            const bust = Date.now();
-            // ✅ config.API_BASE_URL 적용, like/status 경로 유지
-            const res = await fetch(`${config.API_BASE_URL}/api/posts/${id}/like/status?t=${bust}`, {
+            const res = await fetch(`${config.API_BASE_URL}/api/posts/${id}/like`, {
                 method: "GET",
-                headers: { Accept: "application/json", Authorization: authHeader, "Cache-Control": "no-cache" },
+                headers: {
+                    Accept: "application/json",
+                    "Cache-Control": "no-cache",
+                },
                 cache: "no-store",
             });
-            if (!res.ok) return null;
-            const data = await res.json();
 
-            const count = data.likeCount ?? 0;
-            const liked = data.likedByMe ?? false;
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error(text || `좋아요 수 조회 실패 (${res.status})`);
+            }
 
-            setLikeCount(count);
-            setLikedByMe(liked);
-            prevLikeRef.current = count;
-            return { count, liked };
-        } catch {
-            return null;
+            const payload = await res.json();
+            let nextCount = typeof payload === "number" ? payload : null;
+            if (nextCount === null && payload && typeof payload === "object") {
+                nextCount = parseIntSafe(payload.likeCount);
+            }
+
+            if (Number.isFinite(nextCount)) {
+                setLikeCount(nextCount);
+                prevLikeRef.current = nextCount;
+                return nextCount;
+            }
+        } catch (err) {
+            console.error("좋아요 수를 불러오지 못했습니다.", err);
         }
-    };
+        return null;
+    }, [id]);
 
-    // ===== effects =====
     useEffect(() => {
         let ignore = false;
         const controller = new AbortController();
@@ -109,10 +181,12 @@ export default function PostDetail() {
                 setLoadingPost(true);
                 setError("");
 
-                // ✅ config.API_BASE_URL 적용
+                const headers = { Accept: "application/json" };
+                if (authHeader) headers.Authorization = authHeader;
+
                 const res = await fetch(`${config.API_BASE_URL}/api/posts/${id}`, {
                     method: "GET",
-                    headers: { Accept: "application/json", Authorization: authHeader },
+                    headers,
                     signal: controller.signal,
                 });
 
@@ -131,14 +205,13 @@ export default function PostDetail() {
                     author: data.writer || data.author || "익명",
                     authorId: data.writerId ?? data.authorId ?? data.userId ?? null,
                     date: data.createdAt ? new Date(data.createdAt).toLocaleString() : "",
+                    createdAtRaw: data.createdAt ?? null,
                     tags: Array.isArray(data.tags) ? data.tags : [],
                 });
 
                 const initialLike = data.likeCount ?? 0;
                 setLikeCount(initialLike);
                 prevLikeRef.current = initialLike;
-                // ✅ 서버 응답에 likedByMe 필드가 있다면 사용, 없다면 기본값 false
-                setLikedByMe(data.likedByMe ?? false);
 
                 if (typeof data.commentCount === "number") {
                     setCommentCount(data.commentCount);
@@ -154,16 +227,151 @@ export default function PostDetail() {
             ignore = true;
             controller.abort();
         };
-    }, [id, authHeader]); // ✅ navigate 제거
+    }, [id, authHeader]);
 
-    // 공통: 댓글 목록 다시 불러오기
+    useEffect(() => {
+        if (!post) {
+            setAuthorStats(null);
+            setRelatedPosts([]);
+            return;
+        }
+
+        let ignore = false;
+        const controller = new AbortController();
+
+        (async () => {
+            try {
+                setLoadingRelations(true);
+                const headers = { Accept: "application/json" };
+                if (authHeader) headers.Authorization = authHeader;
+
+                const res = await fetch(`${config.API_BASE_URL}/api/posts`, {
+                    method: "GET",
+                    headers,
+                    signal: controller.signal,
+                    credentials: "include",
+                });
+
+                if (!res.ok) {
+                    const text = await res.text();
+                    throw new Error(text || `연관 게시글 조회 실패 (${res.status})`);
+                }
+
+                const raw = await res.json();
+                if (ignore) return;
+
+                const list = Array.isArray(raw)
+                    ? raw
+                    : Array.isArray(raw?.content)
+                        ? raw.content
+                        : Array.isArray(raw?.data)
+                            ? raw.data
+                            : [];
+
+                const normalized = list.map((item) => ({
+                    id: item.id,
+                    title: item.title || "제목 없는 글",
+                    tags: Array.isArray(item.tags) ? item.tags : [],
+                    likeCount: item.likeCount ?? 0,
+                    commentCount: item.commentCount ?? 0,
+                    createdAt: item.createdAt || item.updatedAt || null,
+                    author: item.writer || item.author || "익명",
+                }));
+
+                const fallbackLikeCount = prevLikeRef.current ?? 0;
+                const authorName = post.author;
+                const authored = authorName
+                    ? normalized.filter((entry) => entry.author === authorName)
+                    : [];
+                const includesCurrent = authored.some((entry) => entry.id === post.id);
+                const authorPostCount = authored.length + (!includesCurrent && authorName ? 1 : 0);
+                const authorLikeSum = authored.reduce((sum, entry) => sum + (entry.likeCount ?? 0), 0)
+                    + (!includesCurrent ? fallbackLikeCount : 0);
+                const latestEntry = [...authored]
+                    .sort((a, b) => {
+                        const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                        const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                        return bTime - aTime;
+                    })[0];
+
+                const fallbackCreatedAt = post.createdAtRaw;
+                const latestPost = latestEntry || {
+                    id: post.id,
+                    title: post.title,
+                    createdAt: fallbackCreatedAt,
+                };
+
+                const currentPostLikes = includesCurrent
+                    ? (authored.find((entry) => entry.id === post.id)?.likeCount ?? fallbackLikeCount)
+                    : fallbackLikeCount;
+
+                setAuthorStats({
+                    totalPosts: authorPostCount,
+                    totalLikes: authorLikeSum,
+                    latestTitle: latestPost?.title || "",
+                    latestDate: formatDateTimeShort(latestPost?.createdAt || fallbackCreatedAt),
+                    latestId: latestPost?.id || post.id,
+                    currentPostLikes,
+                });
+
+                const tagSet = new Set((post.tags || []).map((tag) => String(tag).toLowerCase()));
+                const relatedPool = normalized.filter((entry) => {
+                    if (entry.id === post.id) return false;
+                    if (!tagSet.size) return true;
+                    return (entry.tags || []).some((tag) => tagSet.has(String(tag).toLowerCase()));
+                });
+
+                relatedPool.sort((a, b) => {
+                    const likeDiff = (b.likeCount ?? 0) - (a.likeCount ?? 0);
+                    if (likeDiff !== 0) return likeDiff;
+                    const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                    const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                    return bTime - aTime;
+                });
+
+                setRelatedPosts(
+                    relatedPool.slice(0, 3).map((entry) => ({
+                        ...entry,
+                        formattedDate: formatDateTimeShort(entry.createdAt),
+                    })),
+                );
+            } catch (e) {
+                if (!ignore) {
+                    console.error("연관 게시글 정보를 불러오지 못했습니다.", e);
+                }
+            } finally {
+                if (!ignore) setLoadingRelations(false);
+            }
+        })();
+
+        return () => {
+            ignore = true;
+            controller.abort();
+        };
+    }, [post, authHeader, formatDateTimeShort]);
+
+    useEffect(() => {
+        setAuthorStats((prev) => {
+            if (!prev) return prev;
+            const diff = likeCount - (prev.currentPostLikes ?? 0);
+            if (diff === 0) return prev;
+            return {
+                ...prev,
+                totalLikes: Math.max(0, (prev.totalLikes ?? 0) + diff),
+                currentPostLikes: likeCount,
+            };
+        });
+    }, [likeCount]);
+
     const fetchComments = useCallback(async () => {
         try {
             setLoadingComments(true);
             const bust = Date.now();
-            // ✅ config.API_BASE_URL 적용
+            const headers = { Accept: "application/json" };
+            if (authHeader) headers.Authorization = authHeader;
+
             const res = await fetch(`${config.API_BASE_URL}/api/comments/${id}?t=${bust}`, {
-                headers: { Accept: "application/json", Authorization: authHeader },
+                headers,
                 cache: "no-store",
             });
 
@@ -187,7 +395,6 @@ export default function PostDetail() {
     }, [authHeader, id]);
 
     useEffect(() => {
-        // authHeader가 있거나 없더라도 댓글은 로드 시도
         if (!id) return;
         fetchComments();
     }, [id, authHeader, fetchComments]);
@@ -198,34 +405,28 @@ export default function PostDetail() {
         return matchesCurrentUser(post.author, post.authorId);
     }, [hasManageRole, post, matchesCurrentUser]);
 
-    const canDeleteComment = useCallback((comment) => {
-        if (!comment) return false;
-        const writerName = comment.writer ?? comment.author ?? comment.nickname;
-        const writerId = comment.writerId ?? comment.authorId ?? comment.userId;
-        return canManageRecord(writerName, writerId);
-    }, [canManageRecord]);
+    const canDeleteComment = useCallback(
+        (comment) => {
+            if (!comment) return false;
+            const writerName = comment.writer ?? comment.author ?? comment.nickname;
+            const writerId = comment.writerId ?? comment.authorId ?? comment.userId;
+            return canManageRecord(writerName, writerId);
+        },
+        [canManageRecord],
+    );
 
-
-    // 좋아요 토글
     const handleToggleLike = async () => {
         if (!authHeader) {
-            promptLogin();
+            requestLogin();
             return;
         }
         if (liking) return;
 
-        const before = likeCount;
-        const wasLiked = likedByMe;
-        const willLike = !wasLiked;
+        const previousCount = likeCount;
 
         try {
             setLiking(true);
-            // 낙관적 업데이트
-            setLikedByMe(willLike);
-            setLikeCount((c) => Math.max(0, c + (willLike ? 1 : -1)));
 
-            // 2) 서버 토글 호출
-            // ✅ config.API_BASE_URL 적용
             const res = await fetch(`${config.API_BASE_URL}/api/posts/${id}/like`, {
                 method: "POST",
                 headers: {
@@ -238,32 +439,28 @@ export default function PostDetail() {
             });
 
             if (!res.ok) {
-                // 실패 시 롤백
-                setLikedByMe(wasLiked);
-                setLikeCount(before);
                 const text = await res.text();
                 throw new Error(text || `좋아요 처리 실패 (${res.status})`);
             }
 
-            // 성공 시 상태 업데이트 확인
-            const afterStatus = await refreshLikeStatus();
-            if (afterStatus != null) {
-                // 서버로부터 받은 정확한 값으로 최종 업데이트
-                prevLikeRef.current = afterStatus.count;
+            const refreshed = await refreshLikeCount();
+            if (refreshed === null) {
+                setLikeCount(previousCount);
+                prevLikeRef.current = previousCount;
             }
-
         } catch (e) {
+            setLikeCount(previousCount);
+            prevLikeRef.current = previousCount;
             alert(e.message || "좋아요 처리 실패");
         } finally {
             setLiking(false);
         }
     };
 
-    // 댓글 작성
     const handleCreateComment = async () => {
         if (!newComment.trim()) return;
         if (!authHeader) {
-            promptLogin();
+            requestLogin();
             return;
         }
 
@@ -288,7 +485,7 @@ export default function PostDetail() {
             }
 
             setNewComment("");
-            await fetchComments(); // 성공 후 목록 새로고침
+            await fetchComments();
         } catch (e) {
             alert(e.message || "댓글 작성에 실패했습니다.");
         } finally {
@@ -296,17 +493,14 @@ export default function PostDetail() {
         }
     };
 
-    // 대댓글 작성
     const handleCreateReply = async (parentId) => {
         if (!replyContent.trim()) return;
         if (!authHeader) {
-            promptLogin();
+            requestLogin();
             return;
         }
 
         try {
-            // 별도의 로딩 상태 없이 바로 처리
-            // ✅ config.API_BASE_URL 적용
             const res = await fetch(`${config.API_BASE_URL}/api/comments`, {
                 method: "POST",
                 headers: {
@@ -326,8 +520,8 @@ export default function PostDetail() {
             }
 
             setReplyContent("");
-            setReplyTarget(null); // 입력창 닫기
-            await fetchComments(); // 성공 후 목록 새로고침
+            setReplyTarget(null);
+            await fetchComments();
         } catch (e) {
             alert(e.message || "대댓글 작성에 실패했습니다.");
         }
@@ -335,7 +529,7 @@ export default function PostDetail() {
 
     const handleDeletePost = async () => {
         if (!authHeader) {
-            promptLogin();
+            requestLogin();
             return;
         }
         if (deletingPost) return;
@@ -364,7 +558,7 @@ export default function PostDetail() {
 
     const handleDeleteComment = async (commentId) => {
         if (!authHeader) {
-            promptLogin();
+            requestLogin();
             return;
         }
         if (!commentId || deletingCommentId === commentId) return;
@@ -394,252 +588,359 @@ export default function PostDetail() {
         }
     };
 
+    const handleCopyLink = useCallback(async () => {
+        try {
+            await navigator.clipboard.writeText(window.location.href);
+            alert("링크가 복사되었습니다.");
+        } catch (err) {
+            console.error("링크 복사 실패", err);
+            alert("링크를 복사하지 못했습니다. 브라우저 설정을 확인해주세요.");
+        }
+    }, []);
+
+    const handleBookmark = useCallback(() => {
+        alert("즐겨찾기 기능을 준비 중입니다.");
+    }, []);
+
+    const handleCommentKeyDown = (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+            e.preventDefault();
+            handleCreateComment();
+        }
+    };
 
     if (loadingPost) {
-        return <div className="post-detail-container"><div className="post-detail-left"><p>게시글을 불러오는 중입니다…</p></div></div>;
+        return (
+            <div className="post-detail-shell">
+                <div className="post-detail-container">
+                    <div className="post-detail-left">
+                        <article className="post-surface">
+                            <p>게시글을 불러오는 중입니다…</p>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        );
     }
+
     if (error) {
-        return <div className="post-detail-container"><div className="post-detail-left"><p className="error">{error}</p></div></div>;
+        return (
+            <div className="post-detail-shell">
+                <div className="post-detail-container">
+                    <div className="post-detail-left">
+                        <article className="post-surface">
+                            <p className="error">{error}</p>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        );
     }
+
     if (!post) {
-        return <div className="post-detail-container"><div className="post-detail-left"><p>게시글이 없습니다.</p></div></div>;
+        return (
+            <div className="post-detail-shell">
+                <div className="post-detail-container">
+                    <div className="post-detail-left">
+                        <article className="post-surface">
+                            <p>게시글이 없습니다.</p>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     return (
-        <div className="post-detail-container">
-            {/* 왼쪽 질문 본문 */}
-            <div className="post-detail-left">
-                <div className="post-top-divider" />
-                <h1 className="post-title">{post.title}</h1>
-                <div className="post-subinfo">
-                    <span>{post.date} 작성</span>
-                    <span>작성자 {post.author}</span>
-                    <span>👍 {likeCount}</span>
-                    <span>💬 {commentCount}</span>
-                </div>
+        <div className="post-detail-shell">
+            <div className="post-detail-container">
+                <div className="post-detail-left">
+                    <article className="post-surface">
+                        <header className="post-header">
+                            <div className="post-header-top">
+                                <span className="post-breadcrumb">커뮤니티 · 질문</span>
+                                <div className="post-header-actions">
+                                    <button
+                                        type="button"
+                                        className="ghost-icon-btn"
+                                        onClick={handleBookmark}
+                                        title="게시글 저장"
+                                        aria-label="게시글 저장"
+                                    >
+                                        📌
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="ghost-icon-btn"
+                                        onClick={handleCopyLink}
+                                        title="링크 복사"
+                                        aria-label="링크 복사"
+                                    >
+                                        🔗
+                                    </button>
+                                    {canDeletePost && (
+                                        <button
+                                            type="button"
+                                            className="ghost-icon-btn danger"
+                                            onClick={handleDeletePost}
+                                            disabled={deletingPost}
+                                            title="게시글 삭제"
+                                            aria-label="게시글 삭제"
+                                        >
+                                            {deletingPost ? "…" : "🗑"}
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                            <h1 className="post-title">{post.title}</h1>
+                            <div className="post-meta-row">
+                                <span className="meta-chip"><strong>{post.author}</strong> 작성</span>
+                                {post.date && <span className="meta-chip">{post.date}</span>}
+                                <span className="meta-chip">👍 {likeCount}</span>
+                                <span className="meta-chip">💬 {commentCount}</span>
+                            </div>
+                        </header>
 
-                <div className="post-content">
-                    {/* XSS 방지를 위해 DOMPurify 등의 라이브러리를 사용하는 것이 좋습니다 */}
-                    {/<[a-z][\s\S]*>/i.test(post.content) ? (
-                        <div dangerouslySetInnerHTML={{ __html: post.content }} />
-                    ) : (
-                        post.content.split("\n").map((line, i) => <p key={i}>{line}</p>)
-                    )}
-                </div>
+                        <section className="post-body">
+                            {/<[a-z][\s\S]*>/i.test(post.content) ? (
+                                <div dangerouslySetInnerHTML={{ __html: post.content }} />
+                            ) : (
+                                post.content.split("\n").map((line, i) => <p key={i}>{line}</p>)
+                            )}
+                        </section>
 
-                <div className="post-actions">
-                    <button title="좋아요" onClick={handleToggleLike} disabled={liking}>
-                        {likedByMe ? "❤️ " : "👍 "} {likeCount}
-                    </button>
-                    {/* <button title="싫어요" disabled>👎 0</button> */}
-                </div>
-
-                <div className="post-tags">
-                    {post.tags.map((tag, i) => (
-                        <span key={i} className="tag">#{tag}</span>
-                    ))}
-                </div>
-
-                <div className="post-util-buttons">
-                    <button className="save-btn">📌 저장</button>
-                    <button
-                        className="link-btn"
-                        onClick={() => {
-                            navigator.clipboard.writeText(window.location.href);
-                            alert("링크가 복사되었습니다.");
-                        }}
-                    >
-                        🔗
-                    </button>
-                    {canDeletePost && (
-                        <button
-                            className="delete-btn"
-                            onClick={handleDeletePost}
-                            disabled={deletingPost}
-                        >
-                            {deletingPost ? "삭제 중…" : "삭제"}
-                        </button>
-                    )}
-                </div>
-
-                <div className="section-divider" />
-
-                {/* 답변(댓글) 영역 */}
-                <div className="answer-section">
-                    <h3 className="answer-title">답변</h3>
-
-                    <div className="answer-form">
-                        <input
-                            type="text"
-                            placeholder="답변을 작성해보세요."
-                            value={newComment}
-                            onChange={(e) => setNewComment(e.target.value)}
-                            onKeyDown={(e) => { if (e.key === "Enter") handleCreateComment(); }}
-                        />
-                        <div className="answer-form-buttons"> {/* ✅ 클래스 적용 */}
+                        <div className="post-reaction-bar">
                             <button
-                                className="comment-submit-btn" // ✅ 클래스 적용
-                                onClick={handleCreateComment}
-                                disabled={posting || !newComment.trim()} // ✅ 내용이 없을 때 비활성화 추가
+                                type="button"
+                                className="reaction-like"
+                                onClick={handleToggleLike}
+                                disabled={liking}
                             >
-                                {posting ? "작성 중…" : "등록"}
+                                <span aria-hidden="true">👍</span>
+                                <span>{liking ? "처리 중…" : "좋아요"}</span>
+                                <span>{likeCount}</span>
                             </button>
-                            <button
-                                className="comment-cancel-btn" // ✅ 클래스 적용
-                                onClick={() => setNewComment("")}
-                            >
+                            <span className="reaction-stat">💬 {commentCount}개의 답변</span>
+                        </div>
+
+                        {post.tags.length > 0 && (
+                            <div className="post-tag-group">
+                                {post.tags.map((tag, i) => (
+                                    <span key={i} className="tag-chip">#{tag}</span>
+                                ))}
+                            </div>
+                        )}
+                    </article>
+
+                    <section className="comment-card">
+                        <div className="comment-card-header">
+                            <h3>답변</h3>
+                            <span className="comment-count-badge">{commentCount}</span>
+                        </div>
+
+                        <div className="comment-editor">
+                            <textarea
+                                placeholder="답변을 작성해보세요."
+                                value={newComment}
+                                onChange={(e) => setNewComment(e.target.value)}
+                                onKeyDown={handleCommentKeyDown}
+                            />
+                            <span className="comment-hint">⌘+Enter 또는 Ctrl+Enter로 빠르게 등록할 수 있어요.</span>
+                        </div>
+                        <div className="comment-editor-actions">
+                            <button type="button" className="btn-secondary" onClick={() => setNewComment("")}>
                                 취소
                             </button>
+                            <button
+                                type="button"
+                                className="btn-primary"
+                                onClick={handleCreateComment}
+                                disabled={posting || !newComment.trim()}
+                            >
+                                {posting ? "등록 중…" : "등록"}
+                            </button>
+                        </div>
+
+                        {loadingComments && comments.length === 0 && (
+                            <div className="empty-comment"><p>댓글을 불러오는 중…</p></div>
+                        )}
+
+                        {!loadingComments && comments.length === 0 && (
+                            <div className="empty-comment" role="status">
+                                <div className="empty-icon" aria-hidden="true">💬</div>
+                                <p className="comment-title">아직 답변이 없어요.</p>
+                                <p className="comment-sub">첫 번째 답변을 남겨주세요!</p>
+                            </div>
+                        )}
+
+                        {!loadingComments && comments.length > 0 && (
+                            <ul className="comment-list">
+                                {comments.map((c) => (
+                                    <li key={c.id} className="comment-item">
+                                        <div className="comment-meta">
+                                            <b className="comment-writer">{c.writer || "익명"}</b>{" "}
+                                            · {c.createdAt ? new Date(c.createdAt).toLocaleString() : ""}
+                                        </div>
+                                        <div className="comment-content">
+                                            {c.content}
+                                        </div>
+
+                                        <div className="comment-action-row">
+                                            <button
+                                                className="reply-toggle-btn"
+                                                type="button"
+                                                onClick={() => setReplyTarget(c.id === replyTarget ? null : c.id)}
+                                            >
+                                                답글
+                                            </button>
+                                            {canDeleteComment(c) && (
+                                                <button
+                                                    type="button"
+                                                    className="comment-delete-btn"
+                                                    onClick={() => handleDeleteComment(c.id)}
+                                                    disabled={deletingCommentId === c.id}
+                                                >
+                                                    {deletingCommentId === c.id ? "삭제 중…" : "삭제"}
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        {replyTarget === c.id && (
+                                            <div className="reply-form">
+                                                <input
+                                                    type="text"
+                                                    value={replyContent}
+                                                    onChange={(e) => setReplyContent(e.target.value)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === "Enter") handleCreateReply(c.id);
+                                                    }}
+                                                    placeholder={`@${c.writer || "익명"}에게 답글을 입력하세요`}
+                                                />
+                                                <div className="reply-form-buttons">
+                                                    <button
+                                                        type="button"
+                                                        className="reply-submit-btn"
+                                                        onClick={() => handleCreateReply(c.id)}
+                                                        disabled={!replyContent.trim()}
+                                                    >
+                                                        등록
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="reply-cancel-btn"
+                                                        onClick={() => {
+                                                            setReplyTarget(null);
+                                                            setReplyContent("");
+                                                        }}
+                                                    >
+                                                        취소
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {Array.isArray(c.replies) && c.replies.length > 0 && (
+                                            <ul className="reply-list">
+                                                {c.replies.map((r) => (
+                                                    <li key={r.id} className="reply-item">
+                                                        <div className="reply-meta">
+                                                            <b>{r.writer || "익명"}</b> · {r.createdAt ? new Date(r.createdAt).toLocaleString() : ""}
+                                                        </div>
+                                                        <div>{r.content}</div>
+                                                        {canDeleteComment(r) && (
+                                                            <button
+                                                                type="button"
+                                                                className="reply-delete-btn"
+                                                                onClick={() => handleDeleteComment(r.id)}
+                                                                disabled={deletingCommentId === r.id}
+                                                            >
+                                                                {deletingCommentId === r.id ? "삭제 중…" : "삭제"}
+                                                            </button>
+                                                        )}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </section>
+                </div>
+
+                <aside className="post-detail-right">
+                    <div className="support-card author-card">
+                        <div className="author-box">
+                            <div className="profile-image">{post.author?.[0] || "U"}</div>
+                            <div className="author-info">
+                                <div className="author-name">{post.author}</div>
+                                {authorStats ? (
+                                    <ul className="author-stats-list">
+                                        <li>
+                                            <span>등록한 질문</span>
+                                            <strong>{authorStats.totalPosts ?? 0}개</strong>
+                                        </li>
+                                        <li>
+                                            <span>총 받은 좋아요</span>
+                                            <strong>{authorStats.totalLikes ?? 0}개</strong>
+                                        </li>
+                                        {authorStats.latestTitle && (
+                                            <li className="author-recent">
+                                                <span>최근 작성</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => navigate(`/community/post/${authorStats.latestId}`)}
+                                                >
+                                                    {authorStats.latestTitle}
+                                                </button>
+                                                {authorStats.latestDate && <time>{authorStats.latestDate}</time>}
+                                            </li>
+                                        )}
+                                    </ul>
+                                ) : (
+                                    <div className="author-activity">작성자 정보를 불러오는 중이에요…</div>
+                                )}
+                            </div>
                         </div>
                     </div>
 
-                    {/* 댓글 리스트 */}
-                    {loadingComments && comments.length === 0 && (
-                        <div className="empty-comment"><p>댓글을 불러오는 중…</p></div>
-                    )}
-
-                    {!loadingComments && comments.length === 0 && (
-                        <div className="empty-comment">
-                            <img src="/empty-comment.png" alt="답변 없음" />
-                            <p className="comment-title">답변을 기다리고 있는 질문이에요</p>
-                            <p className="comment-sub">첫번째 답변을 남겨보세요!</p>
+                    <div className="support-card related-qna">
+                        <div className="related-qna-header">
+                            <h4>이 글과 비슷한 Q&amp;A</h4>
+                            <button className="view-all-btn" onClick={() => navigate("/community")}>
+                                전체 Q&amp;A
+                            </button>
                         </div>
-                    )}
 
-                    {!loadingComments && comments.length > 0 && (
-                        <ul className="comment-list"> {/* ✅ 클래스 적용 */}
-                            {comments.map((c) => (
-                                <li key={c.id} className="comment-item"> {/* ✅ 클래스 적용 */}
-                                    <div className="comment-meta"> {/* ✅ 클래스 적용 */}
-                                        <b className="comment-writer">{c.writer || "익명"}</b>{" "}
-                                        · {c.createdAt ? new Date(c.createdAt).toLocaleString() : ""}
-                                    </div>
-                                    <div className="comment-content"> {/* ✅ 클래스 적용 */}
-                                        {c.content}
-                                    </div>
-
-                                    {/* 답글 버튼 */}
-                                    <div className="comment-action-row">
-                                        <button
-                                            className="reply-toggle-btn"
-                                            onClick={() => setReplyTarget(c.id === replyTarget ? null : c.id)}
-                                        >
-                                            답글
-                                        </button>
-                                        {canDeleteComment(c) && (
-                                            <button
-                                                className="comment-delete-btn"
-                                                onClick={() => handleDeleteComment(c.id)}
-                                                disabled={deletingCommentId === c.id}
-                                            >
-                                                {deletingCommentId === c.id ? "삭제 중…" : "삭제"}
-                                            </button>
-                                        )}
-                                    </div>
-
-                                    {/* 대댓글 입력창 */}
-                                    {replyTarget === c.id && (
-                                        <div className="reply-form"> {/* ✅ 클래스 적용 */}
-                                            <input
-                                                type="text"
-                                                value={replyContent}
-                                                onChange={(e) => setReplyContent(e.target.value)}
-                                                onKeyDown={(e) => { if (e.key === "Enter") handleCreateReply(c.id); }}
-                                                placeholder={`@${c.writer || "익명"}에게 답글을 입력하세요`}
-                                            />
-                                            <div className="reply-form-buttons"> {/* ✅ 클래스 적용 */}
-                                                <button
-                                                    className="reply-submit-btn" // ✅ 클래스 적용
-                                                    onClick={() => handleCreateReply(c.id)}
-                                                    disabled={!replyContent.trim()}
-                                                >
-                                                    등록
-                                                </button>
-                                                <button
-                                                    className="reply-cancel-btn" // ✅ 클래스 적용
-                                                    onClick={() => { setReplyTarget(null); setReplyContent(""); }}
-                                                >
-                                                    취소
-                                                </button>
+                        <ul>
+                            {loadingRelations && (
+                                <li className="related-empty">비슷한 질문을 불러오는 중이에요…</li>
+                            )}
+                            {!loadingRelations && relatedPosts.length === 0 && (
+                                <li className="related-empty">아직 비슷한 질문이 없어요.</li>
+                            )}
+                            {!loadingRelations && relatedPosts.map((item) => (
+                                <li key={item.id}>
+                                    <button
+                                        type="button"
+                                        className="related-item"
+                                        onClick={() => navigate(`/community/post/${item.id}`)}
+                                    >
+                                        <span className="related-title">{item.title}</span>
+                                        <div className="related-meta">
+                                            <span className="date">{item.formattedDate || "최근"}</span>
+                                            <div className="reactions">
+                                                <span>👍 {item.likeCount ?? 0}</span>
+                                                <span>💬 {item.commentCount ?? 0}</span>
                                             </div>
                                         </div>
-                                    )}
-
-                                    {/* 대댓글 리스트 */}
-                                    {Array.isArray(c.replies) && c.replies.length > 0 && (
-                                        <ul className="reply-list"> {/* ✅ 클래스 적용 */}
-                                            {c.replies.map((r) => (
-                                                <li key={r.id} className="reply-item"> {/* ✅ 클래스 적용 */}
-                                                    <div className="reply-meta">
-                                                        <b>{r.writer || "익명"}</b> · {r.createdAt ? new Date(r.createdAt).toLocaleString() : ""}
-                                                    </div>
-                                                    <div>{r.content}</div>
-                                                    {canDeleteComment(r) && (
-                                                        <button
-                                                            className="reply-delete-btn"
-                                                            onClick={() => handleDeleteComment(r.id)}
-                                                            disabled={deletingCommentId === r.id}
-                                                        >
-                                                            {deletingCommentId === r.id ? "삭제 중…" : "삭제"}
-                                                        </button>
-                                                    )}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
+                                    </button>
                                 </li>
                             ))}
                         </ul>
-                    )}
-                </div>
+                    </div>
+                </aside>
             </div>
-
-            {/* 오른쪽 사이드 */}
-            <aside className="post-detail-right">
-                <div className="author-box">
-                    <div className="profile-image" />
-                    <div className="author-info">
-                        <div className="author-name">{post.author}</div>
-                        <div className="author-activity">작성한 질문수 5</div>
-                    </div>
-                </div>
-
-                <div className="related-qna">
-                    <div className="related-qna-header">
-                        <h4>이 글과 비슷한 Q&amp;A</h4>
-                        <button className="view-all-btn" onClick={() => navigate("/community")}>
-                            전체 Q&amp;A
-                        </button>
-                    </div>
-
-                    <ul>
-                        <li>
-                            <div className="related-item">
-                                <span className="related-title">시간복잡도 질문</span>
-                                <div className="related-meta">
-                                    <span className="date">25.07.02. 13:42</span>
-                                    <div className="reactions">
-                                        <span>👍 1</span>
-                                        <span>💬 2</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                        <li>
-                            <div className="related-item">
-                                <span className="related-title">11강 질문</span>
-                                <div className="related-meta">
-                                    <span className="date">25.07.11. 15:38</span>
-                                    <div className="reactions">
-                                        <span>👍 2</span>
-                                        <span>💬 3</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </aside>
         </div>
     );
 }

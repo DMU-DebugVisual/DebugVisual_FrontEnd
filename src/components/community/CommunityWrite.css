@@ -1,179 +1,508 @@
-.community-write-page {
-    padding-top: 72px;
-    max-width: 640px;        /* ✅ 가로 폭 줄임 */
-    margin: 0 auto 40px auto;
-    padding-left: 16px;
-    padding-right: 16px;
+.community-write-shell {
+    --write-bg: #ffffff;
+    --write-surface: #ffffff;
+    --write-border: rgba(15, 23, 42, 0.06);
+    --write-text: #161829;
+    --write-muted: #545a6c;
+    --write-soft: rgba(124, 92, 255, 0.1);
+    --write-accent: #7c5cff;
+    min-height: 100vh;
+    background: var(--write-bg);
+    padding: 72px 0 96px;
     font-family: "Noto Sans KR", sans-serif;
+    color: var(--write-text);
+}
+
+.community-write-layout {
+    width: min(1120px, 100% - 48px);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 2.15fr) minmax(260px, 1fr);
+    gap: 28px;
+    align-items: flex-start;
+}
+
+.write-main-card {
+    background: var(--write-surface);
+    border: 1px solid var(--write-border);
+    border-radius: 22px;
+    padding: 40px 44px;
+    box-shadow: 0 24px 46px -36px rgba(15, 23, 42, 0.26);
+}
+
+.write-header {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 28px;
+}
+
+.write-header-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--write-accent);
+    background: var(--write-soft);
+    width: fit-content;
+}
+
+.write-header-text h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.write-header-text p {
+    margin: 0;
+    font-size: 15px;
+    color: var(--write-muted);
 }
 
 .top-nav {
-    margin-top: 10px;
     display: flex;
-    gap: 20px;
-    margin-bottom: 24px;     /* ✅ 질문~제목 입력칸 간격 늘림 */
-    font-size: 16px;
-    font-weight: 500;
-    color: #444;
-    border-bottom: 1.5px solid #ccc;
-    padding-bottom: 4px;
+    gap: 12px;
+    flex-wrap: wrap;
+    background: rgba(124, 92, 255, 0.06);
+    border: 1px solid rgba(124, 92, 255, 0.16);
+    border-radius: 16px;
+    padding: 10px;
+    margin-bottom: 32px;
+}
+
+.top-nav-button {
+    border: none;
+    background: transparent;
+    border-radius: 999px;
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--write-muted);
+    cursor: pointer;
+    transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.top-nav-button:hover {
+    transform: translateY(-1px);
+    color: var(--write-text);
+    background: rgba(124, 92, 255, 0.12);
+}
+
+.top-nav-button.active {
+    color: #ffffff;
+    background: var(--write-accent);
+    box-shadow: 0 18px 34px -24px rgba(124, 92, 255, 0.58);
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.field label {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--write-muted);
+    text-transform: uppercase;
 }
 
 .title-input,
 .tag-input {
-    display: block;
     width: 100%;
-    margin-bottom: 8px;
-    font-size: 16px;
-    padding: 8px 0;
-    border: none;
-    border-bottom: 1px solid transparent;
-    background-color: transparent;
-    outline: none;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 1px solid var(--write-border);
+    background: var(--write-bg);
+    font-size: 15px;
+    color: var(--write-text);
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
 }
 
-.title-input::placeholder {
-    font-size: 20px;
+.title-input::placeholder,
+.tag-input::placeholder {
+    color: rgba(23, 26, 42, 0.42);
+    font-weight: 500;
+}
+
+.title-input:focus,
+.tag-input:focus {
+    outline: none;
+    background: var(--write-surface);
+    border-color: rgba(124, 92, 255, 0.4);
+    box-shadow: 0 18px 40px -30px rgba(124, 92, 255, 0.5);
+}
+
+.tag-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.tag-option {
+    padding: 10px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(124, 92, 255, 0.22);
+    background: rgba(124, 92, 255, 0.08);
+    color: var(--write-muted);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+
+.tag-option:hover:not(:disabled) {
+    transform: translateY(-1px);
+    background: rgba(124, 92, 255, 0.16);
+    border-color: rgba(124, 92, 255, 0.34);
+    color: var(--write-text);
+    box-shadow: 0 14px 24px -20px rgba(124, 92, 255, 0.4);
+}
+
+.tag-option.is-active {
+    background: var(--write-accent);
+    border-color: var(--write-accent);
+    color: #ffffff;
+    box-shadow: 0 16px 32px -24px rgba(124, 92, 255, 0.6);
+}
+
+.tag-option:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+    box-shadow: none;
+}
+
+.field-helper {
+    margin: 0;
+    font-size: 12px;
+    color: var(--write-muted);
+}
+
+.tag-helper-count {
+    margin-left: 8px;
+    font-weight: 600;
+    color: var(--write-accent);
+}
+
+.tag-limit-notice {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 4px 0 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--write-accent);
+}
+
+.editor-field {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 32px;
+}
+
+.editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+}
+
+.editor-title {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--write-muted);
+}
+
+.editor-subtitle {
+    font-size: 12px;
+    color: rgba(124, 92, 255, 0.7);
     font-weight: 600;
 }
 
-.tag-input::placeholder {
-    font-size: 14px;
-    color: #888;
+.editor-surface {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: linear-gradient(180deg, rgba(124, 92, 255, 0.06), transparent);
+    border: 1px solid rgba(124, 92, 255, 0.2);
+    border-radius: 20px;
+    padding: 18px;
 }
 
 .markdown-toolbar {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 8px;
+    gap: 10px;
 }
 
 .markdown-toolbar button {
-    width: 36px;
-    height: 36px;
-    background: #f1f1f1;
-    border: 1px solid #ccc;
-    border-radius: 6px;
+    width: 40px;
+    height: 40px;
+    background: var(--write-surface);
+    border: 1px solid rgba(124, 92, 255, 0.22);
+    border-radius: 12px;
     font-size: 16px;
-    display: flex;
+    color: var(--write-accent);
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease, border-color 0.16s ease;
 }
 
 .markdown-toolbar button:hover {
-    background: #e2e2e2;
+    background: rgba(124, 92, 255, 0.14);
+    border-color: rgba(124, 92, 255, 0.45);
+    box-shadow: 0 18px 26px -24px rgba(124, 92, 255, 0.55);
+    transform: translateY(-1px);
+    color: var(--write-text);
 }
 
 .content-textarea {
     width: 100%;
-    min-height: 600px; /* ✅ 세로 길이 늘림 */
+    min-height: 520px;
     resize: vertical;
-    padding: 12px;
-    font-size: 15px;
-    line-height: 1.6;
-    border: 1px solid #ccc;
-    border-radius: 8px;
+    border: 1px solid rgba(124, 92, 255, 0.28);
+    border-radius: 18px;
+    padding: 18px 20px;
+    font-size: 15.5px;
+    line-height: 1.7;
+    color: var(--write-text);
+    background: var(--write-surface);
+    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.05);
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.content-textarea:focus {
+    outline: none;
+    border-color: rgba(124, 92, 255, 0.55);
+    box-shadow: 0 22px 36px -30px rgba(124, 92, 255, 0.45);
 }
 
 .placeholder-style {
-    color: #999;
+    color: rgba(23, 26, 42, 0.45);
 }
 
 .write-actions {
     display: flex;
     justify-content: flex-end;
-    margin-top: 20px;
-    gap: 12px;
+    gap: 14px;
 }
 
 .cancel-btn,
 .submit-btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 6px;
-    font-weight: 500;
+    padding: 12px 20px;
+    border-radius: 14px;
     font-size: 14px;
+    font-weight: 600;
+    border: none;
     cursor: pointer;
+    transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease, color 0.16s ease;
 }
 
 .cancel-btn {
-    background-color: #eee;
-    color: #333;
+    background: var(--write-bg);
+    color: var(--write-muted);
+    border: 1px solid var(--write-border);
+}
+
+.cancel-btn:hover {
+    background: var(--write-surface);
+    color: var(--write-text);
+    box-shadow: 0 18px 34px -30px rgba(124, 92, 255, 0.3);
+    transform: translateY(-1px);
 }
 
 .submit-btn {
-    background-color: #6a1b9a;
-    color: #fff;
+    background: var(--write-accent);
+    color: #ffffff;
+    box-shadow: 0 20px 36px -26px rgba(124, 92, 255, 0.62);
 }
 
-/* 🌙 다크모드: CommunityWrite 페이지 */
-.dark-mode .community-write-page {
-    background-color: #1e1e1e;
-    color: #f0f0f0;
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 24px 44px -28px rgba(124, 92, 255, 0.7);
 }
 
-/* 상단 탭 */
-.dark-mode .top-nav span {
-    color: #ccc;
+.submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
-.dark-mode .top-nav span.active {
-    color: #b88eff;
-    border-bottom: 2px solid #b88eff;
+.write-side-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
-/* 제목 입력 */
-.dark-mode .title-input {
-    color: #f0f0f0;
-    background-color: transparent;
+.side-card {
+    background: var(--write-surface);
+    border: 1px solid var(--write-border);
+    border-radius: 20px;
+    padding: 24px 26px;
+    box-shadow: 0 28px 48px -36px rgba(15, 23, 42, 0.4);
 }
 
-.dark-mode .title-input::placeholder {
-    color: #aaa;
+.side-card h3 {
+    margin: 0 0 14px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--write-text);
+    letter-spacing: -0.01em;
 }
 
-/* 태그 입력 */
-.dark-mode .tag-input {
-    color: #ccc;
-    background-color: transparent;
+.side-card ul {
+    margin: 0;
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    color: var(--write-muted);
+    font-size: 14px;
+    line-height: 1.6;
 }
 
-.dark-mode .tag-input::placeholder {
-    color: #777;
+.side-card p {
+    margin: 0 0 14px;
+    font-size: 14px;
+    color: var(--write-muted);
+    line-height: 1.6;
 }
 
-/* 마크다운 툴바 버튼 */
-.dark-mode .markdown-toolbar button {
-    background-color: #2a2a2a;
-    color: #f0f0f0;
-    border: 1px solid #555;
+.tag-chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
-.dark-mode .markdown-toolbar button:hover {
-    background-color: #3a3a3a;
+.tag-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background: var(--write-soft);
+    color: var(--write-accent);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease;
 }
 
-/* 게시물 작성 textarea */
-.dark-mode .content-textarea {
-    background-color: #2a2a2a;
-    color: #f0f0f0;
-    border: 1px solid #555;
+.tag-chip:hover:not(:disabled) {
+    transform: translateY(-1px);
+    background: rgba(124, 92, 255, 0.16);
+    border-color: rgba(124, 92, 255, 0.32);
+    color: var(--write-text);
+}
+
+.tag-chip.is-active {
+    background: var(--write-accent);
+    border-color: var(--write-accent);
+    color: #ffffff;
+    box-shadow: 0 16px 32px -26px rgba(124, 92, 255, 0.6);
+}
+
+.tag-chip:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.tag-option:focus-visible,
+.tag-chip:focus-visible {
+    outline: 2px solid rgba(124, 92, 255, 0.55);
+    outline-offset: 2px;
+}
+
+.side-reminder {
+    background: linear-gradient(180deg, rgba(124, 92, 255, 0.1), rgba(124, 92, 255, 0.04));
+    border: 1px solid rgba(124, 92, 255, 0.18);
+}
+
+@media (max-width: 1100px) {
+    .community-write-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .write-side-panel {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .side-card {
+        flex: 1 1 280px;
+    }
+}
+
+@media (max-width: 720px) {
+    .community-write-shell {
+        padding: 84px 0 64px;
+    }
+
+    .write-main-card {
+        padding: 32px 24px;
+    }
+
+    .top-nav {
+        padding: 8px;
+    }
+
+    .content-textarea {
+        min-height: 420px;
+    }
+
+    .write-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .cancel-btn,
+    .submit-btn {
+        width: 100%;
+    }
+}
+
+.dark-mode .community-write-shell {
+    --write-bg: #0f1324;
+    --write-surface: #181d33;
+    --write-border: rgba(124, 92, 255, 0.26);
+    --write-text: #f6f6ff;
+    --write-muted: #c4c6de;
+    --write-soft: rgba(124, 92, 255, 0.28);
+    --write-accent: #b88eff;
 }
 
 .dark-mode .placeholder-style {
-    color: #777;
+    color: rgba(246, 246, 255, 0.5);
 }
 
-/* 등록, 취소 버튼 */
-.dark-mode .submit-btn {
-    background-color: #b88eff;
-    color: white;
+.dark-mode .title-input::placeholder,
+.dark-mode .tag-input::placeholder {
+    color: rgba(246, 246, 255, 0.38);
 }
 
-.dark-mode .cancel-btn {
-    background-color: #444;
-    color: #ccc;
+.dark-mode .submit-btn:hover {
+    box-shadow: 0 24px 42px -30px rgba(184, 142, 255, 0.7);
+}
+
+.dark-mode .markdown-toolbar button:hover {
+    color: var(--write-text);
 }

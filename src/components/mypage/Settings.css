@@ -1,333 +1,441 @@
-/* 전체 레이아웃 */
-/*.mypage {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-    height: 100vh;
-    background-color: #f4f4f4;
-    font-family: 'Pretendard', sans-serif;
-}*/
-
-/* 컨테이너 */
-.settings-container {
-    flex: 1;
-    margin: 0 auto;
-    padding: 3rem;
-    box-sizing: border-box;
-    max-width: 1400px;
-    overflow-y: auto;
+.settings-page .mypage-page-header {
+    margin-bottom: 0;
 }
 
-/* 제목 */
-.settings-title {
-    font-size: 40px;
-    margin-bottom: 2rem;
-}
-
-/* 탭 메뉴 */
-.settings-tabs {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 1rem;
-}
-
-.tab {
-    padding: 10px 20px;
-    font-size: 16px;
-    border: none;
-    background-color: #f2f2f2;
-    color: #888;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-.tab.active {
-    background-color: white;
-    color: #000;
-    font-weight: 600;
-}
-
-/* 카드 */
-.settings-card {
-    background-color: #fff;
-    padding: 3rem;
-    border-radius: 12px;
-    box-shadow: none;
-}
-
-/* 섹션 제목 및 설명 */
-.section-title {
-    font-size: 36px;
-    margin-bottom: 2rem;
-    margin-top: 1px;
-}
-
-.section-desc {
-    font-size: 20px;
-    margin-bottom: 2rem;
-    color: #555;
-}
-
-/* 프로필 이미지 */
-.profile-image-section {
+.settings-header-actions {
     display: flex;
     align-items: center;
-    gap: 2rem;
-    margin-bottom: 2rem;
+    gap: 12px;
 }
 
-.profile-image {
-    width: 150px;
-    height: 150px;
-    background-color: #ddd;
-    border-radius: 50%;
+.settings-header-actions .compact {
+    padding: 9px 14px;
+    font-size: 13px;
 }
 
-/* 버튼 */
-.upload-btn,
-.delete-btn {
-    margin-right: 10px;
-    padding: 10px 20px;
-    font-size: 16px;
+.settings-header-actions .ghost-button {
+    color: var(--mypage-text-secondary);
+}
+
+.settings-header-actions .ghost-button svg {
+    width: 16px;
+    height: 16px;
+}
+
+.settings-panel {
+    padding: 36px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.settings-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.settings-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 14px;
+    border: 1px solid var(--mypage-border);
+    background: var(--mypage-surface);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--mypage-text-secondary);
     cursor: pointer;
-    border: none;
-    border-radius: 6px;
+    transition: border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
 }
 
-.upload-btn {
-    background-color: #007bff;
-    color: white;
+.settings-tab svg {
+    width: 14px;
+    height: 14px;
 }
 
-.delete-btn {
-    background-color: #ccc;
-    color: #333;
+.settings-tab:hover {
+    border-color: rgba(124, 92, 255, 0.45);
+    color: var(--mypage-text);
+    transform: translateY(-1px);
+}
+
+.settings-tab.is-active {
+    background: rgba(124, 92, 255, 0.12);
+    color: var(--mypage-accent);
+    border-color: rgba(124, 92, 255, 0.4);
+}
+
+.settings-content {
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: 36px;
+    align-items: flex-start;
+}
+
+.settings-profile-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 28px;
+    border-radius: 18px;
+    border: 1px dashed rgba(124, 92, 255, 0.28);
+    background: linear-gradient(160deg, rgba(124, 92, 255, 0.1), rgba(124, 92, 255, 0.02));
+    text-align: center;
+}
+
+.profile-avatar-large {
+    width: 144px;
+    height: 144px;
+    border-radius: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--mypage-accent);
+    background: rgba(124, 92, 255, 0.12);
+}
+
+.settings-profile-card .secondary-button {
+    width: 100%;
+    justify-content: center;
+}
+
+.settings-profile-card .secondary-button.ghost {
+    border-style: dashed;
 }
 
 .upload-note {
-    font-size: 15px;
-    color: #888;
-    margin-top: 4px;
+    font-size: 13px;
+    color: var(--mypage-text-tertiary);
+    margin: 8px 0 0;
 }
 
-/* 폼 */
-.form-group {
-    margin-bottom: 1.5rem;
+.settings-tip {
+    background: rgba(15, 23, 42, 0.04);
+    border-radius: 12px;
+    padding: 12px 16px;
     display: flex;
     flex-direction: column;
+    gap: 6px;
+    color: var(--mypage-text-secondary);
 }
 
-.form-row {
+.settings-tip strong {
+    color: var(--mypage-text-primary);
+}
+
+.settings-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 24px;
+}
+
+.settings-form .form-group {
     display: flex;
-    gap: 2rem;
-    margin-bottom: 0.5rem;
+    flex-direction: column;
+    gap: 8px;
 }
 
-.form-group.half {
-    flex: 1;
+.settings-form .form-group.half {
+    grid-column: span 1;
 }
 
-.form-group label {
+.settings-form .form-group:nth-of-type(3) {
+    grid-column: 1 / -1;
+}
+
+.settings-form .form-group:nth-of-type(4) {
+    grid-column: 1 / -1;
+}
+
+.settings-form .form-group:nth-of-type(5) {
+    grid-column: 1 / -1;
+}
+
+.settings-form label {
+    font-size: 13px;
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    color: var(--mypage-text-secondary);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
 }
 
-/* input & textarea */
-.form-group input[type="text"] {
-    all: unset;
-    box-sizing: border-box;
-    padding: 12px 16px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    height: 48px;
+.settings-form input,
+.settings-form textarea {
     width: 100%;
+    border: 1px solid var(--mypage-border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-size: 15px;
+    color: var(--mypage-text);
+    background: var(--mypage-surface);
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
-.form-group textarea {
-    padding: 16px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    resize: none;
+.settings-form input:focus,
+.settings-form textarea:focus {
+    outline: none;
+    border-color: rgba(124, 92, 255, 0.48);
+    box-shadow: 0 0 0 4px rgba(124, 92, 255, 0.14);
+}
+
+.settings-form textarea {
+    resize: vertical;
     min-height: 120px;
 }
 
-/* 기타 텍스트 */
 .small-text {
-    font-size: 13px;
-    color: #888;
-    margin-top: 0.3rem;
+    margin: -6px 0 0;
+    font-size: 12px;
+    color: var(--mypage-text-tertiary);
 }
 
-/* 기술 스택 */
 .tech-stack {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin-bottom: 1rem;
 }
 
-.tag {
-    background-color: #007bff;
-    color: white;
-    padding: 4px 14px;
-    border-radius: 20px;
-    font-size: 15px;
+.tech-tag {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--mypage-soft);
+    color: var(--mypage-accent);
+    font-weight: 600;
+    font-size: 13px;
 }
 
-.remove-x {
-    cursor: pointer;
-    margin-left: 6px;
-    font-weight: bold;
-    color: white;
-    padding: 0 6px;
-    border-radius: 50%;
+.remove-tag {
+    border: none;
+    background: transparent;
+    color: inherit;
+    font-size: 14px;
     line-height: 1;
+    cursor: pointer;
 }
 
-.remove-x:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-}
-
-/* 기술 입력 */
 .tech-input-row {
     display: flex;
-    gap: 15px;
+    gap: 12px;
 }
 
 .tech-input-row input {
-    flex-grow: 1;
-    padding: 12px 16px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
+    flex: 1;
 }
 
-.add-btn {
-    background-color: #a684f1;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 20px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.tech-input-row .secondary-button {
+    flex: 0 0 auto;
+    padding: 10px 18px;
 }
 
-/* 소셜 링크 */
 .social-links {
     display: flex;
+    gap: 12px;
+}
+
+.social-links input {
+    flex: 1;
+}
+
+.settings-preferences {
+    padding: 32px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.settings-preferences h2 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.settings-preferences p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--mypage-text-secondary);
+}
+
+.preferences-list {
+    list-style: none;
+    margin: 0;
+    padding: 16px 0 0;
+    display: flex;
+    flex-direction: column;
     gap: 16px;
 }
 
-/* 🌙 전체 배경 */
-.dark-mode .mypage {
-    background-color: #1e1e1e;
-    color: #eee;
+.preference-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.06);
 }
 
-/* 🌙 컨테이너 내부 */
-.dark-mode .settings-container {
-    color: #eee;
+.preference-item strong {
+    display: block;
+    font-size: 15px;
+    margin-bottom: 4px;
+    color: var(--mypage-text-primary);
 }
 
-/* 🌙 탭 버튼 */
-.dark-mode .tab {
-    background-color: #2a2a2a;
-    color: #bbb;
+.preference-item span {
+    font-size: 13px;
+    color: var(--mypage-text-secondary);
 }
 
-.dark-mode .tab:hover {
-    background-color: #3a3a3a;
+.preferences-list li:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
 }
 
-.dark-mode .tab.active {
-    background-color: #b88eff;
-    color: #1e1e1e;
-    font-weight: bold;
+.switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    width: 48px;
+    height: 26px;
 }
 
-/* 🌙 카드 */
-.dark-mode .settings-card {
-    background-color: #2a2a2a;
-    box-shadow: 0 0 6px rgba(255, 255, 255, 0.05);
+.switch input {
+    display: none;
 }
 
-/* 🌙 설명 텍스트 */
-.dark-mode .section-desc {
-    color: #bbb;
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.12);
+    transition: 0.2s ease;
+    border-radius: 999px;
 }
 
-/* 🌙 프로필 이미지 배경 */
-.dark-mode .profile-image {
-    background-color: #444;
+.slider::before {
+    position: absolute;
+    content: '';
+    height: 20px;
+    width: 20px;
+    left: 4px;
+    bottom: 3px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    transition: 0.2s ease;
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.18);
 }
 
-/* 🌙 업로드/삭제 버튼 */
-.dark-mode .upload-btn {
-    background-color: #b88eff;
-    color: #1e1e1e;
+.switch input:checked + .slider {
+    background: rgba(124, 92, 255, 0.5);
 }
 
-.dark-mode .delete-btn {
-    background-color: #555;
-    color: #eee;
+.switch input:checked + .slider::before {
+    transform: translateX(20px);
 }
 
-.dark-mode .upload-note {
-    color: #aaa;
+@media (max-width: 1024px) {
+    .settings-content {
+        grid-template-columns: 1fr;
+    }
+
+    .settings-profile-card {
+        flex-direction: row;
+        justify-content: space-between;
+        text-align: left;
+    }
+
+    .settings-profile-card .secondary-button,
+    .settings-profile-card .secondary-button.ghost {
+        width: auto;
+    }
 }
 
-/* 🌙 입력창 */
-.dark-mode .form-group input[type="text"],
-.dark-mode .tech-input-row input {
-    background-color: #2a2a2a;
-    border: 1px solid #555;
-    color: #eee;
+@media (max-width: 768px) {
+    .settings-panel,
+    .settings-preferences {
+        padding: 28px;
+    }
+
+    .settings-tabs {
+        gap: 8px;
+    }
+
+    .settings-tab {
+        padding: 8px 14px;
+        border-radius: 12px;
+    }
+
+    .settings-form {
+        grid-template-columns: 1fr;
+    }
+
+    .settings-header-actions {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
 }
 
-.dark-mode .form-group textarea {
-    background-color: #2a2a2a;
-    border: 1px solid #555;
-    color: #eee;
+.dark-mode .settings-tab {
+    background: rgba(15, 23, 42, 0.45);
+    border-color: rgba(148, 163, 184, 0.2);
+    color: rgba(226, 232, 240, 0.76);
 }
 
-/* 🌙 작은 보조 텍스트 */
-.dark-mode .small-text {
-    color: #aaa;
+.dark-mode .settings-tab.is-active {
+    background: rgba(124, 92, 255, 0.2);
+    border-color: rgba(124, 92, 255, 0.54);
+    color: #dbeafe;
 }
 
-/* 🌙 기술 스택 태그 */
-.dark-mode .tag {
-    background-color: #b88eff;
-    color: #1e1e1e;
+.dark-mode .settings-profile-card {
+    border-color: rgba(124, 92, 255, 0.4);
+    background: linear-gradient(150deg, rgba(124, 92, 255, 0.18), rgba(15, 23, 42, 0.52));
 }
 
-/* 🌙 제거 X 버튼 */
-.dark-mode .remove-x {
-    color: #1e1e1e;
+.dark-mode .settings-tip {
+    background: rgba(148, 163, 184, 0.12);
+    color: rgba(226, 232, 240, 0.76);
 }
 
-.dark-mode .remove-x:hover {
-    background-color: rgba(0, 0, 0, 0.2);
+.dark-mode .settings-form input,
+.dark-mode .settings-form textarea {
+    background: rgba(15, 23, 42, 0.64);
+    border-color: rgba(148, 163, 184, 0.25);
+    color: rgba(248, 250, 252, 0.94);
 }
 
-/* 🌙 추가 버튼 */
-.dark-mode .add-btn {
-    background-color: #b88eff;
-    color: #1e1e1e;
+.dark-mode .settings-form input:focus,
+.dark-mode .settings-form textarea:focus {
+    border-color: rgba(124, 92, 255, 0.8);
+    box-shadow: 0 0 0 4px rgba(124, 92, 255, 0.18);
 }
 
-/* 🌙 소셜 링크 입력창 */
-.dark-mode .social-links input {
-    background-color: #2a2a2a;
-    border: 1px solid #555;
-    color: #eee;
+.dark-mode .tech-tag {
+    background: rgba(124, 92, 255, 0.24);
+    color: #dbeafe;
+}
+
+.dark-mode .settings-preferences {
+    background: rgba(15, 23, 42, 0.42);
+}
+
+.dark-mode .preference-item {
+    border-bottom-color: rgba(148, 163, 184, 0.15);
+}
+
+.dark-mode .slider {
+    background: rgba(148, 163, 184, 0.28);
+}
+
+.dark-mode .switch input:checked + .slider {
+    background: rgba(124, 92, 255, 0.55);
 }

@@ -1,5 +1,6 @@
-import { HashRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
+import { HashRouter, Routes, Route, useLocation, Navigate, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { promptLogin } from "./utils/auth";
 
 import Header from "./components/header/Header";
 import Footer from "./components/footer/Footer"; // Footer 컴포넌트 임포트 유지
@@ -23,6 +24,7 @@ import CodecastLive from "./components/codecast/codecastlive/CodecastLive";
 
 function AppContent() {
     const location = useLocation();
+    const navigate = useNavigate();
     const [isDark, setIsDark] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [nickname, setNickname] = useState('');
@@ -34,18 +36,36 @@ function AppContent() {
     const isCommunityPage = location.pathname.startsWith("/community");
     const isMyPage = location.pathname.startsWith("/mypage");
     const isCodecastPage = location.pathname.startsWith("/broadcast") || location.pathname.startsWith("/startbroadcast");
-    const shouldShowFooter = isMainPage && !(isSignupPage || isIdePage || isCommunityPage || isMyPage || isCodecastPage);
+    const shouldShowFooter = !(
+        isSignupPage ||
+        isIdePage ||
+        isCommunityPage ||
+        isMyPage ||
+        isCodecastPage ||
+        isMainPage
+    );
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        const storedUsername = localStorage.getItem('username');
-        if (token && storedUsername) {
-            setIsLoggedIn(true);
-            setNickname(storedUsername);
-        } else {
-            setIsLoggedIn(false);
-            setNickname('');
-        }
+        const syncAuthState = () => {
+            const token = localStorage.getItem('token');
+            const storedUsername = localStorage.getItem('username');
+            if (token && storedUsername) {
+                setIsLoggedIn(true);
+                setNickname(storedUsername);
+            } else {
+                setIsLoggedIn(false);
+                setNickname('');
+            }
+        };
+
+        syncAuthState();
+        window.addEventListener('storage', syncAuthState);
+        window.addEventListener('dv:auth-updated', syncAuthState);
+
+        return () => {
+            window.removeEventListener('storage', syncAuthState);
+            window.removeEventListener('dv:auth-updated', syncAuthState);
+        };
     }, []);
 
     useEffect(() => {
@@ -63,6 +83,14 @@ function AppContent() {
         document.body.classList.toggle("dark-mode", isDark);
         localStorage.setItem("theme", isDark ? "dark" : "light");
     }, [isDark]);
+
+    const MyPageGuard = ({ element }) => {
+        if (!isLoggedIn) {
+            promptLogin(undefined, { redirectTo: location.pathname });
+            return <Navigate to="/" replace />;
+        }
+        return element;
+    };
 
     return (
         <>
@@ -90,7 +118,12 @@ function AppContent() {
                 <Route path="/broadcast" element={<Codecast />} />
                 <Route path="/startbroadcast" element={<StartCodecast />} />
                 <Route path="/broadcast/live" element={<CodecastLive />} />
-                <Route path="/mypage" element={<MyPageLayout nickname={nickname} />}>
+                <Route
+                    path="/mypage"
+                    element={(
+                        <MyPageGuard element={<MyPageLayout nickname={nickname} />} />
+                    )}
+                >
                     <Route index element={<Mypage nickname={nickname} />} />
                     <Route path="project" element={<MyProject />} />
                     <Route path="community" element={<MyCommunity nickname={nickname} />} />
@@ -108,6 +141,13 @@ function AppContent() {
                     onLoginSuccess={() => {
                         setIsLoggedIn(true);
                         setNickname(localStorage.getItem('username') || '');
+                        setIsLoginModalOpen(false);
+
+                        const redirectTarget = sessionStorage.getItem('dv:postLoginRedirect');
+                        if (redirectTarget) {
+                            sessionStorage.removeItem('dv:postLoginRedirect');
+                            navigate(redirectTarget, { replace: true });
+                        }
                     }}
                 />
             )}
