@@ -17,6 +17,8 @@
     object-fit: contain;
     background-color: transparent !important;
     padding: 2px 0;
+    filter: none;
+    transition: filter 0.3s ease;
 }
 
 .site-logo-link {
@@ -157,6 +159,10 @@
 
 .dark-mode .site-name {
     color: #eee;
+}
+
+.dark-mode .site-logo {
+    filter: brightness(1.6) saturate(1.15);
 }
 
 .dark-mode .header-nav a {

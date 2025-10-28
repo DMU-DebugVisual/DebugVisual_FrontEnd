@@ -248,6 +248,7 @@
     height: auto;
     display: block;
     margin: 0 auto 0.5rem;
+    transition: filter 0.3s ease;
 }
 .login-password-wrapper {
     position: relative;
@@ -578,4 +579,10 @@
 .signup-logo {
     max-width: 120px;
     height: auto;
+    transition: filter 0.3s ease;
+}
+
+.dark-mode .login-logo,
+.dark-mode .signup-logo {
+    filter: brightness(1.6) saturate(1.15);
 }
