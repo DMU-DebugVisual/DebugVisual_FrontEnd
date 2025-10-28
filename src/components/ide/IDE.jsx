@@ -524,52 +524,7 @@ const IDE = () => {
         editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, function() {
             handleSave();
         });
-
-        monaco.editor.defineTheme('custom-dark', {
-            base: 'vs-dark',
-            inherit: true,
-            rules: [
-                { token: '', foreground: 'D4D4D4', background: '1E1E1E' },
-                { token: 'comment', foreground: '6A9955' },
-                { token: 'string', foreground: 'CE9178' },
-                { token: 'keyword', foreground: '569CD6' },
-                { token: 'number', foreground: 'B5CEA8' }
-            ],
-            colors: {
-                'editor.background': '#1E1E1E',
-                'editorLineNumber.foreground': '#858585',
-                'editorCursor.foreground': '#AEAFAD',
-                'editor.selectionBackground': '#264F78',
-                'editor.lineHighlightBackground': '#2A2D2E'
-            }
-        });
-
-        monaco.editor.defineTheme('custom-light', {
-            base: 'vs',
-            inherit: true,
-            rules: [
-                { token: '', foreground: '2D2D2D', background: 'FFFFFF' },
-                { token: 'comment', foreground: '008000' },
-                { token: 'string', foreground: 'A31515' },
-                { token: 'keyword', foreground: '0000FF' },
-                { token: 'number', foreground: '098658' }
-            ],
-            colors: {
-                'editor.background': '#FFFFFF',
-                'editorLineNumber.foreground': '#237893',
-                'editorCursor.foreground': '#000000',
-                'editor.selectionBackground': '#ADD6FF',
-                'editor.lineHighlightBackground': '#F5F5F5'
-            }
-        });
-
-        const updateEditorTheme = (monaco) => {
-            if (!monaco && !editorRef.current) return;
-            const m = monaco || window.monaco;
-            if (m) { m.editor.setTheme(isDarkMode ? 'custom-dark' : 'custom-light'); }
-        };
-
-        updateEditorTheme(monaco);
+        monaco.editor.setTheme(isDarkMode ? 'vs-dark' : 'vs');
 
         setTimeout(() => {
             try { editorRef.current.layout(); } catch (e) { console.warn('에디터 초기 레이아웃 설정 중 오류:', e); }
@@ -881,9 +836,8 @@ const IDE = () => {
                     if (newIsDarkMode !== isDarkMode) {
                         setIsDarkMode(newIsDarkMode);
 
-                        if (editorRef.current && monacoRef.current) {
-                            const newTheme = newIsDarkMode ? 'custom-dark' : 'custom-light';
-                            monacoRef.current.editor.setTheme(newTheme);
+                        if (monacoRef.current) {
+                            monacoRef.current.editor.setTheme(newIsDarkMode ? 'vs-dark' : 'vs');
                         }
                     }
                 }

@@ -34,6 +34,9 @@ body {
   --text-muted: #5e5980;
   --border-subtle: rgba(15, 23, 42, 0.08);
   --border-strong: rgba(15, 23, 42, 0.12);
+  --ide-editor-bg: #ffffff;
+  --ide-editor-gutter: #f3f4fa;
+  --ide-editor-line-number: #6c678f;
 }
 
 body.dark-mode {
@@ -60,6 +63,9 @@ body.dark-mode {
   --text-muted: #9b97c9;
   --border-subtle: rgba(124, 104, 220, 0.26);
   --border-strong: rgba(124, 104, 220, 0.42);
+  --ide-editor-bg: #151028;
+  --ide-editor-gutter: #0d0a19;
+  --ide-editor-line-number: #9d98df;
   background-color: var(--surface-body);
   color: var(--text-primary);
 }
