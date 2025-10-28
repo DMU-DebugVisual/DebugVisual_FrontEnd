@@ -297,9 +297,6 @@ const Header = ({ isDark, setIsDark, isLoggedIn, nickname, onLoginModalOpen }) =
                         <button onClick={onLoginModalOpen} className="btn btn-outline">
                             로그인
                         </button>
-                        <Link to="/signup" className="btn btn-filled">
-                            회원가입
-                        </Link>
                     </>
                 )}
             </div>

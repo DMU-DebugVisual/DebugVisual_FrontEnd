@@ -15,7 +15,7 @@
 
 .broadcast-icon {
     font-size: 48px;
-    color: #7a52c6;
+    color: var(--accent-primary);
 }
 
 .broadcast-header h2 {
@@ -68,7 +68,7 @@
 }
 
 .input-group button {
-    background-color: #a78bfa;
+    background-color: var(--accent-primary);
     color: white;
     border: none;
     padding: 10px 16px;
@@ -78,6 +78,11 @@
     align-items: center;
     gap: 6px;
     font-weight: bold;
+    transition: background-color 0.2s ease;
+}
+
+.input-group button:hover {
+    background-color: var(--accent-hover);
 }
 
 .error-text {
@@ -92,17 +97,18 @@
     border: none;
     padding: 10px 16px;
     border-radius: 8px;
-    background-color: #7a52c6;
+    background-color: var(--accent-secondary);
     display: flex;
     justify-content: center;
     gap: 6px;
     font-weight: bold;
     text-decoration: none;
     font-size: 15px;
+    transition: background-color 0.2s ease;
 }
 
 .start-btn:hover {
-    background-color: #6b42bb;
+    background-color: var(--accent-hover);
 }
 
 .hr-with-text {
@@ -165,7 +171,7 @@
 
 /* 🌙 아이콘 */
 .dark-mode .broadcast-icon {
-    color: #6a0dad;
+    color: var(--accent-primary);
 }
 
 /* 🌙 설명 텍스트 */
@@ -194,22 +200,22 @@
 
 /* 🌙 참여 버튼 */
 .dark-mode .input-group button {
-    background-color: #6a0dad;
+    background-color: var(--accent-secondary);
     color: white;
 }
 
 .dark-mode .input-group button:hover {
-    background-color: #5a0099;
+    background-color: var(--accent-hover);
 }
 
 /* 🌙 새 방송 시작 버튼 */
 .dark-mode .start-btn {
-    background-color: #6a0dad;
+    background-color: var(--accent-secondary);
     color: white;
 }
 
 .dark-mode .start-btn:hover {
-    background-color: #5a0099;
+    background-color: var(--accent-hover);
 }
 
 /* 🌙 구분선 */

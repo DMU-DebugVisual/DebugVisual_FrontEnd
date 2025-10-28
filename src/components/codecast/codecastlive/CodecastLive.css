@@ -49,16 +49,17 @@
     height: 100px;
     border-radius: 50%;
     border: none;
-    background: #6f42c1;  /* 보라 */
+    background: var(--accent-secondary);
     color: #fff;
     font-size: 50px;
     cursor: pointer;
-    box-shadow: 0 6px 16px rgba(111,66,193,0.25);
+    box-shadow: 0 6px 16px rgba(147, 123, 255, 0.25);
     transition: transform 0.15s ease, filter 0.15s ease, background 0.2s ease;
 }
 .plus-button:hover {
     transform: scale(1.06);
     filter: brightness(1.05);
+    background: var(--accent-hover);
 }
 
 .empty-help {
@@ -90,12 +91,13 @@
 
 
 .dark-mode .plus-button {
-    background: #3a2a55;
+    background: var(--accent-secondary);
     box-shadow: 0 6px 16px rgba(0,0,0,0.35);
 }
 .dark-mode .plus-button:hover {
     transform: scale(1.05);
     filter: brightness(1.05);
+    background: var(--accent-hover);
 }
 
 .dark-mode .empty-help {
@@ -272,13 +274,13 @@
 /* ⚠️ 수정: .share-toggle-btn이 기본 스타일을 사용하도록 추가 */
 .share-toggle-btn,
 .share-screen {
-    background-color: #6a0dad; /* 디스코드 블루 (공유하기 기본 색상) */
+    background-color: var(--accent-secondary);
     color: white;
 }
 
 .share-toggle-btn:not(:disabled):hover,
 .share-screen:not(:disabled):hover {
-    background-color: #c9a7ff;
+    background-color: var(--accent-hover);
 }
 
 /* 화면 공유 버튼 (활성 상태, 공유 중) */

@@ -35,8 +35,8 @@
 }
 
 .title-input:focus {
-    border-color: #6f42c1;
-    box-shadow: 0 0 0 2px rgba(111, 66, 193, 0.2);
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px var(--accent-border);
 }
 
 /* 수정 버튼 */
@@ -51,7 +51,7 @@
 }
 
 .edit-title-btn:hover {
-    color: #6f42c1;
+    color: var(--accent-primary);
 }
 
 .header-right {
@@ -108,9 +108,9 @@
 }
 .focus-button:hover { background-color: #e9e9ef; }
 .focus-button.active {
-    background-color: #6f42c1;
+    background-color: var(--accent-secondary);
     color: #fff;
-    border-color: #6f42c1;
+    border-color: var(--accent-secondary);
 }
 
 .exit-button {
@@ -149,8 +149,8 @@
 }
 .dark-mode .focus-button:hover { background-color: #34343f; }
 .dark-mode .focus-button.active {
-    background-color: #6a0dad;
-    border-color: #6a0dad;
+    background-color: var(--accent-secondary);
+    border-color: var(--accent-secondary);
     color: #fff;
 }
 

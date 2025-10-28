@@ -119,8 +119,8 @@
     padding: 1px 6px;
     font-size: 10px;
     font-weight: 600;
-    color: #4a2ecc;
-    background: rgba(106, 13, 173, 0.12);
+    color: var(--accent-secondary);
+    background: var(--accent-soft);
     border-radius: 999px;
 }
 
@@ -130,7 +130,7 @@
 }
 
 .participant-main .stage.editing {
-    color: #4a2ecc;
+    color: var(--accent-secondary);
     font-weight: 600;
 }
 
@@ -155,9 +155,9 @@
 
 /* 현재 사용자 강조 (Light) */
 .participant-item.active-user {
-    background-color: #ece9f7;
+    background-color: var(--accent-soft);
     font-weight: 600;
-    border-left: 3px solid #6a0dad;
+    border-left: 3px solid var(--accent-secondary);
 }
 
 /* 더보기 버튼 */
@@ -222,7 +222,7 @@
     background: #eee;
     margin: 6px 0;
 }
-.check { font-size: 12px; color: #6f42c1; }
+.check { font-size: 12px; color: var(--accent-secondary); }
 
 /* ========== Dark Mode Overrides ========== */
 
@@ -249,8 +249,8 @@
 }
 
 .dark-mode .participant-item.active-user {
-    background-color: #2a2a2a;
-    border-left: 3px solid #6a0dad;
+    background-color: rgba(255, 255, 255, 0.06);
+    border-left: 3px solid var(--accent-secondary);
 }
 
 .dark-mode .participant-main .stage {
@@ -258,7 +258,7 @@
 }
 
 .dark-mode .participant-main .stage.editing {
-    color: #bba3ff;
+    color: var(--accent-primary);
 }
 
 .dark-mode .participant-main .stage.disconnected {
@@ -270,8 +270,8 @@
 }
 
 .dark-mode .participant-main .self-badge {
-    color: #d5c4ff;
-    background: rgba(136, 93, 255, 0.2);
+    color: var(--accent-primary);
+    background: var(--accent-soft);
 }
 
 .dark-mode .avatar.placeholder {

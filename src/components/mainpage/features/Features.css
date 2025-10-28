@@ -47,8 +47,8 @@
 }
 
 .feature-icon {
-    background-color: #f5ebff;
-    color: #7a52c6;
+    background-color: var(--accent-soft);
+    color: var(--accent-primary);
     font-size: 28px;
     width: 48px;
     height: 48px;
@@ -92,8 +92,8 @@
 }
 
 .dark-mode .feature-icon {
-    background-color: #3a2d4f;
-    color: #b88eff;
+    background-color: var(--accent-soft);
+    color: var(--accent-primary);
 }
 
 .dark-mode .feature-desc {

@@ -44,7 +44,7 @@
 
 /* 실행 버튼 */
 .run-button {
-    background-color: #6a0dad;
+    background-color: var(--accent-secondary);
     color: white;
     border: none;
     padding: 6px 12px;
@@ -56,7 +56,7 @@
     gap: 6px;
     transition: background-color 0.2s ease;
 }
-.run-button:hover { background-color: #8844dd; }
+.run-button:hover { background-color: var(--accent-hover); }
 
 /* 시각화 버튼 */
 .viz-button {
@@ -74,8 +74,8 @@
 }
 .viz-button:hover {
     background-color: #ece9f7;
-    border-color: #d7c7ff;
-    color: #4f2aa3;
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
 }
 
 /* ✅ [수정된 부분] 파일 선택 버튼 크기 조정 */
@@ -148,6 +148,6 @@
 }
 .dark-mode .viz-button:hover {
     background-color: #34343f;
-    border-color: #6a0dad;
-    color: #c9a7ff;
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
 }

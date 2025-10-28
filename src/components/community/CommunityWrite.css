@@ -4,8 +4,8 @@
     --write-border: rgba(15, 23, 42, 0.06);
     --write-text: #161829;
     --write-muted: #545a6c;
-    --write-soft: rgba(124, 92, 255, 0.1);
-    --write-accent: #7c5cff;
+    --write-soft: rgba(139, 112, 255, 0.12);
+    --write-accent: var(--accent-secondary);
     min-height: 100vh;
     background: var(--write-bg);
     padding: 72px 0 96px;
@@ -69,8 +69,8 @@
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
-    background: rgba(124, 92, 255, 0.06);
-    border: 1px solid rgba(124, 92, 255, 0.16);
+    background: rgba(139, 112, 255, 0.06);
+    border: 1px solid rgba(139, 112, 255, 0.16);
     border-radius: 16px;
     padding: 10px;
     margin-bottom: 32px;
@@ -91,13 +91,13 @@
 .top-nav-button:hover {
     transform: translateY(-1px);
     color: var(--write-text);
-    background: rgba(124, 92, 255, 0.12);
+    background: rgba(139, 112, 255, 0.12);
 }
 
 .top-nav-button.active {
     color: #ffffff;
     background: var(--write-accent);
-    box-shadow: 0 18px 34px -24px rgba(124, 92, 255, 0.58);
+    box-shadow: 0 18px 34px -24px rgba(139, 112, 255, 0.58);
 }
 
 .field {
@@ -137,8 +137,8 @@
 .tag-input:focus {
     outline: none;
     background: var(--write-surface);
-    border-color: rgba(124, 92, 255, 0.4);
-    box-shadow: 0 18px 40px -30px rgba(124, 92, 255, 0.5);
+    border-color: rgba(139, 112, 255, 0.4);
+    box-shadow: 0 18px 40px -30px rgba(139, 112, 255, 0.5);
 }
 
 .tag-selector {
@@ -150,8 +150,8 @@
 .tag-option {
     padding: 10px 16px;
     border-radius: 999px;
-    border: 1px solid rgba(124, 92, 255, 0.22);
-    background: rgba(124, 92, 255, 0.08);
+    border: 1px solid rgba(139, 112, 255, 0.22);
+    background: rgba(139, 112, 255, 0.08);
     color: var(--write-muted);
     font-size: 13px;
     font-weight: 600;
@@ -163,17 +163,17 @@
 
 .tag-option:hover:not(:disabled) {
     transform: translateY(-1px);
-    background: rgba(124, 92, 255, 0.16);
-    border-color: rgba(124, 92, 255, 0.34);
+    background: rgba(139, 112, 255, 0.16);
+    border-color: rgba(139, 112, 255, 0.34);
     color: var(--write-text);
-    box-shadow: 0 14px 24px -20px rgba(124, 92, 255, 0.4);
+    box-shadow: 0 14px 24px -20px rgba(139, 112, 255, 0.4);
 }
 
 .tag-option.is-active {
     background: var(--write-accent);
     border-color: var(--write-accent);
     color: #ffffff;
-    box-shadow: 0 16px 32px -24px rgba(124, 92, 255, 0.6);
+    box-shadow: 0 16px 32px -24px rgba(139, 112, 255, 0.6);
 }
 
 .tag-option:disabled {
@@ -228,7 +228,7 @@
 
 .editor-subtitle {
     font-size: 12px;
-    color: rgba(124, 92, 255, 0.7);
+    color: rgba(139, 112, 255, 0.7);
     font-weight: 600;
 }
 
@@ -236,8 +236,8 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
-    background: linear-gradient(180deg, rgba(124, 92, 255, 0.06), transparent);
-    border: 1px solid rgba(124, 92, 255, 0.2);
+    background: linear-gradient(180deg, rgba(139, 112, 255, 0.06), transparent);
+    border: 1px solid rgba(139, 112, 255, 0.2);
     border-radius: 20px;
     padding: 18px;
 }
@@ -252,7 +252,7 @@
     width: 40px;
     height: 40px;
     background: var(--write-surface);
-    border: 1px solid rgba(124, 92, 255, 0.22);
+    border: 1px solid rgba(139, 112, 255, 0.22);
     border-radius: 12px;
     font-size: 16px;
     color: var(--write-accent);
@@ -264,9 +264,9 @@
 }
 
 .markdown-toolbar button:hover {
-    background: rgba(124, 92, 255, 0.14);
-    border-color: rgba(124, 92, 255, 0.45);
-    box-shadow: 0 18px 26px -24px rgba(124, 92, 255, 0.55);
+    background: rgba(139, 112, 255, 0.14);
+    border-color: rgba(139, 112, 255, 0.45);
+    box-shadow: 0 18px 26px -24px rgba(139, 112, 255, 0.55);
     transform: translateY(-1px);
     color: var(--write-text);
 }
@@ -275,7 +275,7 @@
     width: 100%;
     min-height: 520px;
     resize: vertical;
-    border: 1px solid rgba(124, 92, 255, 0.28);
+    border: 1px solid rgba(139, 112, 255, 0.28);
     border-radius: 18px;
     padding: 18px 20px;
     font-size: 15.5px;
@@ -288,8 +288,8 @@
 
 .content-textarea:focus {
     outline: none;
-    border-color: rgba(124, 92, 255, 0.55);
-    box-shadow: 0 22px 36px -30px rgba(124, 92, 255, 0.45);
+    border-color: rgba(139, 112, 255, 0.55);
+    box-shadow: 0 22px 36px -30px rgba(139, 112, 255, 0.45);
 }
 
 .placeholder-style {
@@ -322,19 +322,19 @@
 .cancel-btn:hover {
     background: var(--write-surface);
     color: var(--write-text);
-    box-shadow: 0 18px 34px -30px rgba(124, 92, 255, 0.3);
+    box-shadow: 0 18px 34px -30px rgba(139, 112, 255, 0.3);
     transform: translateY(-1px);
 }
 
 .submit-btn {
     background: var(--write-accent);
     color: #ffffff;
-    box-shadow: 0 20px 36px -26px rgba(124, 92, 255, 0.62);
+    box-shadow: 0 20px 36px -26px rgba(139, 112, 255, 0.62);
 }
 
 .submit-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 24px 44px -28px rgba(124, 92, 255, 0.7);
+    box-shadow: 0 24px 44px -28px rgba(139, 112, 255, 0.7);
 }
 
 .submit-btn:disabled {
@@ -408,8 +408,8 @@
 
 .tag-chip:hover:not(:disabled) {
     transform: translateY(-1px);
-    background: rgba(124, 92, 255, 0.16);
-    border-color: rgba(124, 92, 255, 0.32);
+    background: rgba(139, 112, 255, 0.16);
+    border-color: rgba(139, 112, 255, 0.32);
     color: var(--write-text);
 }
 
@@ -417,7 +417,7 @@
     background: var(--write-accent);
     border-color: var(--write-accent);
     color: #ffffff;
-    box-shadow: 0 16px 32px -26px rgba(124, 92, 255, 0.6);
+    box-shadow: 0 16px 32px -26px rgba(139, 112, 255, 0.6);
 }
 
 .tag-chip:disabled {
@@ -428,13 +428,13 @@
 
 .tag-option:focus-visible,
 .tag-chip:focus-visible {
-    outline: 2px solid rgba(124, 92, 255, 0.55);
+    outline: 2px solid rgba(139, 112, 255, 0.55);
     outline-offset: 2px;
 }
 
 .side-reminder {
-    background: linear-gradient(180deg, rgba(124, 92, 255, 0.1), rgba(124, 92, 255, 0.04));
-    border: 1px solid rgba(124, 92, 255, 0.18);
+    background: linear-gradient(180deg, rgba(139, 112, 255, 0.1), rgba(139, 112, 255, 0.04));
+    border: 1px solid rgba(139, 112, 255, 0.18);
 }
 
 @media (max-width: 1100px) {
@@ -483,11 +483,11 @@
 .dark-mode .community-write-shell {
     --write-bg: #0f1324;
     --write-surface: #181d33;
-    --write-border: rgba(124, 92, 255, 0.26);
+    --write-border: rgba(139, 112, 255, 0.26);
     --write-text: #f6f6ff;
     --write-muted: #c4c6de;
-    --write-soft: rgba(124, 92, 255, 0.28);
-    --write-accent: #b88eff;
+    --write-soft: rgba(139, 112, 255, 0.28);
+    --write-accent: var(--accent-primary);
 }
 
 .dark-mode .placeholder-style {

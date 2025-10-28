@@ -2,8 +2,8 @@
 
 /* CSS 변수 */
 :root {
-    --primary: #6a47b8;
-    --primary-hover: #5339a0;
+    --primary: var(--accent-secondary);
+    --primary-hover: var(--accent-hover);
     --success: #43a047;
     --warning: #fb8c00;
     --danger-color: #e53935; /* 🆕 삭제 색상 정의 */
@@ -24,8 +24,8 @@
 
 /* 다크 모드 변수 */
 body.dark-mode {
-    --primary: #7e57c2;
-    --primary-hover: #5e35b1;
+    --primary: var(--accent-secondary);
+    --primary-hover: var(--accent-hover);
     --success: #4caf50;
     --warning: #ff9800;
     --danger-color: #ff5252; /* 🆕 다크 모드 삭제 색상 정의 */

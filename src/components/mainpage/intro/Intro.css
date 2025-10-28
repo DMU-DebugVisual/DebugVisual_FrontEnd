@@ -34,7 +34,7 @@
     gap: 12px;
 }
 
-.btn {
+.intro-buttons .btn {
     padding: 12px 20px;
     font-size: 14px;
     border-radius: 8px;
@@ -43,24 +43,24 @@
     font-weight: 500;
 }
 
-.primary {
-    background-color: #7a52c6;
+.intro-buttons .primary {
+    background-color: var(--accent-secondary);
     color: white;
     border: none;
 }
 
-.primary:hover {
-    background-color: #6a42bb;
+.intro-buttons .primary:hover {
+    background-color: var(--accent-hover);
 }
 
-.secondary {
+.intro-buttons .secondary {
     background-color: white;
-    color: #7a52c6;
-    border: 1px solid #7a52c6;
+    color: var(--accent-primary);
+    border: 1px solid var(--accent-primary);
 }
 
-.secondary:hover {
-    background-color: #f4eeff;
+.intro-buttons .secondary:hover {
+    background-color: var(--accent-soft);
 }
 
 .intro-right {
@@ -91,18 +91,18 @@
 }
 
 .dark-mode .primary {
-    background-color: #6a0dad;
+    background-color: var(--accent-secondary);
     color: white;
 }
 
 .dark-mode .primary:hover {
-    background-color: #5a0099;
+    background-color: var(--accent-hover);
 }
 
 .dark-mode .secondary {
     background-color: #2c2c2c;
-    color: #b88eff;
-    border: 1px solid #b88eff;
+    color: var(--accent-primary);
+    border: 1px solid var(--accent-primary);
 }
 
 .dark-mode .secondary:hover {

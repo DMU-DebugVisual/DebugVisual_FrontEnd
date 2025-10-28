@@ -5,7 +5,7 @@
    ---------------------------------------------------- */
 .start-footer-integration-wrapper {
     /* ✅ 배경색 및 텍스트 색상 복원 */
-    background-color: #7a52c6;
+    background: linear-gradient(135deg, var(--accent-secondary), var(--accent-grad-stop));
     color: white;
 
     /* 콘텐츠를 중앙에 배치하기 위해 flex 사용 */
@@ -53,7 +53,7 @@
 
 .start-button {
     background-color: white;
-    color: #7a52c6;
+    color: var(--accent-primary);
     padding: 16px 32px;
     border: none;
     border-radius: 10px;
@@ -66,22 +66,22 @@
 }
 
 .start-button:hover {
-    background-color: #f2e9ff;
+    background-color: var(--accent-soft);
 }
 
 /* ----------------------------------------------------
    4. 🌙 다크모드 (배경색 복원)
    ---------------------------------------------------- */
 .dark-mode .start-footer-integration-wrapper {
-    background-color: #4e378a;
+    background: linear-gradient(135deg, var(--accent-secondary), var(--accent-grad-stop));
     color: #f5f5f5;
 }
 
 .dark-mode .start-button {
     background-color: #1e1e1e;
-    color: #b88eff;
+    color: var(--accent-primary);
 }
 
 .dark-mode .start-button:hover {
-    background-color: #2a2a2a;
+    background-color: rgba(255, 255, 255, 0.08);
 }

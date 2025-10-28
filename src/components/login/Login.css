@@ -14,7 +14,8 @@
     border-radius: 12px;
     max-width: 380px;
     width: 100%;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 24px 46px -32px rgba(15, 23, 42, 0.28);
+    border: 1px solid rgba(139, 112, 255, 0.16);
     position: relative;
 }
 
@@ -26,6 +27,12 @@
     border: none;
     background: none;
     cursor: pointer;
+    color: var(--accent-secondary);
+    transition: color 0.2s ease;
+}
+
+.modal-close:hover {
+    color: var(--accent-hover);
 }
 
 .login-title {
@@ -33,6 +40,7 @@
     font-weight: bold;
     text-align: center;
     margin-bottom: 1rem;
+    color: var(--accent-secondary);
 }
 
 .login-form {
@@ -47,10 +55,18 @@
     max-width: 420px;   /* ✅ 원하면 제한만 두기 */
     padding: 0.75rem 1rem;
     font-size: 0.9rem;
-    border: 1px solid #ccc;
+    border: 1px solid rgba(15, 23, 42, 0.12);
     border-radius: 6px;
     box-sizing: border-box;
     display: block;
+}
+
+
+.login-form input:focus {
+    outline: none;
+    border-color: var(--accent-secondary);
+    box-shadow: 0 0 0 4px var(--accent-soft);
+    background: rgba(139, 112, 255, 0.04);
 }
 
 
@@ -58,16 +74,19 @@
     width: 300px;
     padding: 0.85rem;
     font-size: 0.9rem;
-    background-color: #6a1b9a;
-    color: white;
-    border: none;
+    background: var(--accent-secondary);
+    color: #ffffff;
+    border: 1px solid var(--accent-secondary);
     border-radius: 6px;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    box-shadow: 0 12px 24px -18px var(--accent-secondary);
 }
 
 .login-form button:hover {
-    background-color: #8e24aa;
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+    box-shadow: 0 18px 32px -20px rgba(139, 112, 255, 0.48);
 }
 
 .auth-links {
@@ -82,7 +101,7 @@
 .auth-links a,
 .auth-links button,
 .auth-links .signup-action {
-    color: #6a1b9a;
+    color: var(--accent-secondary);
     cursor: pointer;
     text-decoration: none;
 }
@@ -109,7 +128,7 @@
     align-items: center;
     text-align: center;
     font-size: 0.9rem;
-    color: #999;
+    color: rgba(15, 23, 42, 0.45);
     margin: 1rem 0 1rem;
 }
 
@@ -118,7 +137,7 @@
     content: '';
     flex: 1;
     height: 1px;
-    background: #ccc;
+    background: rgba(15, 23, 42, 0.15);
     margin: 0 0.2rem;
 }
 
@@ -167,7 +186,7 @@
 .dark-mode .modal-content {
     background-color: #2a2a2a;
     color: #f0f0f0;
-    border: 1px solid #444;
+    border: 1px solid rgba(148, 163, 184, 0.28);
 }
 
 .dark-mode .modal-close {
@@ -180,7 +199,7 @@
 
 .dark-mode .login-form input {
     background-color: #1e1e1e;
-    border: 1px solid #555;
+    border: 1px solid rgba(148, 163, 184, 0.28);
     color: #f0f0f0;
 }
 
@@ -189,18 +208,20 @@
 }
 
 .dark-mode .login-form button {
-    background-color: #8e24aa;
-    color: white;
+    background: var(--accent-secondary);
+    color: #ffffff;
+    border-color: var(--accent-secondary);
 }
 
 .dark-mode .login-form button:hover {
-    background-color: #ba68c8;
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
 }
 
 .dark-mode .auth-links a,
 .dark-mode .auth-links button,
 .dark-mode .auth-links .signup-action {
-    color: #b88eff;
+    color: var(--accent-primary);
 }
 
 .dark-mode .auth-links .separator {
@@ -208,12 +229,12 @@
 }
 
 .dark-mode .divider {
-    color: #aaa;
+    color: rgba(148, 163, 184, 0.6);
 }
 
 .dark-mode .divider::before,
 .dark-mode .divider::after {
-    background: #444;
+    background: rgba(148, 163, 184, 0.22);
 }
 
 .dark-mode .social-buttons button {
@@ -277,12 +298,13 @@
     font-weight: bold;
     text-align: center;
     margin-bottom: 0.2rem;
+    color: var(--accent-secondary);
 }
 
 .signup-subtitle {
     text-align: center;
     font-size: 0.9rem;
-    color: #666;
+    color: rgba(15, 23, 42, 0.6);
     margin-bottom: 1.7rem;
     margin-top: 0.2rem;
 }
@@ -307,11 +329,20 @@
     width: 100%;
     padding: 0.9rem 0.9rem;
     font-size: 1rem;
-    border: 1px solid #ccc;
+    border: 1px solid rgba(15, 23, 42, 0.12);
     border-radius: 5px;
     box-sizing: border-box;
     height: 42px;
 
+}
+
+.signup-form input[type="text"]:focus,
+.signup-form input[type="email"]:focus,
+.signup-form input[type="password"]:focus {
+    outline: none;
+    border-color: var(--accent-secondary);
+    box-shadow: 0 0 0 4px var(--accent-soft);
+    background: rgba(139, 112, 255, 0.04);
 }
 
 /* 공통 안내문 스타일 */
@@ -372,7 +403,7 @@
     appearance: none;
     width: 16px;
     height: 16px;
-    border: 1px solid #aaa;
+    border: 1px solid rgba(15, 23, 42, 0.25);
     border-radius: 3px;
     background-color: #fff;
     cursor: pointer;
@@ -380,8 +411,8 @@
 }
 
 .signup-benefit input[type="checkbox"]:checked {
-    background-color: #8e24aa !important;
-    border-color: #8e24aa !important;
+    background-color: var(--accent-secondary) !important;
+    border-color: var(--accent-secondary) !important;
 }
 
 .signup-benefit input[type="checkbox"]::after {
@@ -403,19 +434,23 @@
 
 
 .signup-button {
-    background-color: #8e24aa;
-    color: white;
+    background: var(--accent-secondary);
+    color: #ffffff;
     padding: 0.75rem;
     font-size: 0.95rem;
     font-weight: 600;
-    border: none;
+    border: 1px solid var(--accent-secondary);
     border-radius: 6px;
     cursor: pointer;
     margin-top: 1.3rem;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 16px 28px -24px rgba(139, 112, 255, 0.6);
 }
 
 .signup-button:hover {
-    background-color: #ba68c8;
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+    box-shadow: 0 20px 34px -24px rgba(139, 112, 255, 0.72);
 }
 
 .divider {
@@ -423,7 +458,7 @@
     align-items: center;
     text-align: center;
     font-size: 0.8rem;
-    color: #aaa;
+    color: rgba(15, 23, 42, 0.45);
     margin: 1.6rem 0 1.2rem;
     width: 100%;
     max-width: 325px;
@@ -434,7 +469,7 @@
     content: '';
     flex: 1;
     height: 1px;
-    background-color: #ccc;
+    background-color: rgba(15, 23, 42, 0.15);
     margin: 0 0.1rem;
 }
 
@@ -451,7 +486,7 @@
     padding: 0.65rem;
     font-size: 0.9rem;
     border-radius: 5px;
-    border: 1px solid #ccc;
+    border: 1px solid rgba(15, 23, 42, 0.12);
     background-color: #f1f1f1;
     cursor: pointer; /* 👈 이 부분 변경 */
     transition: background-color 0.2s ease;
@@ -474,11 +509,13 @@
 }
 
 .dark-mode .signup-button {
-    background-color: #8e24aa;
+    background: var(--accent-secondary);
+    border-color: var(--accent-secondary);
 }
 
 .dark-mode .signup-button:hover {
-    background-color: #ba68c8;
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
 }
 
 .dark-mode .divider {

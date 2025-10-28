@@ -7,6 +7,30 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+:root {
+  --accent-primary: #8b70ff;
+  --accent-secondary: #6d52e5;
+  --accent-hover: #7f62ff;
+  --accent-soft: rgba(139, 112, 255, 0.12);
+  --accent-soft-strong: rgba(139, 112, 255, 0.2);
+  --accent-border: rgba(139, 112, 255, 0.32);
+  --accent-glow: #d6caff;
+  --accent-grad-start: #8b70ff;
+  --accent-grad-stop: #b7a0ff;
+}
+
+body.dark-mode {
+  --accent-primary: #5c46e0;
+  --accent-secondary: #4a34c9;
+  --accent-hover: #6a52f6;
+  --accent-soft: rgba(92, 70, 224, 0.26);
+  --accent-soft-strong: rgba(92, 70, 224, 0.36);
+  --accent-border: rgba(92, 70, 224, 0.48);
+  --accent-glow: #2f25a8;
+  --accent-grad-start: #4a34c9;
+  --accent-grad-stop: #6a52f6;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;

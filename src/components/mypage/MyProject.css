@@ -215,7 +215,7 @@
 .project-progress__bar {
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, #7c5cff, #a78bfa);
+    background: linear-gradient(135deg, var(--accent-grad-start), var(--accent-grad-stop));
 }
 
 .project-progress__label {

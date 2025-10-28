@@ -62,9 +62,14 @@
     border: none;
     border-radius: 8px;
     padding: 0 14px;
-    background: #6f42c1;
+    background: var(--accent-secondary);
     color: #fff;
     cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.chat-input .send-btn:hover {
+    background: var(--accent-hover);
 }
 
 /* 다크 모드 */
@@ -99,5 +104,5 @@
     border-color: #2f2f40;
 }
 .dark-mode .chat-input .send-btn {
-    background: #6a0dad;
+    background: var(--accent-secondary);
 }
