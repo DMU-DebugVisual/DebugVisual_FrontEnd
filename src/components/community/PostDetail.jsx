@@ -5,16 +5,16 @@ import "./PostDetail.css";
 import config from "../../config";
 import { promptLogin } from "../../utils/auth";
 
-const parseIntSafe = (v) => {
-    const n = Number(v);
-    return Number.isFinite(n) ? n : null;
+const parseIntSafe = (value) => {
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? numeric : null;
 };
 
 const deriveCommentCount = (resp, data) => {
     try {
         const fromHeader = resp?.headers?.get?.("X-Total-Count");
-        const n = parseIntSafe(fromHeader);
-        if (n !== null) return n;
+        const headerValue = parseIntSafe(fromHeader);
+        if (headerValue !== null) return headerValue;
     } catch (_) {}
 
     if (Array.isArray(data)) return data.length;
@@ -27,7 +27,7 @@ const deriveCommentCount = (resp, data) => {
 };
 
 export default function PostDetail() {
-    const { id } = useParams(); // /community/post/:id
+    const { id } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -44,31 +44,24 @@ export default function PostDetail() {
     const [loadingComments, setLoadingComments] = useState(true);
     const [error, setError] = useState("");
 
-    // 좋아요 상태
     const [likeCount, setLikeCount] = useState(0);
-    const [likedByMe, setLikedByMe] = useState(false); // ✅ 추가: 내가 좋아요를 눌렀는지 여부
     const [liking, setLiking] = useState(false);
     const prevLikeRef = useRef(0);
 
-    // 댓글 수 상태
     const [commentCount, setCommentCount] = useState(0);
 
-    // 댓글 작성 상태
     const [newComment, setNewComment] = useState("");
     const [posting, setPosting] = useState(false);
     const [deletingPost, setDeletingPost] = useState(false);
     const [deletingCommentId, setDeletingCommentId] = useState(null);
 
-    // 대댓글 작성 상태
-    const [replyTarget, setReplyTarget] = useState(null); // 대댓글을 달 댓글 ID
+    const [replyTarget, setReplyTarget] = useState(null);
     const [replyContent, setReplyContent] = useState("");
 
-    // 작성자/연관 데이터
     const [authorStats, setAuthorStats] = useState(null);
     const [relatedPosts, setRelatedPosts] = useState([]);
     const [loadingRelations, setLoadingRelations] = useState(false);
 
-    // 토큰 및 인증 헤더 (백틱 사용 수정 반영)
     const authHeader = useMemo(() => {
         const token = authState.token;
         if (!token) return null;
@@ -78,12 +71,17 @@ export default function PostDetail() {
     const currentUserId = useMemo(() => authState.userId || "", [authState.userId]);
     const currentUsername = useMemo(() => authState.username || "", [authState.username]);
     const currentRole = useMemo(() => (authState.role || "").toUpperCase(), [authState.role]);
-    const hasManageRole = useMemo(() => ["ADMIN", "MANAGER", "ROLE_ADMIN", "ROLE_MANAGER"].includes(currentRole), [currentRole]);
+    const hasManageRole = useMemo(
+        () => ["ADMIN", "MANAGER", "ROLE_ADMIN", "ROLE_MANAGER"].includes(currentRole),
+        [currentRole],
+    );
+
     const matchesCurrentUser = useCallback((writerName, writerId) => {
         if (writerId && currentUserId) return String(writerId) === String(currentUserId);
         if (writerName && currentUsername) return writerName === currentUsername;
         return false;
     }, [currentUserId, currentUsername]);
+
     const canManageRecord = useCallback((writerName, writerId) => {
         if (hasManageRole) return true;
         return matchesCurrentUser(writerName, writerId);
@@ -119,7 +117,11 @@ export default function PostDetail() {
         };
     }, []);
 
-    const redirectPath = useMemo(() => `${location.pathname}${location.search || ""}`, [location.pathname, location.search]);
+    const redirectPath = useMemo(
+        () => `${location.pathname}${location.search || ""}`,
+        [location.pathname, location.search],
+    );
+
     const requestLogin = useCallback(() => {
         promptLogin(undefined, { redirectTo: redirectPath });
     }, [redirectPath]);
@@ -143,7 +145,6 @@ export default function PostDetail() {
                 method: "GET",
                 headers: {
                     Accept: "application/json",
-                    ...(authHeader ? { Authorization: authHeader } : {}),
                     "Cache-Control": "no-cache",
                 },
                 cache: "no-store",
@@ -159,6 +160,7 @@ export default function PostDetail() {
             if (nextCount === null && payload && typeof payload === "object") {
                 nextCount = parseIntSafe(payload.likeCount);
             }
+
             if (Number.isFinite(nextCount)) {
                 setLikeCount(nextCount);
                 prevLikeRef.current = nextCount;
@@ -168,9 +170,8 @@ export default function PostDetail() {
             console.error("좋아요 수를 불러오지 못했습니다.", err);
         }
         return null;
-    }, [authHeader, id]);
+    }, [id]);
 
-    // ===== effects =====
     useEffect(() => {
         let ignore = false;
         const controller = new AbortController();
@@ -180,10 +181,12 @@ export default function PostDetail() {
                 setLoadingPost(true);
                 setError("");
 
-                // ✅ config.API_BASE_URL 적용
+                const headers = { Accept: "application/json" };
+                if (authHeader) headers.Authorization = authHeader;
+
                 const res = await fetch(`${config.API_BASE_URL}/api/posts/${id}`, {
                     method: "GET",
-                    headers: { Accept: "application/json", Authorization: authHeader },
+                    headers,
                     signal: controller.signal,
                 });
 
@@ -209,8 +212,6 @@ export default function PostDetail() {
                 const initialLike = data.likeCount ?? 0;
                 setLikeCount(initialLike);
                 prevLikeRef.current = initialLike;
-                // ✅ 서버 응답에 likedByMe 필드가 있다면 사용, 없다면 기본값 false
-                setLikedByMe(data.likedByMe ?? false);
 
                 if (typeof data.commentCount === "number") {
                     setCommentCount(data.commentCount);
@@ -226,7 +227,7 @@ export default function PostDetail() {
             ignore = true;
             controller.abort();
         };
-    }, [id, authHeader]); // ✅ navigate 제거
+    }, [id, authHeader]);
 
     useEffect(() => {
         if (!post) {
@@ -277,13 +278,15 @@ export default function PostDetail() {
                     author: item.writer || item.author || "익명",
                 }));
 
+                const fallbackLikeCount = prevLikeRef.current ?? 0;
                 const authorName = post.author;
                 const authored = authorName
                     ? normalized.filter((entry) => entry.author === authorName)
                     : [];
                 const includesCurrent = authored.some((entry) => entry.id === post.id);
                 const authorPostCount = authored.length + (!includesCurrent && authorName ? 1 : 0);
-                const authorLikeSum = authored.reduce((sum, entry) => sum + (entry.likeCount ?? 0), 0) + (!includesCurrent ? likeCount : 0);
+                const authorLikeSum = authored.reduce((sum, entry) => sum + (entry.likeCount ?? 0), 0)
+                    + (!includesCurrent ? fallbackLikeCount : 0);
                 const latestEntry = [...authored]
                     .sort((a, b) => {
                         const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
@@ -299,8 +302,8 @@ export default function PostDetail() {
                 };
 
                 const currentPostLikes = includesCurrent
-                    ? (authored.find((entry) => entry.id === post.id)?.likeCount ?? likeCount)
-                    : likeCount;
+                    ? (authored.find((entry) => entry.id === post.id)?.likeCount ?? fallbackLikeCount)
+                    : fallbackLikeCount;
 
                 setAuthorStats({
                     totalPosts: authorPostCount,
@@ -326,10 +329,12 @@ export default function PostDetail() {
                     return bTime - aTime;
                 });
 
-                setRelatedPosts(relatedPool.slice(0, 3).map((entry) => ({
-                    ...entry,
-                    formattedDate: formatDateTimeShort(entry.createdAt),
-                })));
+                setRelatedPosts(
+                    relatedPool.slice(0, 3).map((entry) => ({
+                        ...entry,
+                        formattedDate: formatDateTimeShort(entry.createdAt),
+                    })),
+                );
             } catch (e) {
                 if (!ignore) {
                     console.error("연관 게시글 정보를 불러오지 못했습니다.", e);
@@ -343,7 +348,7 @@ export default function PostDetail() {
             ignore = true;
             controller.abort();
         };
-    }, [post, authHeader, formatDateTimeShort, likeCount]);
+    }, [post, authHeader, formatDateTimeShort]);
 
     useEffect(() => {
         setAuthorStats((prev) => {
@@ -358,14 +363,15 @@ export default function PostDetail() {
         });
     }, [likeCount]);
 
-    // 공통: 댓글 목록 다시 불러오기
     const fetchComments = useCallback(async () => {
         try {
             setLoadingComments(true);
             const bust = Date.now();
-            // ✅ config.API_BASE_URL 적용
+            const headers = { Accept: "application/json" };
+            if (authHeader) headers.Authorization = authHeader;
+
             const res = await fetch(`${config.API_BASE_URL}/api/comments/${id}?t=${bust}`, {
-                headers: { Accept: "application/json", Authorization: authHeader },
+                headers,
                 cache: "no-store",
             });
 
@@ -389,7 +395,6 @@ export default function PostDetail() {
     }, [authHeader, id]);
 
     useEffect(() => {
-        // authHeader가 있거나 없더라도 댓글은 로드 시도
         if (!id) return;
         fetchComments();
     }, [id, authHeader, fetchComments]);
@@ -400,15 +405,16 @@ export default function PostDetail() {
         return matchesCurrentUser(post.author, post.authorId);
     }, [hasManageRole, post, matchesCurrentUser]);
 
-    const canDeleteComment = useCallback((comment) => {
-        if (!comment) return false;
-        const writerName = comment.writer ?? comment.author ?? comment.nickname;
-        const writerId = comment.writerId ?? comment.authorId ?? comment.userId;
-        return canManageRecord(writerName, writerId);
-    }, [canManageRecord]);
+    const canDeleteComment = useCallback(
+        (comment) => {
+            if (!comment) return false;
+            const writerName = comment.writer ?? comment.author ?? comment.nickname;
+            const writerId = comment.writerId ?? comment.authorId ?? comment.userId;
+            return canManageRecord(writerName, writerId);
+        },
+        [canManageRecord],
+    );
 
-
-    // 좋아요 토글
     const handleToggleLike = async () => {
         if (!authHeader) {
             requestLogin();
@@ -416,18 +422,11 @@ export default function PostDetail() {
         }
         if (liking) return;
 
-        const before = likeCount;
-        const wasLiked = likedByMe;
-        const willLike = !wasLiked;
+        const previousCount = likeCount;
 
         try {
             setLiking(true);
-            // 낙관적 업데이트
-            setLikedByMe(willLike);
-            setLikeCount((c) => Math.max(0, c + (willLike ? 1 : -1)));
 
-            // 2) 서버 토글 호출
-            // ✅ config.API_BASE_URL 적용
             const res = await fetch(`${config.API_BASE_URL}/api/posts/${id}/like`, {
                 method: "POST",
                 headers: {
@@ -440,32 +439,24 @@ export default function PostDetail() {
             });
 
             if (!res.ok) {
-                // 실패 시 롤백
-                setLikedByMe(wasLiked);
-                setLikeCount(before);
                 const text = await res.text();
                 throw new Error(text || `좋아요 처리 실패 (${res.status})`);
             }
 
-            try {
-                const body = await res.json();
-                if (typeof body === "boolean") {
-                    setLikedByMe(body);
-                }
-            } catch (_) {
-                // ignore body parse issues; fallback to optimistic state
+            const refreshed = await refreshLikeCount();
+            if (refreshed === null) {
+                setLikeCount(previousCount);
+                prevLikeRef.current = previousCount;
             }
-
-            await refreshLikeCount();
-
         } catch (e) {
+            setLikeCount(previousCount);
+            prevLikeRef.current = previousCount;
             alert(e.message || "좋아요 처리 실패");
         } finally {
             setLiking(false);
         }
     };
 
-    // 댓글 작성
     const handleCreateComment = async () => {
         if (!newComment.trim()) return;
         if (!authHeader) {
@@ -494,7 +485,7 @@ export default function PostDetail() {
             }
 
             setNewComment("");
-            await fetchComments(); // 성공 후 목록 새로고침
+            await fetchComments();
         } catch (e) {
             alert(e.message || "댓글 작성에 실패했습니다.");
         } finally {
@@ -502,7 +493,6 @@ export default function PostDetail() {
         }
     };
 
-    // 대댓글 작성
     const handleCreateReply = async (parentId) => {
         if (!replyContent.trim()) return;
         if (!authHeader) {
@@ -511,8 +501,6 @@ export default function PostDetail() {
         }
 
         try {
-            // 별도의 로딩 상태 없이 바로 처리
-            // ✅ config.API_BASE_URL 적용
             const res = await fetch(`${config.API_BASE_URL}/api/comments`, {
                 method: "POST",
                 headers: {
@@ -532,8 +520,8 @@ export default function PostDetail() {
             }
 
             setReplyContent("");
-            setReplyTarget(null); // 입력창 닫기
-            await fetchComments(); // 성공 후 목록 새로고침
+            setReplyTarget(null);
+            await fetchComments();
         } catch (e) {
             alert(e.message || "대댓글 작성에 실패했습니다.");
         }
@@ -724,12 +712,12 @@ export default function PostDetail() {
                         <div className="post-reaction-bar">
                             <button
                                 type="button"
-                                className={`reaction-like ${likedByMe ? "active" : ""}`}
+                                className="reaction-like"
                                 onClick={handleToggleLike}
                                 disabled={liking}
                             >
-                                <span aria-hidden="true">{likedByMe ? "❤️" : "👍"}</span>
-                                <span>{likedByMe ? "좋아요 취소" : "좋아요"}</span>
+                                <span aria-hidden="true">👍</span>
+                                <span>{liking ? "처리 중…" : "좋아요"}</span>
                                 <span>{likeCount}</span>
                             </button>
                             <span className="reaction-stat">💬 {commentCount}개의 답변</span>
@@ -823,7 +811,9 @@ export default function PostDetail() {
                                                     type="text"
                                                     value={replyContent}
                                                     onChange={(e) => setReplyContent(e.target.value)}
-                                                    onKeyDown={(e) => { if (e.key === "Enter") handleCreateReply(c.id); }}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === "Enter") handleCreateReply(c.id);
+                                                    }}
                                                     placeholder={`@${c.writer || "익명"}에게 답글을 입력하세요`}
                                                 />
                                                 <div className="reply-form-buttons">
@@ -838,7 +828,10 @@ export default function PostDetail() {
                                                     <button
                                                         type="button"
                                                         className="reply-cancel-btn"
-                                                        onClick={() => { setReplyTarget(null); setReplyContent(""); }}
+                                                        onClick={() => {
+                                                            setReplyTarget(null);
+                                                            setReplyContent("");
+                                                        }}
                                                     >
                                                         취소
                                                     </button>
