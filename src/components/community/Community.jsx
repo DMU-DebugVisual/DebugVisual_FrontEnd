@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Community.css";
 import config from "../../config";
@@ -7,9 +7,38 @@ const ALLOWED_TAGS = [
     "JAVA", "C", "CPP", "JPA", "JAVASCRIPT", "PYTHON", "OOP", "BIGDATA", "SPRING", "TYPESCRIPT", "ML"
 ];
 
+const SEARCH_SCOPE_OPTIONS = [
+    { value: "all", label: "전체" },
+    { value: "author", label: "작성자" },
+    { value: "title", label: "제목" },
+    { value: "content", label: "내용" },
+    { value: "tag", label: "태그" },
+];
+
+const SEARCH_OPERATOR_OPTIONS = [
+    { value: "or", label: "또는" },
+    { value: "and", label: "그리고" },
+];
+
+const DEFAULT_SCOPE = "all";
+const DEFAULT_OPERATOR = "or";
+
+const SIDEBAR_CHANNELS = [
+    { label: "질문 & 답변", active: true },
+    { label: "고민있어요", disabled: true },
+    { label: "스터디", disabled: true },
+    { label: "팀 프로젝트", disabled: true },
+    { label: "블로그", disabled: true },
+];
+
+const COMMUNITY_TABS = [
+    { label: "전체", disabled: false },
+    { label: "미해결", disabled: true },
+    { label: "해결됨", disabled: true },
+];
+
 export default function Community() {
     const navigate = useNavigate();
-    const tabs = ["전체", "미해결", "해결됨"];
     const filters = ["최신순", "오래된순", "좋아요순"];
 
     // ✅ 서버 데이터 상태
@@ -22,6 +51,8 @@ export default function Community() {
     const [selectedTagFilters, setSelectedTagFilters] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [lastKnownPage, setLastKnownPage] = useState(1);
+    const [searchScope, setSearchScope] = useState(DEFAULT_SCOPE);
+    const [searchOperator, setSearchOperator] = useState(DEFAULT_OPERATOR);
 
     const PAGE_SIZE = 10;
     const selectedTagCount = selectedTagFilters.length;
@@ -79,11 +110,17 @@ export default function Community() {
                         createdAtMs = Number.isFinite(parsed) ? parsed : null;
                     }
 
+                    const plainContent = (p.content || "")
+                        .replace(/<[^>]+>/g, " ")
+                        .replace(/\s+/g, " ")
+                        .trim();
+
                     return {
                         id: p.id,
                         status: p.status || "",
                         title: p.title,
-                        summary: (p.content || "").replace(/<[^>]+>/g, "").slice(0, 120),
+                        summary: plainContent.slice(0, 120),
+                        contentText: plainContent,
                         tags: p.tags || [],
                         author: p.writer || "익명",
                         date: p.createdAt ? new Date(p.createdAt).toLocaleString() : "",
@@ -197,7 +234,7 @@ export default function Community() {
         setLastKnownPage(1);
     };
 
-    const toggleTagFilter = (tag) => {
+    const toggleTagFilter = (tag, { resetSearch = false } = {}) => {
         setSelectedTagFilters((prev) => {
             if (prev.includes(tag)) {
                 const next = prev.filter((item) => item !== tag);
@@ -211,6 +248,52 @@ export default function Community() {
             setTagKeyword(next.map((item) => item.toLowerCase()));
             return next;
         });
+        if (resetSearch) {
+            setSearchInput("");
+            setKeyword("");
+        }
+        setCurrentPage(1);
+        setLastKnownPage(1);
+    };
+
+    const handleTopWriterSelect = useCallback((writerName) => {
+        const trimmed = (writerName || "").trim();
+        if (!trimmed) return;
+
+        const isActive =
+            keyword === trimmed &&
+            searchInput.trim() === trimmed &&
+            selectedTagFilters.length === 0;
+
+        if (isActive) {
+            setSearchInput("");
+            setKeyword("");
+        } else {
+            setSearchInput(trimmed);
+            setKeyword(trimmed);
+        }
+
+        setSelectedTagFilters([]);
+        setTagKeyword([]);
+        setCurrentPage(1);
+        setLastKnownPage(1);
+    }, [keyword, searchInput, selectedTagFilters.length]);
+
+    const handlePopularTagSelect = (tag) => {
+        const normalized = tag.toUpperCase();
+        const isActive = selectedTagFilters.length === 1 && selectedTagFilters[0] === normalized;
+
+        setSearchInput("");
+        setKeyword("");
+
+        if (isActive) {
+            setSelectedTagFilters([]);
+            setTagKeyword([]);
+        } else {
+            setSelectedTagFilters([normalized]);
+            setTagKeyword([normalized.toLowerCase()]);
+        }
+
         setCurrentPage(1);
         setLastKnownPage(1);
     };
@@ -280,7 +363,7 @@ export default function Community() {
                 if (timeA !== timeB) return timeB - timeA;
                 return (b.id ?? 0) - (a.id ?? 0);
             })
-            .slice(0, 5)
+            .slice(0, 3)
             .map((post) => ({
                 id: post.id,
                 title: post.title,
@@ -288,6 +371,34 @@ export default function Community() {
                 likes: post.likes ?? 0,
                 createdAt: post.date,
             }));
+    }, [posts]);
+
+    const popularTags = useMemo(() => {
+        if (!posts.length) return [];
+
+        const counts = posts.reduce((acc, post) => {
+            (post.tags || []).forEach((tag) => {
+                const normalized = String(tag || "").trim();
+                if (!normalized) return;
+                const printable = normalized.replace(/^#/, "");
+                if (!printable) return;
+                const key = printable.toLowerCase();
+
+                if (!acc[key]) {
+                    acc[key] = { label: printable, count: 0 };
+                }
+                acc[key].count += 1;
+            });
+            return acc;
+        }, {});
+
+        return Object.values(counts)
+            .sort((a, b) => {
+                const countDiff = b.count - a.count;
+                if (countDiff !== 0) return countDiff;
+                return a.label.localeCompare(b.label);
+            })
+            .slice(0, 5);
     }, [posts]);
 
     const jumpBy = 5;
@@ -313,22 +424,47 @@ export default function Community() {
                 <aside className="sidebar-left">
                     <h3>함께 공부해요.</h3>
                     <ul>
-                        <li className="active">질문 & 답변</li>
-                        <li>고민있어요</li>
-                        <li>스터디</li>
-                        <li>팀 프로젝트</li>
-                        <li>블로그</li>
+                        {SIDEBAR_CHANNELS.map((channel) => (
+                            <li
+                                key={channel.label}
+                                className={[
+                                    channel.active ? "active" : "",
+                                    channel.disabled ? "is-disabled" : "",
+                                ].filter(Boolean).join(" ")}
+                            >
+                                {channel.label}
+                            </li>
+                        ))}
                     </ul>
                     <div className="top-writers">
                         <h4>Zivorp TOP Writers</h4>
                         {topWriters.length ? (
                             <ol>
-                                {topWriters.map(({ name, count }) => (
-                                    <li key={name}>
-                                        <span>{name}</span>
-                                        <span>{count}</span>
-                                    </li>
-                                ))}
+                                {topWriters.map(({ name, count }) => {
+                                    const trimmed = (name || "").trim();
+                                    const isActive =
+                                        trimmed &&
+                                        keyword === trimmed &&
+                                        searchInput.trim() === trimmed &&
+                                        selectedTagFilters.length === 0;
+
+                                    return (
+                                        <li key={name}>
+                                            <button
+                                                type="button"
+                                                className={[
+                                                    "top-writer-item",
+                                                    isActive ? "is-active" : "",
+                                                ].filter(Boolean).join(" ")}
+                                                onClick={() => handleTopWriterSelect(trimmed)}
+                                                aria-pressed={isActive}
+                                            >
+                                                <span className="writer-name">{name}</span>
+                                                <span className="writer-count">{count}</span>
+                                            </button>
+                                        </li>
+                                    );
+                                })}
                             </ol>
                         ) : (
                             <p className="top-writers-empty">아직 활동 기록이 없어요.</p>
@@ -338,8 +474,18 @@ export default function Community() {
 
                 <main className="community-main">
                     <div className="tabs">
-                        {tabs.map((tab, i) => (
-                            <button key={i} className={i === 0 ? "active-tab" : ""}>{tab}</button>
+                        {COMMUNITY_TABS.map((tab) => (
+                            <button
+                                key={tab.label}
+                                type="button"
+                                className={[
+                                    tab.disabled ? "tab-disabled" : "",
+                                    !tab.disabled ? "active-tab" : "",
+                                ].filter(Boolean).join(" ")}
+                                disabled={tab.disabled}
+                            >
+                                {tab.label}
+                            </button>
                         ))}
                     </div>
 
@@ -519,14 +665,6 @@ export default function Community() {
                 </main>
 
                 <aside className="sidebar-right">
-                    <div className="popular-tags">
-                        <h4>인기 태그</h4>
-                        <div className="tag-list">
-                            <span>Java</span><span>C</span><span>C++</span><span>jpa</span>
-                            <span>JavaScript</span><span>Python</span><span>객체지향</span>
-                            <span>빅데이터</span><span>spring</span><span>TypeScript</span><span>머신러닝</span>
-                        </div>
-                    </div>
                     <div className="popular-posts">
                         <h4>주간 인기글</h4>
                         {weeklyPopular.length ? (
@@ -548,6 +686,33 @@ export default function Community() {
                             </ul>
                         ) : (
                             <p className="popular-posts-empty">인기 게시글을 불러오는 중입니다.</p>
+                        )}
+                    </div>
+                    <div className="popular-tags">
+                        <h4>인기 태그</h4>
+                        {popularTags.length ? (
+                            <ol className="tag-list">
+                                {popularTags.map((tag) => {
+                                    const normalizedTag = tag.label.toUpperCase();
+                                    const isActive = selectedTagFilters.length === 1 && selectedTagFilters[0] === normalizedTag;
+                                    return (
+                                        <li key={tag.label}>
+                                            <button
+                                                type="button"
+                                                className={["tag-item-button", isActive ? "is-active" : ""].filter(Boolean).join(" ")}
+                                                onClick={() => handlePopularTagSelect(normalizedTag)}
+                                                aria-pressed={isActive}
+                                                title={isActive ? `#${normalizedTag} 태그 필터 제거` : `#${normalizedTag} 태그 필터 추가`}
+                                            >
+                                                <span className="tag-name">#{normalizedTag}</span>
+                                                <span className="tag-count">{tag.count}</span>
+                                            </button>
+                                        </li>
+                                    );
+                                })}
+                            </ol>
+                        ) : (
+                            <p className="popular-tags-empty">인기 태그 데이터를 불러오는 중입니다.</p>
                         )}
                     </div>
                 </aside>

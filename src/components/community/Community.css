@@ -20,7 +20,7 @@
     width: min(1180px, 100% - 48px);
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 220px minmax(0, 1fr) 260px;
+    grid-template-columns: 220px minmax(0, 1fr) 320px;
     grid-template-areas: "left main right";
     gap: 28px;
     align-items: flex-start;
@@ -32,8 +32,17 @@
     top: 96px;
     display: flex;
     flex-direction: column;
+    gap: 16px;
     letter-spacing: 0.1em;
     color: var(--community-muted);
+}
+
+.sidebar-left h3 {
+    margin: 0;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--community-text);
 }
 
 .sidebar-left ul {
@@ -61,6 +70,17 @@
 .sidebar-left li.active {
     color: var(--community-accent);
     font-weight: 600;
+}
+
+.sidebar-left li.is-disabled {
+    color: rgba(85, 90, 108, 0.32);
+    cursor: default;
+    pointer-events: none;
+    font-weight: 500;
+}
+
+.sidebar-left li.is-disabled:hover {
+    color: rgba(85, 90, 108, 0.32);
 }
 
 .top-writers,
@@ -99,17 +119,48 @@
 }
 
 .top-writers li {
+    list-style: none;
+}
+
+.top-writer-item {
+    width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 13px;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    background: rgba(124, 92, 255, 0.08);
     color: var(--community-muted);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
 }
 
-.top-writers li span:first-child {
+.top-writer-item:hover {
+    background: rgba(124, 92, 255, 0.18);
+    border-color: rgba(124, 92, 255, 0.32);
+    color: var(--community-text);
+    transform: translateY(-1px);
+}
+
+.top-writer-item.is-active {
+    background: var(--community-accent);
+    border-color: var(--community-accent);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.top-writer-item .writer-name {
     display: flex;
     align-items: center;
     gap: 6px;
+}
+
+.top-writer-item .writer-count {
+    color: inherit;
 }
 
 .community-main {
@@ -141,6 +192,18 @@
 .tabs button.active-tab {
     color: var(--community-text);
     border-color: var(--community-accent);
+}
+
+.tabs button.tab-disabled {
+    color: rgba(85, 90, 108, 0.3);
+    border-color: transparent;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.tabs button.tab-disabled:hover {
+    color: rgba(85, 90, 108, 0.3);
+    border-color: transparent;
 }
 
 .search-bar {
@@ -487,30 +550,79 @@
     position: sticky;
     top: 96px;
     display: flex;
+    flex-direction: column;
     border-radius: 12px;
     gap: 20px;
     align-self: start;
 }
 
-.tag-list {
+.popular-tags .tag-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    flex-direction: column;
+    gap: 10px;
 }
 
-.tag-list span {
-    padding: 6px 10px;
-    flex-wrap: wrap;
-    justify-content: center;
-    color: var(--community-accent);
+.popular-tags .tag-list li {
+    list-style: none;
+}
+
+.popular-tags .tag-item-button {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    background: rgba(124, 92, 255, 0.08);
+    color: var(--community-muted);
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.18s ease;
+    transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
 }
 
-.tag-list span:hover {
-    background: rgba(124, 92, 255, 0.28);
+.popular-tags .tag-item-button:hover:not(:disabled) {
+    background: rgba(124, 92, 255, 0.18);
+    border-color: rgba(124, 92, 255, 0.32);
+    color: var(--community-text);
+    transform: translateY(-1px);
+}
+
+.popular-tags .tag-item-button .tag-name {
+    color: var(--community-text);
+}
+
+.popular-tags .tag-item-button .tag-count {
+    color: var(--community-accent);
+}
+
+.popular-tags .tag-item-button.is-active {
+    background: var(--community-accent);
+    border-color: var(--community-accent);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.popular-tags .tag-item-button.is-active .tag-name,
+.popular-tags .tag-item-button.is-active .tag-count {
+    color: #ffffff;
+}
+
+.popular-tags .tag-item-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: none;
+}
+
+.popular-tags-empty {
+    margin: 0;
+    font-size: 13px;
+    color: var(--community-muted);
 }
 
 .popular-posts ul {
