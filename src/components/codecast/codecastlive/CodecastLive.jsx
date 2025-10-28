@@ -58,7 +58,6 @@ async function joinRoomApi(roomId, token) {
     throw new Error(text || `HTTP ${res.status}`);
 }
 
-
 export default function CodecastLive({ isDark }) {
     const navigate = useNavigate();
     const location = useLocation();
@@ -110,7 +109,7 @@ export default function CodecastLive({ isDark }) {
             role: defaultRole,
             code: defaultFile.content,
             file: defaultFile,
-            stage: 'ready', // 초기 상태는 'ready'
+            stage: 'ready',
         }),
         [userId, username, defaultRole, defaultFile]
     );
@@ -133,6 +132,9 @@ export default function CodecastLive({ isDark }) {
     const [isLoadingFiles, setIsLoadingFiles] = useState(false);
     const [fileLoadError, setFileLoadError] = useState('');
     const fileContentCacheRef = useRef(new Map());
+
+    // ✅ 세션별 권한: { [sessionId]: { [userId]: 'edit' } }
+    const [sessionPermissions, setSessionPermissions] = useState({});
 
     const updateParticipants = useCallback(
         (updater) => {
@@ -235,13 +237,11 @@ export default function CodecastLive({ isDark }) {
             if (sessionLike) {
                 const ownerIdFromSession =
                     sessionLike.ownerId || sessionLike.owner?.userId || sessionLike.owner?.id || null;
+                const sId = sessionLike.sessionId || sessionLike.id; // ✅ 세션 ID 추출
 
                 if (ownerIdFromSession) {
                     setSessionOwnerId(ownerIdFromSession);
                     sessionOwnerResolvedId = ownerIdFromSession;
-                }
-                if (sessionLike.sessionId && sessionLike.sessionId !== sessionId) {
-                    setSessionId(sessionLike.sessionId);
                 }
 
                 const rawStage = (sessionLike.stage || '').toString().toLowerCase();
@@ -261,6 +261,7 @@ export default function CodecastLive({ isDark }) {
                     sessionOwnerPatch = {
                         name: sessionLike.ownerName || sessionLike.owner?.userName || sessionLike.owner?.name,
                         stage: normalizedStage,
+                        sessionId: sId, // ✅ 세션 ID 저장
                         file: sessionFile
                             ? {
                                 ...sessionFile,
@@ -323,6 +324,17 @@ export default function CodecastLive({ isDark }) {
                         });
                     }
                 });
+
+                // ✅ 세션별 권한표 동기화
+                if (sId) {
+                    setSessionPermissions((prev) => ({
+                        ...prev,
+                        [sId]: Array.from(editIds).reduce((acc, id) => {
+                            acc[String(id)] = 'edit';
+                            return acc;
+                        }, {})
+                    }));
+                }
             }
 
             updateParticipants((prev) => {
@@ -344,6 +356,7 @@ export default function CodecastLive({ isDark }) {
                         code: draft.code ?? prevEntry?.code ?? '',
                         file: draft.file ?? prevEntry?.file ?? null,
                         stage: draft.stage || prevEntry?.stage || 'ready',
+                        sessionId: draft.sessionId ?? prevEntry?.sessionId ?? null, // ✅ 보존
                     });
                 };
 
@@ -415,7 +428,10 @@ export default function CodecastLive({ isDark }) {
                                     ? {
                                         ...p,
                                         name: ownerName || p.name,
-                                        file: { ...p.file, ...file },
+                                        sessionId: nextSessionId || p.sessionId, // ✅
+                                        file: file
+                                            ? { ...p.file, ...file, ...(typeof code === 'string' ? { content: code } : {}) }
+                                            : p.file,
                                         code: typeof code === 'string' ? code : file?.content ?? p.code ?? '',
                                         stage: 'ready',
                                     }
@@ -441,8 +457,11 @@ export default function CodecastLive({ isDark }) {
                                 p.id === ownerId
                                     ? {
                                         ...p,
+                                        sessionId: nextSessionId || p.sessionId, // ✅
                                         stage,
-                                        file: file ? { ...p.file, ...file } : p.file,
+                                        file: file
+                                            ? { ...p.file, ...file, ...(typeof code === 'string' ? { content: code } : {}) }
+                                            : p.file,
                                         code: typeof code === 'string' ? code : p.code,
                                     }
                                     : p
@@ -452,11 +471,18 @@ export default function CodecastLive({ isDark }) {
                     break;
                 }
                 case 'PERMISSION_CHANGED': {
-                    const { targetUserId, role } = payload;
+                    const { sessionId: sid, targetUserId, role } = payload;
                     if (!targetUserId || !role) break;
-                    updateParticipants((prev) =>
-                        prev.map((p) => (p.id === targetUserId ? { ...p, role } : p))
-                    );
+
+                    // ✅ 세션 권한표 갱신 (전역 role은 수정하지 않음)
+                    if (sid) {
+                        setSessionPermissions((prev) => {
+                            const cur = { ...(prev[sid] || {}) };
+                            if (role === 'edit') cur[targetUserId] = 'edit';
+                            else delete cur[targetUserId];
+                            return { ...prev, [sid]: cur };
+                        });
+                    }
                     break;
                 }
                 case 'FILE_SAVED': {
@@ -544,7 +570,6 @@ export default function CodecastLive({ isDark }) {
         fetchAvailableFiles();
     }, [fetchAvailableFiles]);
 
-
     // 유효한 roomId 없으면 뒤로
     useEffect(() => {
         if (!room.id) {
@@ -623,8 +648,42 @@ export default function CodecastLive({ isDark }) {
         };
     }, [room.id, token, connect, subscribeSystem, navigate]);
 
+    const findById = (id) => participants.find((p) => p.id === id);
+
+    const isViewingSelf = activeParticipant?.id === ownParticipantId;
+
+    const roomOwnerId = useMemo(() => {
+        const host = participants.find((p) => p.role === 'host');
+        if (host) return host.id;
+        if (currentUser.role === 'host') return currentUser.id;
+        return injected.ownerId || null;
+    }, [participants, injected.ownerId, currentUser.id, currentUser.role]);
+
+    // ✅ 포커스된 세션만 계산 (권한 제외)
+    const focusedSessionId = useMemo(() => {
+        const focused = participants.find((p) => p.id === activeParticipantId);
+        return focused?.sessionId || null;
+    }, [activeParticipantId, participants]);
+
+    const focusedOwnerId = useMemo(() => {
+        const focused = participants.find((p) => p.id === activeParticipantId);
+        return focused?.id || null;
+    }, [activeParticipantId, participants]);
+
+    // ✅ activeSessionMeta: 세션/오너만 담기
+    const activeSessionMeta = useMemo(() => {
+        if (!focusedSessionId) return null;
+        return { sessionId: focusedSessionId, ownerId: focusedOwnerId };
+    }, [focusedSessionId, focusedOwnerId]);
+
+    // ✅ 현재 세션의 권한표만 별도로 조회
+    const activeSessionPermissions = useMemo(() => {
+        return focusedSessionId ? (sessionPermissions[focusedSessionId] || {}) : {};
+    }, [focusedSessionId, sessionPermissions]);
+
+    // 코드 구독은 세션ID/오너만 의존 (권한 변화로 재구독 방지)
     useEffect(() => {
-        if (!room.id || !sessionId) return;
+        if (!room.id || !activeSessionMeta?.sessionId) return;
 
         let unsubscribe = null;
         let cancelled = false;
@@ -633,18 +692,14 @@ export default function CodecastLive({ isDark }) {
             try {
                 await connect(token);
                 if (cancelled) return;
-                unsubscribe = subscribeCode(room.id, sessionId, (msg) => {
+                unsubscribe = subscribeCode(room.id, activeSessionMeta.sessionId, (msg) => {
                     if (!msg) return;
                     const senderId = msg.senderId;
                     if (senderId === userId) return;
                     if (typeof msg.content !== 'string') return;
 
                     const newContent = msg.content;
-                    const targetParticipantId =
-                        msg.targetParticipantId ||
-                        msg.ownerId ||
-                        msg.sessionOwnerId ||
-                        senderId;
+                    const targetParticipantId = activeSessionMeta.ownerId;
 
                     updateParticipants((prev) =>
                         prev.map((p) =>
@@ -672,7 +727,7 @@ export default function CodecastLive({ isDark }) {
             cancelled = true;
             unsubscribe?.();
         };
-    }, [room.id, sessionId, token, connect, subscribeCode, updateParticipants, userId]);
+    }, [room.id, activeSessionMeta?.sessionId, activeSessionMeta?.ownerId, token, connect, subscribeCode, updateParticipants, userId]);
 
     // 페이지 언마운트시에만 실제 소켓 종료
     useEffect(() => {
@@ -682,46 +737,22 @@ export default function CodecastLive({ isDark }) {
         };
     }, [disconnect]);
 
-    const findById = (id) => participants.find((p) => p.id === id);
-
-    const isViewingSelf = activeParticipant?.id === ownParticipantId;
-
-    const roomOwnerId = useMemo(() => {
-        const host = participants.find((p) => p.role === 'host');
-        if (host) return host.id;
-        if (currentUser.role === 'host') return currentUser.id;
-        return injected.ownerId || null;
-    }, [participants, injected.ownerId, currentUser.id, currentUser.role]);
-
-    const activeSessionMeta = useMemo(() => {
-        if (!sessionId) return null;
-        const ownerParticipant =
-            participants.find((p) => p.id === sessionOwnerId) ||
-            participants.find((p) => p.id === roomOwnerId);
-        const permissions = participants.reduce((acc, p) => {
-            if (p.role === 'edit') acc[p.id] = 'edit';
-            return acc;
-        }, {});
-
-        return {
-            sessionId,
-            ownerId: sessionOwnerId || ownerParticipant?.id || roomOwnerId || null,
-            permissions,
-        };
-    }, [sessionId, participants, roomOwnerId, sessionOwnerId]);
-
+    // ✅ 에디터 쓰기 가능 여부: 세션별 권한표 사용
     const hasEditPermissionOnActive = useMemo(() => {
         if (!activeParticipant) return false;
-        if (activeParticipant.id === ownParticipantId) return true;
         if (!activeSessionMeta) return false;
         if (activeParticipant.stage !== 'editing') return false;
 
-        const isSessionOwner = activeSessionMeta.ownerId === ownParticipantId;
-        const isRoomOwner = roomOwnerId === ownParticipantId;
-        const hasGrantedPermission = activeSessionMeta.permissions?.[ownParticipantId] === 'edit';
+        // 세션 소유자(프리뷰의 주인) 본인은 항상 편집 가능
+        if (activeSessionMeta.ownerId === ownParticipantId) return true;
 
-        return Boolean(isSessionOwner || isRoomOwner || hasGrantedPermission);
-    }, [activeParticipant, activeSessionMeta, ownParticipantId, roomOwnerId]);
+        // 방장 특권 유지(원치 않으면 제거)
+        const isRoomOwner = roomOwnerId === ownParticipantId;
+        if (isRoomOwner) return true;
+
+        // ✅ 세션별 권한표에서 확인
+        return activeSessionPermissions[ownParticipantId] === 'edit';
+    }, [activeParticipant, activeSessionMeta, ownParticipantId, roomOwnerId, activeSessionPermissions]);
 
     const editorReadOnly = !(isViewingSelf || hasEditPermissionOnActive);
 
@@ -755,10 +786,24 @@ export default function CodecastLive({ isDark }) {
             sendCodeUpdate(room.id, targetSessionId, {
                 senderId: ownId,
                 targetParticipantId,
+                sessionId: targetSessionId,
                 content: nextText,
             });
         }
     };
+
+    // 사이드바 표시용 역할 계산: 현재 세션 권한표 반영
+    const sidebarViewParticipants = useMemo(() => {
+        const perms = activeSessionPermissions;
+        const ownerId = activeSessionMeta?.ownerId;
+        return participants.map((p) => {
+            let displayRole = 'view';
+            if (p.id === roomOwnerId) displayRole = 'host';      // 방장 표시 유지
+            if (p.id === ownerId) displayRole = 'host';          // 세션 소유자를 별도 'owner'로 구분하고 싶으면 이 라인을 바꿔도 됨
+            else if (perms[p.id] === 'edit') displayRole = 'edit';
+            return { ...p, displayRole };
+        });
+    }, [participants, activeSessionPermissions, activeSessionMeta?.ownerId, roomOwnerId]);
 
     // 파일 선택 처리
     const handlePickFile = async (picked) => {
@@ -1070,6 +1115,7 @@ export default function CodecastLive({ isDark }) {
                     p.id === (selfParticipantId || currentUser.id)
                         ? {
                             ...p,
+                            sessionId: newSessionId, // ✅
                             file: normalizedFile,
                             code: normalizedFile.content ?? p.code ?? '',
                             stage: 'ready',
@@ -1077,6 +1123,12 @@ export default function CodecastLive({ isDark }) {
                         : p
                 )
             );
+
+            // ✅ 세션 권한 초기화: 소유자만 편집 가능
+            setSessionPermissions((prev) => ({
+                ...prev,
+                [newSessionId]: { [selfParticipantId || currentUser.id]: 'edit' }
+            }));
 
             setCurrentUser((prev) => ({
                 ...prev,
@@ -1130,17 +1182,12 @@ export default function CodecastLive({ isDark }) {
         }
     };
 
-    const previewParticipants = useMemo(() => {
-        const editingList = participants.filter((p) => p.stage === 'editing');
-        const selfParticipant = participants.find((p) => p.id === selfParticipantId);
-        if (selfParticipant && !editingList.some((p) => p.id === selfParticipant.id)) {
-            editingList.push(selfParticipant);
-        }
-        return editingList;
-    }, [participants, selfParticipantId]);
+    const previewParticipants = useMemo(
+        () => participants.filter((p) => p.stage === 'editing'), [participants]
+    );
 
     // 참가자가 'editing' 상태인지만 확인해 프리뷰를 노출합니다.
-    const isAnyParticipantSharing = previewParticipants.some((p) => p.stage === 'editing');
+    const isAnyParticipantSharing = participants.some((p) => p.stage === 'editing');
 
     useEffect(() => {
         if (!isAnyParticipantSharing && selfParticipantId && activeParticipantId !== selfParticipantId) {
@@ -1162,10 +1209,11 @@ export default function CodecastLive({ isDark }) {
 
             <div className={`main-section ${isChatOpen ? 'with-chat' : ''}`}>
                 <Sidebar
-                    participants={participants}
+                    participants={sidebarViewParticipants}   // ✅ 표시용 role 반영
                     currentUserId={currentUser.id}
                     roomOwnerId={roomOwnerId}
                     activeSession={activeSessionMeta}
+                    sessionPermissions={activeSessionPermissions}
                     focusedParticipantId={activeParticipantId}
                     onSelectParticipant={handleParticipantFocus}
                     onChangePermission={async (sessionUuid, participantId, nextRole) => {
@@ -1194,29 +1242,28 @@ export default function CodecastLive({ isDark }) {
                             return;
                         }
 
-                        const prevParticipants = participants;
-                        const prevCurrent = currentUser;
-
-                        setParticipants((prev) =>
-                            prev.map((p) => (p.id === target.id ? { ...p, role: nextRole } : p))
-                        );
-                        if (currentUser.id === target.id) {
-                            setCurrentUser((prev) => ({ ...prev, role: nextRole }));
-                        }
-
                         try {
                             if (nextRole === 'edit') {
                                 await grantEditPermission({ token, sessionId: sessionUuid, targetUserId: target.id });
                             } else {
                                 await revokeEditPermission({ token, sessionId: sessionUuid, targetUserId: target.id });
                             }
+
+                            // ✅ 로컬 세션 권한표 갱신 (participants 전역 role은 건드리지 않음)
+                            setSessionPermissions((prev) => {
+                                const cur = { ...(prev[sessionUuid] || {}) };
+                                if (nextRole === 'edit') cur[target.id] = 'edit';
+                                else delete cur[target.id];
+                                return { ...prev, [sessionUuid]: cur };
+                            });
+
+                            // ✅ 세션ID 포함해서 브로드캐스트
                             broadcastSystemEvent('PERMISSION_CHANGED', {
+                                sessionId: sessionUuid,
                                 targetUserId: target.id,
                                 role: nextRole,
                             });
                         } catch (e) {
-                            setParticipants(prevParticipants);
-                            setCurrentUser(prevCurrent);
                             console.error(e);
                             if (String(e?.message || '').includes('403')) {
                                 alert('권한 변경 실패: 서버에서 요청을 거부했습니다. (방장 또는 세션 소유자만 변경 가능)');
@@ -1262,7 +1309,10 @@ export default function CodecastLive({ isDark }) {
 
                 <div className="editor-area">
                     <CodeEditor
-                        file={activeParticipant?.file}
+                        file={
+                            activeParticipant?.file
+                                ? { ...activeParticipant.file, content: activeParticipant.file.content ?? activeParticipant.code ?? '' }
+                                : undefined}
                         onChange={handleEditorChange}
                         currentUser={activeParticipant || currentUser}
                         readOnly={editorReadOnly}
@@ -1280,11 +1330,11 @@ export default function CodecastLive({ isDark }) {
                                 onClick={handleShareToggle}
                                 title={currentUser.stage === 'editing' ? '클릭하여 공유 중지' : '클릭하여 방 참가자들에게 코드 공유 시작'}
                             >
-                                <span className="icon-wrapper">
-                                    {currentUser.stage === 'editing'
-                                        ? <FaCheck className="icon check-icon" />
-                                        : <FaDesktop className="icon" />}
-                                </span>
+                <span className="icon-wrapper">
+                  {currentUser.stage === 'editing'
+                      ? <FaCheck className="icon check-icon" />
+                      : <FaDesktop className="icon" />}
+                </span>
                                 <span className="text">
                                     {currentUser.stage === 'editing' ? '그만하기' : '공유하기'}
                                 </span>
@@ -1296,15 +1346,14 @@ export default function CodecastLive({ isDark }) {
                                 onClick={handleSaveCurrentFile}
                                 title="현재 코드를 서버에 저장"
                             >
-                                <span className="icon-wrapper">
-                                    <FaSave className="icon" />
-                                </span>
+                <span className="icon-wrapper">
+                  <FaSave className="icon" />
+                </span>
                                 <span className="text">저장하기</span>
                             </button>
                         </div>
                     </div>
                 )}
-
 
                 {(previewOpen && isAnyParticipantSharing) && (
                     <div className="preview-strip nochrome" aria-label="participants preview strip">
