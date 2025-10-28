@@ -29,14 +29,14 @@ body.dark-mode {
     --success: #4caf50;
     --warning: #ff9800;
     --danger-color: #ff5252; /* 🆕 다크 모드 삭제 색상 정의 */
-    --bg: #1e1e1e;
-    --element: #252525;
-    --element-light: #2d2d2d;
-    --border: #444444;
-    --border-light: #333333;
-    --text: #e0e0e0;
-    --text-light: #aaaaaa;
-    --text-medium: #cccccc;
+    --bg: #060609;
+    --element: #101018;
+    --element-light: #181828;
+    --border: rgba(124, 104, 220, 0.32);
+    --border-light: rgba(124, 104, 220, 0.2);
+    --text: #f4f3ff;
+    --text-light: #a9a6d6;
+    --text-medium: #c5c2e8;
     background-color: var(--bg);
 }
 

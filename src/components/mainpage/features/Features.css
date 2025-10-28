@@ -4,10 +4,11 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: white;
+    background-color: var(--surface-page);
     text-align: center;
     padding: 3rem;
     box-sizing: border-box;
+    color: var(--text-primary);
 }
 
 .features-title {
@@ -18,7 +19,7 @@
 
 .features-subtitle {
     font-size: 20px;     /* 크게 */
-    color: #666;
+    color: var(--text-muted);
     margin-bottom: 48px;
 }
 
@@ -33,17 +34,17 @@
 .feature-card {
     width: 320px;        /* 더 크게 */
     padding: 32px;
-    border: 1px solid #eaeaea;
+    border: 1px solid var(--border-subtle);
     border-radius: 16px;
-    box-shadow: 0 6px 12px rgba(0,0,0,0.05);
-    background-color: #fff;
+    box-shadow: 0 12px 28px rgba(24, 20, 56, 0.08);
+    background-color: var(--surface-card);
     text-align: left;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .feature-card:hover {
     transform: scale(1.05);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 16px 32px rgba(24, 20, 56, 0.14);
 }
 
 .feature-icon {
@@ -67,35 +68,30 @@
 
 .feature-desc {
     font-size: 16px;     /* 크게 */
-    color: #555;
+    color: var(--text-muted);
     line-height: 1.8;
 }
 
 /* 🌙 다크모드 */
 .dark-mode .features-section {
-    background-color: #1e1e1e;
-    color: #eee;
+    background-color: var(--surface-page);
+    color: var(--text-primary);
 }
 
 .dark-mode .features-subtitle {
-    color: #aaa;
+    color: var(--text-muted);
 }
 
 .dark-mode .feature-card {
-    background-color: #2a2a2a;
-    border-color: #444;
-    box-shadow: 0 6px 12px rgba(255, 255, 255, 0.05);
+    background-color: var(--surface-card);
+    border-color: var(--border-subtle);
+    box-shadow: 0 20px 40px rgba(24, 20, 56, 0.16);
 }
 
 .dark-mode .feature-card:hover {
-    box-shadow: 0 8px 24px rgba(255, 255, 255, 0.1);
-}
-
-.dark-mode .feature-icon {
-    background-color: var(--accent-soft);
-    color: var(--accent-primary);
+    box-shadow: 0 24px 48px rgba(24, 20, 56, 0.2);
 }
 
 .dark-mode .feature-desc {
-    color: #ccc;
+    color: var(--text-muted);
 }

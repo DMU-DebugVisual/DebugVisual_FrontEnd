@@ -1,5 +1,5 @@
 .broadcast-container {
-    background-color: #ffffff;
+    background-color: var(--surface-page);
     min-height: 100vh;
     display: flex;              /* 가운데 정렬용 */
     justify-content: center;    /* 가로 가운데 */
@@ -7,6 +7,7 @@
     flex-direction: column;     /* 위아래 배치 */
     padding: 20px;              /* 좌우만 여백 */
     text-align: center;
+    color: var(--text-primary);
 }
 
 .broadcast-header {
@@ -25,18 +26,19 @@
 }
 
 .broadcast-header p {
-    color: #555;
+    color: var(--text-muted);
     font-size: 16px;
     line-height: 1.5;
 }
 
 .broadcast-card {
     margin: 0 auto;
-    background-color: white;
+    background-color: var(--surface-card);
     padding: 40px 30px;
     border-radius: 12px;
     max-width: 550px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* 테두리와 그림자 병행 */
+    box-shadow: 0 20px 46px rgba(24, 20, 56, 0.12); /* 테두리와 그림자 병행 */
+    border: 1px solid var(--border-subtle);
 
 }
 
@@ -49,7 +51,7 @@
 
 .broadcast-card p {
     font-size: 14px;
-    color: #666;
+    color: var(--text-muted);
     margin-bottom: 10px;
     text-align: left;
 }
@@ -62,9 +64,11 @@
 .input-group input {
     flex: 1;
     padding: 10px 14px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-subtle);
     border-radius: 8px;
     font-size: 14px;
+    background-color: var(--surface-input);
+    color: var(--text-primary);
 }
 
 .input-group button {
@@ -116,7 +120,7 @@
     align-items: center;
     text-align: center;
     margin: 24px 0;
-    color: #999;
+    color: var(--text-muted);
     font-size: 14px;
 }
 
@@ -124,7 +128,7 @@
 .hr-with-text::after {
     content: "";
     flex: 1;
-    border-top: 1px solid #ddd;
+    border-top: 1px solid var(--border-subtle);
     margin: 0 12px;
 }
 
@@ -140,15 +144,17 @@
     margin-bottom: 6px;
     text-align: left;
     font-size: 14px;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .start-input-group input {
     flex: 1;
     padding: 10px 14px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-subtle);
     border-radius: 8px;
     font-size: 14px;
+    background-color: var(--surface-input);
+    color: var(--text-primary);
 }
 
 .required {
@@ -158,15 +164,15 @@
 
 .help-text {
     font-size: 12px;
-    color: #888;
+    color: var(--text-muted);
     margin-top: 6px;
     text-align: left;
 }
 
 /* 🌙 전체 배경 */
 .dark-mode .broadcast-container {
-    background-color: #1e1e1e;
-    color: #f0f0f0;
+    background-color: var(--surface-page);
+    color: var(--text-primary);
 }
 
 /* 🌙 아이콘 */
@@ -176,26 +182,27 @@
 
 /* 🌙 설명 텍스트 */
 .dark-mode .broadcast-header p {
-    color: #cccccc;
+    color: var(--text-muted);
 }
 
 /* 🌙 카드 배경 */
 .dark-mode .broadcast-card {
-    background-color: #2a2a2a;
-    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.05);
+    background-color: var(--surface-card);
+    border-color: var(--border-subtle);
+    box-shadow: 0 24px 48px rgba(24, 20, 56, 0.18);
 }
 
 /* 🌙 카드 내부 텍스트 */
 .dark-mode .broadcast-card p {
-    color: #bbbbbb;
+    color: var(--text-muted);
 }
 
 /* 🌙 인풋 */
 .dark-mode .input-group input,
 .dark-mode .start-input-group input {
-    background-color: #1e1e1e;
-    color: #f0f0f0;
-    border: 1px solid #555;
+    background-color: var(--surface-input);
+    color: var(--text-primary);
+    border: 1px solid var(--border-subtle);
 }
 
 /* 🌙 참여 버튼 */
@@ -220,22 +227,22 @@
 
 /* 🌙 구분선 */
 .dark-mode .hr-with-text {
-    color: #aaa;
+    color: var(--text-muted);
 }
 
 .dark-mode .hr-with-text::before,
 .dark-mode .hr-with-text::after {
-    border-top: 1px solid #444;
+    border-top: 1px solid var(--border-subtle);
 }
 
 /* 🌙 폼 라벨 */
 .dark-mode .start-input-group label {
-    color: #ddd;
+    color: var(--text-primary);
 }
 
 /* 🌙 헬프 텍스트 */
 .dark-mode .help-text {
-    color: #aaa;
+    color: var(--text-muted);
 }
 
 /* 🌙 필수 표시 */

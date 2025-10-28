@@ -9,14 +9,16 @@
 }
 
 .modal-content {
-    background-color: white;
+    background-color: var(--surface-popover);
     padding: 2.5rem;
     border-radius: 12px;
     max-width: 380px;
     width: 100%;
-    box-shadow: 0 24px 46px -32px rgba(15, 23, 42, 0.28);
-    border: 1px solid rgba(139, 112, 255, 0.16);
+    box-shadow: 0 24px 46px -32px rgba(24, 20, 56, 0.28);
+    border: 1px solid var(--border-subtle);
     position: relative;
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .modal-close {
@@ -55,10 +57,12 @@
     max-width: 420px;   /* ✅ 원하면 제한만 두기 */
     padding: 0.75rem 1rem;
     font-size: 0.9rem;
-    border: 1px solid rgba(15, 23, 42, 0.12);
+    border: 1px solid var(--border-subtle);
     border-radius: 6px;
     box-sizing: border-box;
     display: block;
+    background-color: var(--surface-input);
+    color: var(--text-primary);
 }
 
 
@@ -66,7 +70,7 @@
     outline: none;
     border-color: var(--accent-secondary);
     box-shadow: 0 0 0 4px var(--accent-soft);
-    background: rgba(139, 112, 255, 0.04);
+    background: rgba(139, 112, 255, 0.08);
 }
 
 
@@ -80,7 +84,7 @@
     border-radius: 6px;
     cursor: pointer;
     transition: background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-    box-shadow: 0 12px 24px -18px var(--accent-secondary);
+    box-shadow: 0 12px 24px -18px rgba(24, 20, 56, 0.32);
 }
 
 .login-form button:hover {
@@ -96,6 +100,7 @@
     font-size: 0.75rem;
     margin-top: 1.2rem;
     margin-bottom: 1.5rem;
+    color: var(--text-muted);
 }
 
 .auth-links a,
@@ -120,7 +125,7 @@
 }
 
 .auth-links .separator {
-    color: #ccc;
+    color: var(--border-subtle);
 }
 
 .divider {
@@ -128,7 +133,7 @@
     align-items: center;
     text-align: center;
     font-size: 0.9rem;
-    color: rgba(15, 23, 42, 0.45);
+    color: var(--text-muted);
     margin: 1rem 0 1rem;
 }
 
@@ -137,7 +142,7 @@
     content: '';
     flex: 1;
     height: 1px;
-    background: rgba(15, 23, 42, 0.15);
+    background: var(--border-subtle);
     margin: 0 0.2rem;
 }
 
@@ -159,8 +164,8 @@
     font-size: 0.95rem;
     font-weight: 500;
     border-radius: 6px;
-    border: 1px solid #ddd;
-    background-color:  #fcfcfc; /* 더 밝게 */
+    border: 1px solid var(--border-subtle);
+    background-color: var(--surface-input); /* 더 밝게 */
     cursor: pointer;
     transition: background-color 0.2s;
 }
@@ -174,37 +179,38 @@
 }
 
 .social-button:hover {
-    background-color: #ededed;
+    background-color: var(--surface-hover);
 }
 
 .social-button.google,
 .social-button.github {
-    background-color: #fcfcfc;
+    background-color: var(--surface-input);
 }
 
 
 .dark-mode .modal-content {
-    background-color: #2a2a2a;
-    color: #f0f0f0;
-    border: 1px solid rgba(148, 163, 184, 0.28);
+    background-color: var(--surface-popover);
+    color: var(--text-primary);
+    border: 1px solid var(--border-subtle);
+    box-shadow: 0 24px 46px -32px rgba(47, 37, 168, 0.32);
 }
 
 .dark-mode .modal-close {
-    color: #f0f0f0;
+    color: var(--text-muted);
 }
 
 .dark-mode .login-title {
-    color: #ffffff;
+    color: var(--text-primary);
 }
 
 .dark-mode .login-form input {
-    background-color: #1e1e1e;
-    border: 1px solid rgba(148, 163, 184, 0.28);
-    color: #f0f0f0;
+    background-color: var(--surface-input);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
 }
 
 .dark-mode .login-form input::placeholder {
-    color: #aaa;
+    color: var(--text-muted);
 }
 
 .dark-mode .login-form button {
@@ -225,22 +231,22 @@
 }
 
 .dark-mode .auth-links .separator {
-    color: #666;
+    color: var(--border-subtle);
 }
 
 .dark-mode .divider {
-    color: rgba(148, 163, 184, 0.6);
+    color: var(--text-muted);
 }
 
 .dark-mode .divider::before,
 .dark-mode .divider::after {
-    background: rgba(148, 163, 184, 0.22);
+    background: var(--border-subtle);
 }
 
 .dark-mode .social-buttons button {
-    background-color: #3a3a3a;
-    border: 1px solid #666;
-    color: #ccc;
+    background-color: var(--surface-button);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
 }
 
 .login-logo {
@@ -273,7 +279,7 @@
     transform: translateY(-50%);
     cursor: pointer;
     font-size: 1.1rem;
-    color: #888;
+    color: var(--text-muted);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -290,7 +296,8 @@
     /*justify-content: center; */
     padding: 6rem 1rem 2rem;
     min-height: 103vh;
-    background-color: #ffffff;
+    background-color: var(--surface-body);
+    color: var(--text-primary);
     margin-top: -2rem; /* 폼 전체를 위로 */
 }
 
@@ -305,7 +312,7 @@
 .signup-subtitle {
     text-align: center;
     font-size: 0.9rem;
-    color: rgba(15, 23, 42, 0.6);
+    color: var(--text-muted);
     margin-bottom: 1.7rem;
     margin-top: 0.2rem;
 }
@@ -330,10 +337,12 @@
     width: 100%;
     padding: 0.9rem 0.9rem;
     font-size: 1rem;
-    border: 1px solid rgba(15, 23, 42, 0.12);
+    border: 1px solid var(--border-subtle);
     border-radius: 5px;
     box-sizing: border-box;
     height: 42px;
+    background-color: var(--surface-input);
+    color: var(--text-primary);
 
 }
 
@@ -343,7 +352,7 @@
     outline: none;
     border-color: var(--accent-secondary);
     box-shadow: 0 0 0 4px var(--accent-soft);
-    background: rgba(139, 112, 255, 0.04);
+    background: rgba(139, 112, 255, 0.08);
 }
 
 /* 공통 안내문 스타일 */
@@ -351,7 +360,7 @@
 .email-guide,
 .confirm-password {
     font-size: 0.8rem;
-    color: #999;
+    color: var(--text-muted);
     margin-bottom: 0.5rem;
     line-height: 1.6;
     list-style: none;
@@ -359,7 +368,7 @@
 }
 .email-guide {
     font-size: 0.8rem;
-    color: #999;
+    color: var(--text-muted);
     line-height: 1.4;
     margin-top: 0;
 
@@ -380,7 +389,7 @@
     align-items: flex-start;
     gap: 0.5rem;
     font-size: 0.4rem;
-    color: #444;
+    color: var(--text-muted);
     line-height: 1.4;
     justify-content: center;
 }
@@ -391,22 +400,22 @@
 
 .benefits-label {
     font-size: 0.6rem !important;
-    color: #444;
+    color: var(--text-muted);
 }
 
 .signup-check label {
     flex: 1;
     line-height: 1.4;
     font-size: 0.7rem;
-    color: #444;
+    color: var(--text-muted);
 }
 .signup-benefit input[type="checkbox"] {
     appearance: none;
     width: 16px;
     height: 16px;
-    border: 1px solid rgba(15, 23, 42, 0.25);
+    border: 1px solid var(--border-subtle);
     border-radius: 3px;
-    background-color: #fff;
+    background-color: var(--surface-input);
     cursor: pointer;
     position: relative;
 }
@@ -459,7 +468,7 @@
     align-items: center;
     text-align: center;
     font-size: 0.8rem;
-    color: rgba(15, 23, 42, 0.45);
+    color: var(--text-muted);
     margin: 1.6rem 0 1.2rem;
     width: 100%;
     max-width: 325px;
@@ -470,7 +479,7 @@
     content: '';
     flex: 1;
     height: 1px;
-    background-color: rgba(15, 23, 42, 0.15);
+    background-color: var(--border-subtle);
     margin: 0 0.1rem;
 }
 
@@ -487,26 +496,27 @@
     padding: 0.65rem;
     font-size: 0.9rem;
     border-radius: 5px;
-    border: 1px solid rgba(15, 23, 42, 0.12);
-    background-color: #f1f1f1;
+    border: 1px solid var(--border-subtle);
+    background-color: var(--surface-input);
     cursor: pointer; /* 👈 이 부분 변경 */
     transition: background-color 0.2s ease;
 }
 
 .social-buttons button:hover {
-    background-color: #e0e0e0; /* 👈 hover 시 배경 어둡게 */
+    background-color: var(--surface-hover); /* 👈 hover 시 배경 어둡게 */
 }
+
 
 
 .dark-mode .signup-container {
-    background-color: #1e1e1e;
-    color: #f0f0f0;
+    background-color: var(--surface-body);
+    color: var(--text-primary);
 }
 
 .dark-mode .signup-form input {
-    background-color: #1e1e1e;
-    border: 1px solid #555;
-    color: #f0f0f0;
+    background-color: var(--surface-input);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
 }
 
 .dark-mode .signup-button {
@@ -520,22 +530,22 @@
 }
 
 .dark-mode .divider {
-    color: #aaa;
+    color: var(--text-muted);
 }
 
 .dark-mode .divider::before,
 .dark-mode .divider::after {
-    background: #444;
+    background: var(--border-subtle);
 }
 
 .dark-mode .social-buttons button {
-    background-color: #3a3a3a;
-    border: 1px solid #666;
-    color: #aaa;
+    background-color: var(--surface-button);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
 }
 
 .dark-mode .signup-check label {
-    color: #ccc;
+    color: var(--text-muted);
     font-size: 0.75rem;
 }
 
@@ -544,7 +554,7 @@
 }
 
 .password-guide.neutral {
-    color: #999;
+    color: var(--text-muted);
 }
 
 .password-guide.valid {
@@ -566,7 +576,7 @@
     background: none;
     border: none;
     cursor: pointer;
-    color: #999;
+    color: var(--text-muted);
     font-size: 1.2rem;
 }
 

@@ -4,12 +4,13 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: #f9f9f9;
+    background-color: var(--surface-home-hero);
     text-align: center;
     padding: 3rem;
     box-sizing: border-box;
     /* ✅ 추가: 최소 높이를 뷰포트 높이로 설정하여 전체 화면을 사용하되, 내용이 넘치면 스크롤 가능하게 함 */
     min-height: 100vh;
+    color: var(--text-primary);
 }
 
 .demo-title {
@@ -20,7 +21,7 @@
 
 .demo-subtitle {
     font-size: 20px;     /* 크게 */
-    color: #666;
+    color: var(--text-muted);
     margin-bottom: 48px;
 }
 
@@ -43,8 +44,8 @@
     height: 400px;
     padding: 24px;
     border-radius: 16px;
-    background-color: white;
-    border: 1px solid #e0e0e0;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-subtle);
     text-align: center;
     display: flex;
     align-items: center;
@@ -56,24 +57,24 @@
 
 .placeholder-box strong {
     font-size: 18px;     /* 크게 */
-    color: #888;
+    color: var(--text-muted);
 }
 
 /* 🌙 다크모드 */
 .dark-mode .demo-section {
-    background-color: #181818;
-    color: #f0f0f0;
+    background-color: var(--surface-home-hero);
+    color: var(--text-primary);
 }
 
 .dark-mode .demo-subtitle {
-    color: #aaa;
+    color: var(--text-muted);
 }
 
 .dark-mode .demo-box {
-    background-color: #2a2a2a;
-    border: 1px solid #444;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-subtle);
 }
 
 .dark-mode .placeholder-box strong {
-    color: #bbb;
+    color: var(--text-muted);
 }

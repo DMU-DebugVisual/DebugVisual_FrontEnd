@@ -4,9 +4,10 @@
     justify-content: space-between;
     align-items: center;
     padding: 2rem 4rem;
-    background-color: #f9f9f9;
+    background-color: var(--surface-home-hero);
     flex-wrap: wrap;
     box-sizing: border-box;
+    color: var(--text-primary);
 }
 
 .intro-left {
@@ -18,13 +19,13 @@
     font-size: 36px;
     font-weight: bold;
     margin-bottom: 20px;
-    color: #222;
+    color: var(--text-primary);
     line-height: 1.4;
 }
 
 .intro-left p {
     font-size: 16px;
-    color: #555;
+    color: var(--text-muted);
     margin-bottom: 30px;
     line-height: 1.6;
 }
@@ -54,13 +55,13 @@
 }
 
 .intro-buttons .secondary {
-    background-color: white;
+    background-color: var(--surface-card);
     color: var(--accent-primary);
     border: 1px solid var(--accent-primary);
 }
 
 .intro-buttons .secondary:hover {
-    background-color: var(--accent-soft);
+    background-color: var(--surface-hover);
 }
 
 .intro-right {
@@ -74,20 +75,20 @@
     max-width: 100%;
     max-height: 70%;
     border-radius: 12px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 18px 36px rgba(24, 20, 56, 0.1);
 }
 
 /* 🌙 다크모드 */
 .dark-mode .intro-section {
-    background-color: #181818;
+    background-color: var(--surface-home-hero);
 }
 
 .dark-mode .intro-left h1 {
-    color: #f0f0f0;
+    color: var(--text-primary);
 }
 
 .dark-mode .intro-left p {
-    color: #cccccc;
+    color: var(--text-muted);
 }
 
 .dark-mode .primary {
@@ -100,15 +101,15 @@
 }
 
 .dark-mode .secondary {
-    background-color: #2c2c2c;
+    background-color: var(--surface-button);
     color: var(--accent-primary);
     border: 1px solid var(--accent-primary);
 }
 
 .dark-mode .secondary:hover {
-    background-color: #3a3a3a;
+    background-color: var(--surface-hover);
 }
 
 .dark-mode .intro-right img {
-    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.06);
+    box-shadow: 0 20px 40px rgba(47, 37, 168, 0.16);
 }
