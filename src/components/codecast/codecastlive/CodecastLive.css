@@ -4,8 +4,8 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
-    background-color: #f7f7f9; /* 라이트 배경 */
-    color: #222;
+    background-color: var(--surface-page);
+    color: var(--text-primary);
     padding-top: 70px;
 }
 
@@ -25,9 +25,9 @@
     flex: 1;
     min-width: 0;
     min-height: 0;
-    background: #ffffff;            /* 라이트에서 흰 배경 */
-    border-left: 1px solid #e6e6ea; /* 라이트 보더 */
-    display: flex;                  /* 에디터 섹션이 꽉 차게 */
+    background: var(--surface-card);
+    border-left: 1px solid var(--border-subtle);
+    display: flex;
     position: relative;
     padding: 0;
 }
@@ -63,8 +63,8 @@
 }
 
 .empty-help {
-    margin: 0;                     /* 기본 마진 제거! */
-    color: #555;
+    margin: 0;
+    color: var(--text-muted);
     font-size: 15px;
     letter-spacing: 0.2px;
     opacity: 0.9;
@@ -72,36 +72,7 @@
 
 /* ========== Dark Mode Overrides ========== */
 
-.dark-mode .broadcast-wrapper {
-    background-color: #111;
-    color: #eee;
-}
-
-.dark-mode .editor-area {
-    background: #0b0b0f;
-    border-left: 1px solid rgba(255,255,255,0.06);
-}
-
-/* 🟢 수정/추가: CodeEditor의 루트 배경을 다크 모드에 맞게 설정 */
-/* CodeEditor 내 Monaco 테마와 별개로, CodeEditor 컴포넌트의 루트 요소에 적용 */
-.dark-mode .code-editor {
-    background-color: #0f0f1a;
-    color: #fff;
-}
-
-
-.dark-mode .plus-button {
-    background: var(--accent-secondary);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.35);
-}
-.dark-mode .plus-button:hover {
-    transform: scale(1.05);
-    filter: brightness(1.05);
-    background: var(--accent-hover);
-}
-
 .dark-mode .empty-help {
-    color: #c8c1d9;
     font-size: 14px;
 }
 
@@ -138,9 +109,9 @@
     max-width: 88%;
     height: 140px;                 /* 스트립 높이 */
     border-radius: 14px;
-    background: rgba(255,255,255,0.85);  /* 거의 투명한 배경(카드 가독성) */
-    box-shadow: 0 10px 26px rgba(0,0,0,0.18);
-    border: 1px solid rgba(0,0,0,0.06);
+    background: color-mix(in srgb, var(--surface-popover) 92%, transparent);
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.16);
+    border: 1px solid var(--border-subtle);
     overflow: hidden;              /* 둥근 모서리 유지 */
     z-index: 4;
     pointer-events: auto;
@@ -150,9 +121,7 @@
 
 /* 다크 */
 .dark-mode .preview-strip.nochrome {
-    background: rgba(16,16,22,0.86);
-    border: 1px solid rgba(255,255,255,0.06);
-    box-shadow: 0 10px 26px rgba(0,0,0,0.45);
+    box-shadow: 0 10px 28px rgba(4, 4, 12, 0.45);
 }
 
 /* ✅ 가로 스크롤 영역: 내부 컨텐츠만 보이게, 상단바 없음 */
@@ -191,19 +160,18 @@
     padding: 6px 12px;
     font-size: 12px;
     line-height: 1;
-    border: 1px solid rgba(0,0,0,0.08);
+    border: 1px solid var(--border-subtle);
     border-radius: 999px;
-    background: rgba(255,255,255,0.9);
+    background: color-mix(in srgb, var(--surface-popover) 96%, transparent);
     backdrop-filter: blur(8px);
     cursor: pointer;
     z-index: 1001; /* 제어 바 (1000) 보다 높게 설정 */
-    box-shadow: 0 8px 18px rgba(0,0,0,0.18);
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.16);
 }
 
 .preview-toggle.open { bottom: 160px; }  /* 열림 시 버튼을 위로 띄워 스트립과 구분 */
 .dark-mode .preview-toggle {
-    border: 1px solid rgba(255,255,255,0.06);
-    background: rgba(22,22,28,0.9);
+    box-shadow: 0 10px 22px rgba(4, 4, 12, 0.38);
 }
 
 /* 전체화면 시 살짝 위치 보정 (선택) */
@@ -270,12 +238,22 @@
     margin-right: 8px; /* 여백도 살짝 조정 */
     font-size: 20px;
 }
+.control-btn .icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+}
 
 /* ⚠️ 수정: .share-toggle-btn이 기본 스타일을 사용하도록 추가 */
 .share-toggle-btn,
 .share-screen {
     background-color: var(--accent-secondary);
     color: white;
+    min-width: 120px;
+    width: 136px;
+    justify-content: center;
 }
 
 .share-toggle-btn:not(:disabled):hover,
@@ -286,12 +264,13 @@
 /* 화면 공유 버튼 (활성 상태, 공유 중) */
 .share-toggle-btn.active,
 .share-screen.active {
-    background-color: #38a75e; /* 공유 중 녹색 */
+    background: linear-gradient(135deg, #ff5c7a, #ff2f5c);
+    box-shadow: 0 8px 18px rgba(255, 47, 92, 0.3);
 }
 
 .share-toggle-btn.active:not(:disabled):hover,
 .share-screen.active:not(:disabled):hover {
-    background-color: #2e8b4c;
+    filter: brightness(1.07);
 }
 
 .share-toggle-btn .check-icon,

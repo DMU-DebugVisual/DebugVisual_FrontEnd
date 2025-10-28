@@ -1,14 +1,16 @@
-/* ========== 기본: Light ========== */
+/* CodecastSidebar.css */
 
 .codecast-sidebar {
     width: 200px;
-    background-color: #f7f7f9;
-    padding: 16px;
-    border-right: 1px solid #e6e6ea;
-    color: #222;
+    background-color: var(--surface-muted);
+    padding: 16px 14px;
+    border-right: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
-/* 타이틀 + 채팅 버튼 라인 */
 .sidebar-headline {
     display: flex;
     align-items: center;
@@ -23,34 +25,41 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    color: #222;
+    color: var(--text-primary);
 }
 
 .codecast-sidebar-title .count {
-    color: #888;
+    color: var(--text-muted);
     font-size: 14px;
     font-weight: normal;
 }
 
 .chat-open-btn {
-    background: #f2f2f4;
-    color: #333;
-    border: 1px solid #e4e4ea;
+    background: var(--surface-muted);
+    color: var(--text-primary);
+    border: 1px solid var(--border-subtle);
     padding: 6px 8px;
     border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
-    transition: background-color .15s ease, border-color .15s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
 }
-.chat-open-btn:hover { background-color: #e9e9ef; }
+
+.chat-open-btn:hover {
+    background-color: var(--accent-soft);
+    border-color: var(--accent-border);
+}
 
 .participant-list {
     list-style: none;
     padding: 0;
     margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .participant-item {
@@ -58,39 +67,43 @@
     align-items: center;
     gap: 10px;
     font-size: 14px;
-    padding: 6px 8px;
-    border-radius: 6px;
-    margin-bottom: 6px;
-    transition: background-color 0.2s ease;
+    padding: 8px 10px;
+    border-radius: 10px;
+    margin: 0;
+    border: 1px solid transparent;
+    background-color: color-mix(in srgb, var(--surface-card) 92%, transparent);
+    transition: background-color 0.18s ease, border-color 0.18s ease;
     cursor: pointer;
-    position: relative; /* 팝오버 기준 */
-}
-.participant-item:hover {
-    background-color: #ececf5;
+    position: relative;
+    color: var(--text-primary);
 }
 
-/* 프로필 아바타 */
+.participant-item:hover {
+    background-color: var(--accent-soft);
+    border-color: var(--accent-border);
+}
+
 .avatar {
     width: 28px;
     height: 28px;
     border-radius: 50%;
     object-fit: cover;
-    background: #ddd;
+    background: var(--surface-muted);
     display: flex;
     align-items: center;
     justify-content: center;
+    color: var(--text-primary);
 }
 
 .avatar.placeholder {
-    background: #bbb;
+    background: var(--surface-muted);
 }
 
 .default-user-icon {
     font-size: 14px;
-    color: #fff;
+    color: var(--text-primary);
 }
 
-/* 이름 */
 .participant-item .name {
     flex: 1;
     min-width: 0;
@@ -126,16 +139,16 @@
 
 .participant-main .stage {
     font-size: 11px;
-    color: #777;
+    color: var(--text-muted);
 }
 
 .participant-main .stage.editing {
-    color: var(--accent-secondary);
+    color: var(--accent-primary);
     font-weight: 600;
 }
 
 .participant-main .stage.disconnected {
-    color: #c62828;
+    color: #eb5757;
     font-weight: 600;
 }
 
@@ -143,56 +156,57 @@
     color: #3f51b5;
 }
 
-/* 역할 아이콘 */
 .role-icon {
     font-size: 15px;
 }
 
-/* 역할별 색상 */
 .role-icon.host { color: #ffbf00; }
 .role-icon.edit { color: #00a152; }
 .role-icon.view { color: #999; }
 
-/* 현재 사용자 강조 (Light) */
 .participant-item.active-user {
-    background-color: var(--accent-soft);
+    background-color: var(--accent-soft-strong);
     font-weight: 600;
     border-left: 3px solid var(--accent-secondary);
 }
 
-/* 더보기 버튼 */
 .more-btn {
     background: transparent;
     border: none;
     cursor: pointer;
     padding: 4px;
     border-radius: 6px;
-    color: #666;
-    transition: background-color .12s ease, color .12s ease;
+    color: var(--text-muted);
+    transition: background-color 0.12s ease, color 0.12s ease;
 }
-.more-btn:hover { background-color: rgba(0,0,0,0.05); }
-.dark-mode .more-btn:hover { background-color: rgba(255,255,255,0.08); }
-.dark-mode .more-btn { color: #bbb; }
 
-/* 팝오버 메뉴 */
+.more-btn:hover {
+    background-color: var(--accent-soft);
+    color: var(--accent-primary);
+}
+
 .more-menu {
     position: absolute;
     top: 36px;
     right: 6px;
     min-width: 160px;
-    background: #fff;
-    border: 1px solid #e6e6ef;
+    background: var(--surface-popover);
+    border: 1px solid var(--border-subtle);
     border-radius: 10px;
-    box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
     padding: 8px;
     z-index: 10;
 }
 
-.menu-group { display: flex; flex-direction: column; gap: 4px; }
+.menu-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
 
 .menu-label {
     font-size: 12px;
-    color: #888;
+    color: var(--text-muted);
     padding: 4px 6px 6px;
 }
 
@@ -204,97 +218,49 @@
     border-radius: 8px;
     padding: 8px 10px;
     cursor: pointer;
-    color: #222;
+    color: var(--text-primary);
     display: flex;
     align-items: center;
     gap: 8px;
 }
-.menu-item:hover { background: #f4f3fb; }
-.menu-item:disabled {
-    opacity: .55;
-    cursor: default;
-}
-.menu-item.danger {
-    color: #c62828;
-}
-.menu-divider {
-    height: 1px;
-    background: #eee;
-    margin: 6px 0;
-}
-.check { font-size: 12px; color: var(--accent-secondary); }
 
-/* ========== Dark Mode Overrides ========== */
-
-.dark-mode .codecast-sidebar {
-    background-color: #1c1c1c;
-    border-right: 1px solid #333;
-    color: white;
-}
-
-.dark-mode .codecast-sidebar-title { color: white; }
-.dark-mode .codecast-sidebar-title .count { color: #aaa; }
-
-.dark-mode .chat-open-btn {
-    background: #2b2b34;
-    color: #eaeaf2;
-    border: 1px solid #3a3a48;
-}
-.dark-mode .chat-open-btn:hover {
-    background: #34343f;
-}
-
-.dark-mode .participant-item:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-}
-
-.dark-mode .participant-item.active-user {
-    background-color: rgba(255, 255, 255, 0.06);
-    border-left: 3px solid var(--accent-secondary);
-}
-
-.dark-mode .participant-main .stage {
-    color: #b5b5c7;
-}
-
-.dark-mode .participant-main .stage.editing {
-    color: var(--accent-primary);
-}
-
-.dark-mode .participant-main .stage.disconnected {
-    color: #ff6b6b;
-}
-
-.dark-mode .participant-main .stage.watching {
-    color: #879bff;
-}
-
-.dark-mode .participant-main .self-badge {
-    color: var(--accent-primary);
+.menu-item:hover {
     background: var(--accent-soft);
 }
 
-.dark-mode .avatar.placeholder {
-    background: #555;
+.menu-item:disabled {
+    opacity: 0.55;
+    cursor: default;
+}
+
+.menu-item.danger {
+    color: #eb5757;
+}
+
+.menu-divider {
+    height: 1px;
+    background: var(--border-subtle);
+    margin: 6px 0;
+}
+
+.check {
+    font-size: 12px;
+    color: var(--accent-secondary);
+}
+
+.dark-mode .codecast-sidebar {
+    background-color: color-mix(in srgb, var(--surface-muted) 82%, transparent);
+    box-shadow: 12px 0 32px rgba(4, 4, 12, 0.28);
+}
+
+.dark-mode .participant-item {
+    background-color: color-mix(in srgb, var(--surface-card) 74%, rgba(8, 6, 20, 0.55));
 }
 
 .dark-mode .default-user-icon {
-    color: #ccc;
+    color: var(--text-primary);
 }
 
-/* 아이콘 색상 (Dark) */
-.dark-mode .role-icon.host { color: gold; }
-.dark-mode .role-icon.edit { color: #00c853; }
-.dark-mode .role-icon.view { color: #888; }
-
-/* 다크 모드 팝오버 */
 .dark-mode .more-menu {
-    background: #1a1a26;
-    border-color: rgba(255,255,255,0.08);
-    box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+    box-shadow: 0 12px 28px rgba(4, 4, 12, 0.32);
 }
-.dark-mode .menu-item { color: #eee; }
-.dark-mode .menu-item:hover { background: #232333; }
-.dark-mode .menu-label { color: #aaa; }
-.dark-mode .menu-divider { background: #2a2a36; }
-.dark-mode .menu-item.danger { color: #ff6b6b; }

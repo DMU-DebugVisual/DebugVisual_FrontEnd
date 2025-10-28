@@ -19,7 +19,10 @@ window.fetch = async (...args) => {
 
         window.dispatchEvent(new Event("dv:auth-updated"));
 
-        const redirectTo = window.location.hash ? window.location.hash.replace(/^#/, "") || "/" : window.location.pathname || "/";
+        let redirectTo = window.location.hash ? window.location.hash.replace(/^#/, "") || "/" : window.location.pathname || "/";
+        if (redirectTo.startsWith("/broadcast/live")) {
+            redirectTo = "/broadcast";
+        }
         promptLogin("세션이 만료되었습니다. 다시 로그인해 주세요.", { redirectTo });
     }
 

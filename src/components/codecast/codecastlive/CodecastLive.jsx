@@ -1273,7 +1273,7 @@ export default function CodecastLive({ isDark }) {
                                         : <FaDesktop className="icon" />}
                                 </span>
                                 <span className="text">
-                                    {currentUser.stage === 'editing' ? '공유 중' : '공유하기'}
+                                    {currentUser.stage === 'editing' ? '그만하기' : '공유하기'}
                                 </span>
                             </button>
                         </div>
