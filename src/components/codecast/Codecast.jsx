@@ -3,14 +3,28 @@ import React, { useState } from "react";
 import { FaPlus, FaArrowRight, FaDesktop } from "react-icons/fa";
 import "./Codecast.css";
 import { Link, useNavigate } from "react-router-dom";
+import { promptLogin } from "../../utils/auth";
 
 const Codecast = () => {
     const navigate = useNavigate();
     const [inviteCode, setInviteCode] = useState("");
+    const [errorText, setErrorText] = useState("");
 
     const handleJoin = () => {
+        setErrorText("");
         const code = inviteCode.trim();
-        if (!code) return alert("방송 코드를 입력하세요.");
+        if (!code) {
+            setErrorText("방송 코드를 입력하세요.");
+            return;
+        }
+
+        const token = localStorage.getItem("token");
+        const username = localStorage.getItem("username");
+        if (!token || !username) {
+            setErrorText("로그인이 필요합니다. 먼저 로그인해주세요.");
+            promptLogin("방송에 참여하려면 로그인이 필요합니다.", { redirectTo: "/broadcast" });
+            return;
+        }
         // ✅ rid 쿼리로 전달
         navigate(`/broadcast/live?rid=${encodeURIComponent(code)}`);
     };
@@ -39,6 +53,7 @@ const Codecast = () => {
                             참여하기
                         </button>
                     </div>
+                    {errorText && <p className="error-text">{errorText}</p>}
                 </div>
 
                 <div className="hr-with-text"><span>또는</span></div>

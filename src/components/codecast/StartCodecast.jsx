@@ -4,6 +4,7 @@ import { FaArrowRight } from "react-icons/fa";
 import "./Codecast.css";
 import { useNavigate } from "react-router-dom";
 import { createRoom } from "./api/collab";
+import { promptLogin } from "../../utils/auth";
 
 const StartCodecast = () => {
     const navigate = useNavigate();
@@ -18,7 +19,8 @@ const StartCodecast = () => {
         const token = localStorage.getItem("token");
         const username = localStorage.getItem("username");
         if (!token || !username) {
-            setErrMsg("로그인이 필요합니다. 먼저 로그인해주세요.");
+            setErrMsg("");
+            promptLogin("방송을 시작하려면 로그인이 필요합니다.", { redirectTo: "/startbroadcast" });
             return;
         }
         if (!roomName.trim()) {
