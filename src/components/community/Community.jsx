@@ -3,10 +3,6 @@ import { useNavigate } from "react-router-dom";
 import "./Community.css";
 import config from "../../config";
 
-const ALLOWED_TAGS = [
-    "JAVA", "C", "CPP", "JPA", "JAVASCRIPT", "PYTHON", "OOP", "BIGDATA", "SPRING", "TYPESCRIPT", "ML"
-];
-
 const SEARCH_SCOPE_OPTIONS = [
     { value: "all", label: "전체" },
     { value: "author", label: "작성자" },
@@ -55,8 +51,6 @@ export default function Community() {
     const [searchOperator, setSearchOperator] = useState(DEFAULT_OPERATOR);
 
     const PAGE_SIZE = 10;
-    const selectedTagCount = selectedTagFilters.length;
-    const reachedTagFilterLimit = selectedTagCount >= 10;
 
     useEffect(() => {
         let ignore = false;
@@ -260,39 +254,6 @@ export default function Community() {
 
         setKeyword(trimmedKeyword);
         setTagKeyword(selectedTagFilters.map((tag) => tag.toLowerCase()));
-        setCurrentPage(1);
-        setLastKnownPage(1);
-    };
-
-    const handleReset = () => {
-        setSearchInput("");
-        setKeyword("");
-        setSelectedTagFilters([]);
-        setTagKeyword([]);
-        setSearchScope(DEFAULT_SCOPE);
-        setSearchOperator(DEFAULT_OPERATOR);
-        setCurrentPage(1);
-        setLastKnownPage(1);
-    };
-
-    const toggleTagFilter = (tag, { resetSearch = false } = {}) => {
-        setSelectedTagFilters((prev) => {
-            if (prev.includes(tag)) {
-                const next = prev.filter((item) => item !== tag);
-                setTagKeyword(next.map((item) => item.toLowerCase()));
-                return next;
-            }
-            if (prev.length >= 10) {
-                return prev;
-            }
-            const next = [...prev, tag];
-            setTagKeyword(next.map((item) => item.toLowerCase()));
-            return next;
-        });
-        if (resetSearch) {
-            setSearchInput("");
-            setKeyword("");
-        }
         setCurrentPage(1);
         setLastKnownPage(1);
     };
@@ -555,16 +516,6 @@ export default function Community() {
                     </div>
 
                     <div className="search-bar">
-                        <form className="search-row" onSubmit={handleSearchSubmit}>
-                            <input
-                                type="search"
-                                placeholder="궁금한 질문을 검색해보세요!"
-                                value={searchInput}
-                                onChange={(event) => setSearchInput(event.target.value)}
-                                aria-label="게시글 검색"
-                            />
-                            <button type="submit" className="search-btn">검색</button>
-                        </form>
                         <div className="search-options">
                             <div className="search-option">
                                 <label htmlFor="community-search-scope">검색 대상</label>
@@ -603,42 +554,16 @@ export default function Community() {
                                 </select>
                             </div>
                         </div>
-                        <div className="search-row tag-search-row" role="presentation">
-                            <div
-                                className="tag-search-selector"
-                                role="group"
-                                aria-label="태그 검색"
-                            >
-                                {ALLOWED_TAGS.map((tag) => {
-                                    const isActive = selectedTagFilters.includes(tag);
-                                    const isDisabled = !isActive && reachedTagFilterLimit;
-                                    const printable = `#${tag.toLowerCase()}`;
-                                    const buttonLabel = isActive
-                                        ? `${printable} 태그 필터 제거`
-                                        : isDisabled
-                                            ? "태그 필터는 최대 10개까지 선택할 수 있어요"
-                                            : `${printable} 태그 필터 추가`;
-                                    return (
-                                        <button
-                                            key={tag}
-                                            type="button"
-                                            className={`tag-search-option ${isActive ? "is-active" : ""}`.trim()}
-                                            onClick={() => toggleTagFilter(tag)}
-                                            aria-pressed={isActive}
-                                            disabled={isDisabled}
-                                            title={buttonLabel}
-                                        >
-                                            {printable}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                            <button type="button" className="reset-btn" onClick={handleReset}>초기화</button>
-                        </div>
-                        <p className="tag-search-helper" aria-live="polite">
-                            태그는 클릭해서 추가하거나 제거할 수 있어요. 선택 {selectedTagCount}개
-                            {reachedTagFilterLimit ? " (최대 10개 선택됨)" : ""}
-                        </p>
+                        <form className="search-row" onSubmit={handleSearchSubmit}>
+                            <input
+                                type="search"
+                                placeholder="궁금한 질문을 검색해보세요!"
+                                value={searchInput}
+                                onChange={(event) => setSearchInput(event.target.value)}
+                                aria-label="게시글 검색"
+                            />
+                            <button type="submit" className="search-btn">검색</button>
+                        </form>
                     </div>
 
                     <div className="filter-area">
