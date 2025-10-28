@@ -1,15 +1,15 @@
 /* src/components/mypage/Mypage.css */
 
 .mypage-wrapper {
-    background: #ffffff;
+    background: var(--surface-page);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
 .mypage {
-    --mypage-bg: #ffffff;
-    --mypage-surface: #ffffff;
+    --mypage-bg: var(--surface-page);
+    --mypage-surface: var(--surface-card);
     --mypage-elevated: rgba(255, 255, 255, 0.92);
     --mypage-border: rgba(15, 23, 42, 0.06);
     --mypage-text-primary: #161829;
@@ -462,22 +462,28 @@ body.body-scroll .mypage-content {
 }
 
 .dark-mode .mypage {
-    --mypage-bg: #0f1119;
+    --mypage-bg: var(--surface-page);
     --mypage-surface: #181c2b;
-    --mypage-border: rgba(255, 255, 255, 0.08);
-    --mypage-text: #f2f4ff;
-    --mypage-muted: #c9cff7;
+    --mypage-elevated: rgba(31, 32, 48, 0.92);
+    --mypage-border: rgba(124, 104, 220, 0.32);
+    --mypage-text-primary: #f4f3ff;
+    --mypage-text-secondary: #b3b0de;
+    --mypage-text-tertiary: #8f8bbb;
+    --mypage-text: #f4f3ff;
+    --mypage-muted: #9b97c9;
     --mypage-accent: var(--accent-primary);
-    --mypage-soft: rgba(147, 123, 255, 0.28);
+    --mypage-soft: rgba(108, 92, 231, 0.22);
+    --mypage-shadow: 0 28px 46px -36px rgba(4, 4, 8, 0.62);
 }
 
 .dark-mode .section-card,
 .dark-mode .stat-card {
-    box-shadow: none;
+    box-shadow: var(--mypage-shadow);
 }
 
 .dark-mode .project-card {
-    background: rgba(24, 28, 43, 0.85);
+    background: var(--mypage-surface);
+    border-color: var(--mypage-border);
 }
 
 @media (max-width: 1024px) {

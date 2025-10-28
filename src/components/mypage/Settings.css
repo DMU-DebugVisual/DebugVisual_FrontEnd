@@ -413,67 +413,68 @@
 }
 
 .dark-mode .settings-tab {
-    background: rgba(15, 23, 42, 0.45);
-    border-color: rgba(148, 163, 184, 0.2);
-    color: rgba(226, 232, 240, 0.76);
+    background: var(--mypage-surface);
+    border-color: var(--mypage-border);
+    color: var(--mypage-text-secondary);
 }
 
 .dark-mode .settings-tab.is-active {
-    background: rgba(124, 92, 255, 0.2);
+    background: rgba(124, 92, 255, 0.24);
     border-color: rgba(124, 92, 255, 0.54);
-    color: #dbeafe;
+    color: var(--mypage-text);
 }
 
 .dark-mode .settings-profile-card {
-    border-color: rgba(124, 92, 255, 0.4);
-    background: linear-gradient(150deg, rgba(124, 92, 255, 0.18), rgba(15, 23, 42, 0.52));
+    border-color: var(--mypage-border);
+    background: var(--mypage-surface);
 }
 
 .dark-mode .settings-tip {
-    background: rgba(148, 163, 184, 0.12);
-    color: rgba(226, 232, 240, 0.76);
+    background: rgba(148, 163, 184, 0.16);
+    color: var(--mypage-text-secondary);
 }
 
 .dark-mode .settings-form input,
 .dark-mode .settings-form textarea {
-    background: rgba(15, 23, 42, 0.64);
-    border-color: rgba(148, 163, 184, 0.25);
-    color: rgba(248, 250, 252, 0.94);
+    background: var(--surface-input);
+    border-color: var(--mypage-border);
+    color: var(--mypage-text);
 }
 
 .dark-mode .settings-form input:focus,
 .dark-mode .settings-form textarea:focus {
     border-color: rgba(124, 92, 255, 0.8);
-    box-shadow: 0 0 0 4px rgba(124, 92, 255, 0.18);
+    box-shadow: 0 0 0 4px rgba(124, 92, 255, 0.22);
 }
 
 .dark-mode .tech-tag {
-    background: rgba(124, 92, 255, 0.24);
-    color: #dbeafe;
+    background: rgba(124, 92, 255, 0.28);
+    color: var(--mypage-text);
+    border-color: var(--mypage-border);
 }
 
 .dark-mode .tech-stack {
-    background: rgba(124, 92, 255, 0.12);
-    border-color: rgba(124, 92, 255, 0.28);
+    background: rgba(124, 92, 255, 0.16);
+    border-color: var(--mypage-border);
 }
 
 .dark-mode .settings-preferences {
-    background: rgba(15, 23, 42, 0.52);
-    border-color: rgba(124, 92, 255, 0.28);
+    background: var(--mypage-surface);
+    border-color: var(--mypage-border);
 }
 
 .dark-mode .preference-item {
-    border-bottom-color: rgba(148, 163, 184, 0.15);
+    border-bottom-color: var(--mypage-border);
 }
 
 .dark-mode .social-links input {
-    background: rgba(15, 23, 42, 0.64);
-    border-color: rgba(124, 92, 255, 0.32);
-    color: rgba(248, 250, 252, 0.94);
+    background: var(--surface-input);
+    border-color: var(--mypage-border);
+    color: var(--mypage-text);
 }
 
 .dark-mode .social-links input:focus {
-    box-shadow: 0 0 0 4px rgba(124, 92, 255, 0.22);
+    box-shadow: 0 0 0 4px rgba(124, 92, 255, 0.26);
 }
 
 .dark-mode .slider {
