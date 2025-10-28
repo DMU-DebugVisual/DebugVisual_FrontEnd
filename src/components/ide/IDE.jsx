@@ -515,8 +515,7 @@ const IDE = () => {
             renderLineHighlight: 'line',
             renderWhitespace: 'none',
             automaticLayout: false, // 💡 충돌 회피를 위해 비활성화
-            wordWrap: "bounded",
-            wordWrapColumn: 120,
+            wordWrap: "off",
             scrollbar: { vertical: 'auto', horizontal: 'auto', verticalScrollbarSize: 10, horizontalScrollbarSize: 10 }
         };
         editor.updateOptions(editorOptions);
@@ -1125,7 +1124,7 @@ const IDE = () => {
                                     cursorBlinking: "solid",
                                     folding: true,
                                     lineNumbersMinChars: 3,
-                                    wordWrap: "on",
+                                    wordWrap: "off",
                                     renderWhitespace: "none",
                                     renderLineHighlight: "line",
                                     renderLineHighlightOnlyWhenFocus: false,
