@@ -42,12 +42,20 @@ async function joinRoomApi(roomId, token) {
         credentials: 'include',
     });
 
-    if (!res.ok) {
-        const text = await res.text().catch(() => '');
-        if (res.status === 409) return { status: 'already_joined' };
-        throw new Error(text || `HTTP ${res.status}`);
+    if (res.ok) {
+        const data = await res.json().catch(() => null);
+        if (data && typeof data === 'object') {
+            return data.status ? data : { status: 'success', ...data };
+        }
+        return { status: 'success' };
     }
-    return await res.json().catch(() => ({ status: 'success' }));
+
+    const text = await res.text().catch(() => '');
+    if (res.status === 409) return { status: 'already_joined', message: text };
+    if (res.status === 404 || res.status === 403) {
+        return { status: 'not_found', message: text || '존재하지 않는 방송 코드입니다.' };
+    }
+    throw new Error(text || `HTTP ${res.status}`);
 }
 
 
@@ -556,8 +564,13 @@ export default function CodecastLive({ isDark }) {
             try {
                 if (token && room.id) {
                     console.log('[API] Joining room via REST API:', room.id);
-                    await joinRoomApi(room.id, token);
-                    console.log('[API] Room joined successfully or already registered.');
+                    const joinResult = await joinRoomApi(room.id, token);
+                    if (joinResult?.status === 'not_found') {
+                        alert(joinResult.message || '존재하지 않는 방송 코드입니다.');
+                        navigate('/broadcast', { replace: true });
+                        return;
+                    }
+                    console.log('[API] Room joined successfully or already registered.', joinResult);
                 }
 
                 console.log('[WS] effect start', { roomId: room.id, hasToken: !!token });
@@ -608,7 +621,7 @@ export default function CodecastLive({ isDark }) {
         return () => {
             unsubs.forEach((u) => u?.());
         };
-    }, [room.id, token, connect, subscribeSystem]);
+    }, [room.id, token, connect, subscribeSystem, navigate]);
 
     useEffect(() => {
         if (!room.id || !sessionId) return;
