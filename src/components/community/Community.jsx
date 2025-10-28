@@ -135,6 +135,8 @@ export default function Community() {
                 setTagKeyword([]);
                 setSelectedTagFilters([]);
                 setSearchInput("");
+                setSearchScope(DEFAULT_SCOPE);
+                setSearchOperator(DEFAULT_OPERATOR);
                 setCurrentPage(1);
                 setLastKnownPage(1);
             } catch (e) {
@@ -151,29 +153,66 @@ export default function Community() {
     }, []);
 
     const filteredPosts = useMemo(() => {
-        if (!keyword && (!tagKeyword || tagKeyword.length === 0)) {
-            return posts;
-        }
+        const tokens = keyword
+            ? keyword
+                .split(/\s+/)
+                .map((token) => token.trim())
+                .filter(Boolean)
+                .map((token) => token.toLowerCase())
+            : [];
 
-        const lowerKeyword = keyword.toLowerCase();
+        const matchTokens = (post) => {
+            if (!tokens.length) return true;
+
+            const haystacks = (() => {
+                switch (searchScope) {
+                    case "author":
+                        return [post.author];
+                    case "title":
+                        return [post.title];
+                    case "content":
+                        return [post.contentText ?? post.summary ?? ""];
+                    case "tag":
+                        return (post.tags || []).map((tag) => String(tag || ""));
+                    case "all":
+                    default:
+                        return [
+                            post.title,
+                            post.summary,
+                            post.contentText,
+                            post.author,
+                            ...(post.tags || []),
+                        ];
+                }
+            })();
+
+            const normalizedHaystacks = haystacks
+                .flatMap((value) => (Array.isArray(value) ? value : [value]))
+                .map((value) => String(value || "").toLowerCase())
+                .filter(Boolean);
+
+            if (!normalizedHaystacks.length) return false;
+
+            const containsToken = (token) =>
+                normalizedHaystacks.some((haystack) => haystack.includes(token));
+
+            return searchOperator === "and"
+                ? tokens.every(containsToken)
+                : tokens.some(containsToken);
+        };
 
         return posts.filter((post) => {
-            const matchesKeyword = lowerKeyword
-                ? [post.title, post.summary, post.author]
-                    .join(" ")
-                    .toLowerCase()
-                    .includes(lowerKeyword)
-                : true;
+            if (!matchTokens(post)) return false;
 
-            const matchesTags = tagKeyword.length
-                ? tagKeyword.every((token) =>
-                    (post.tags || []).some((tag) => tag.toLowerCase().includes(token))
-                )
-                : true;
+            if (!tagKeyword.length) return true;
 
-            return matchesKeyword && matchesTags;
+            return tagKeyword.every((token) =>
+                (post.tags || []).some((tag) =>
+                    String(tag || "").toLowerCase().includes(token),
+                ),
+            );
         });
-    }, [keyword, tagKeyword, posts]);
+    }, [keyword, tagKeyword, posts, searchScope, searchOperator]);
 
     const [activeFilter, setActiveFilter] = useState(filters[0]);
 
@@ -220,7 +259,7 @@ export default function Community() {
         const trimmedKeyword = searchInput.trim();
 
         setKeyword(trimmedKeyword);
-    setTagKeyword(selectedTagFilters.map((tag) => tag.toLowerCase()));
+        setTagKeyword(selectedTagFilters.map((tag) => tag.toLowerCase()));
         setCurrentPage(1);
         setLastKnownPage(1);
     };
@@ -230,6 +269,8 @@ export default function Community() {
         setKeyword("");
         setSelectedTagFilters([]);
         setTagKeyword([]);
+        setSearchScope(DEFAULT_SCOPE);
+        setSearchOperator(DEFAULT_OPERATOR);
         setCurrentPage(1);
         setLastKnownPage(1);
     };
@@ -260,15 +301,25 @@ export default function Community() {
         const trimmed = (writerName || "").trim();
         if (!trimmed) return;
 
+        const trimmedLower = trimmed.toLowerCase();
+        const currentKeywordLower = (keyword || "").toLowerCase();
+        const currentInputLower = searchInput.trim().toLowerCase();
+
         const isActive =
-            keyword === trimmed &&
-            searchInput.trim() === trimmed &&
-            selectedTagFilters.length === 0;
+            searchScope === "author" &&
+            searchOperator === DEFAULT_OPERATOR &&
+            selectedTagFilters.length === 0 &&
+            currentKeywordLower === trimmedLower &&
+            currentInputLower === trimmedLower;
 
         if (isActive) {
+            setSearchScope(DEFAULT_SCOPE);
+            setSearchOperator(DEFAULT_OPERATOR);
             setSearchInput("");
             setKeyword("");
         } else {
+            setSearchScope("author");
+            setSearchOperator(DEFAULT_OPERATOR);
             setSearchInput(trimmed);
             setKeyword(trimmed);
         }
@@ -277,19 +328,27 @@ export default function Community() {
         setTagKeyword([]);
         setCurrentPage(1);
         setLastKnownPage(1);
-    }, [keyword, searchInput, selectedTagFilters.length]);
+    }, [keyword, searchInput, searchScope, searchOperator, selectedTagFilters]);
 
     const handlePopularTagSelect = (tag) => {
         const normalized = tag.toUpperCase();
-        const isActive = selectedTagFilters.length === 1 && selectedTagFilters[0] === normalized;
+        const isActive =
+            searchScope === "tag" &&
+            searchOperator === DEFAULT_OPERATOR &&
+            selectedTagFilters.length === 1 &&
+            selectedTagFilters[0] === normalized;
 
         setSearchInput("");
         setKeyword("");
 
         if (isActive) {
+            setSearchScope(DEFAULT_SCOPE);
+            setSearchOperator(DEFAULT_OPERATOR);
             setSelectedTagFilters([]);
             setTagKeyword([]);
         } else {
+            setSearchScope("tag");
+            setSearchOperator(DEFAULT_OPERATOR);
             setSelectedTagFilters([normalized]);
             setTagKeyword([normalized.toLowerCase()]);
         }
@@ -442,11 +501,17 @@ export default function Community() {
                             <ol>
                                 {topWriters.map(({ name, count }) => {
                                     const trimmed = (name || "").trim();
+                                    const trimmedLower = trimmed.toLowerCase();
+                                    const currentKeywordLower = (keyword || "").toLowerCase();
+                                    const currentInputLower = searchInput.trim().toLowerCase();
+
                                     const isActive =
-                                        trimmed &&
-                                        keyword === trimmed &&
-                                        searchInput.trim() === trimmed &&
-                                        selectedTagFilters.length === 0;
+                                        Boolean(trimmed) &&
+                                        searchScope === "author" &&
+                                        searchOperator === DEFAULT_OPERATOR &&
+                                        selectedTagFilters.length === 0 &&
+                                        currentKeywordLower === trimmedLower &&
+                                        currentInputLower === trimmedLower;
 
                                     return (
                                         <li key={name}>
@@ -500,6 +565,44 @@ export default function Community() {
                             />
                             <button type="submit" className="search-btn">검색</button>
                         </form>
+                        <div className="search-options">
+                            <div className="search-option">
+                                <label htmlFor="community-search-scope">검색 대상</label>
+                                <select
+                                    id="community-search-scope"
+                                    value={searchScope}
+                                    onChange={(event) => {
+                                        setSearchScope(event.target.value);
+                                        setCurrentPage(1);
+                                        setLastKnownPage(1);
+                                    }}
+                                >
+                                    {SEARCH_SCOPE_OPTIONS.map((option) => (
+                                        <option key={option.value} value={option.value}>
+                                            {option.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="search-option">
+                                <label htmlFor="community-search-operator">조건</label>
+                                <select
+                                    id="community-search-operator"
+                                    value={searchOperator}
+                                    onChange={(event) => {
+                                        setSearchOperator(event.target.value);
+                                        setCurrentPage(1);
+                                        setLastKnownPage(1);
+                                    }}
+                                >
+                                    {SEARCH_OPERATOR_OPTIONS.map((option) => (
+                                        <option key={option.value} value={option.value}>
+                                            {option.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
                         <div className="search-row tag-search-row" role="presentation">
                             <div
                                 className="tag-search-selector"
@@ -694,7 +797,12 @@ export default function Community() {
                             <ol className="tag-list">
                                 {popularTags.map((tag) => {
                                     const normalizedTag = tag.label.toUpperCase();
-                                    const isActive = selectedTagFilters.length === 1 && selectedTagFilters[0] === normalizedTag;
+                                    const isActive =
+                                        searchScope === "tag" &&
+                                        searchOperator === DEFAULT_OPERATOR &&
+                                        selectedTagFilters.length === 1 &&
+                                        selectedTagFilters[0] === normalizedTag;
+
                                     return (
                                         <li key={tag.label}>
                                             <button
