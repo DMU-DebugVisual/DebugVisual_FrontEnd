@@ -6,8 +6,8 @@
     --detail-border: rgba(15, 23, 42, 0.06);
     --detail-text: #161829;
     --detail-muted: #53596c;
-    --detail-accent: #7c5cff;
-    --detail-soft: rgba(124, 92, 255, 0.14);
+    --detail-accent: var(--accent-secondary);
+    --detail-soft: rgba(139, 112, 255, 0.14);
     min-height: 100vh;
     background: var(--detail-bg);
     padding: 72px 0 84px;
@@ -80,7 +80,7 @@
 }
 
 .ghost-icon-btn:hover {
-    border-color: rgba(124, 92, 255, 0.5);
+    border-color: rgba(139, 112, 255, 0.5);
     color: var(--detail-text);
 }
 
@@ -137,8 +137,8 @@
 }
 
 .post-body pre {
-    background: rgba(124, 92, 255, 0.12);
-    border: 1px solid rgba(124, 92, 255, 0.22);
+    background: rgba(139, 112, 255, 0.12);
+    border: 1px solid rgba(139, 112, 255, 0.22);
     border-radius: 14px;
     padding: 18px;
     font-size: 13px;
@@ -184,12 +184,12 @@
 
 .reaction-like:hover {
     transform: translateY(-1px);
-    border-color: rgba(124, 92, 255, 0.45);
+    border-color: rgba(139, 112, 255, 0.45);
 }
 
 .reaction-like.active {
-    background: rgba(124, 92, 255, 0.28);
-    border-color: rgba(124, 92, 255, 0.35);
+    background: rgba(139, 112, 255, 0.28);
+    border-color: rgba(139, 112, 255, 0.35);
     color: var(--detail-text);
 }
 
@@ -202,7 +202,7 @@
     font-size: 13px;
     font-weight: 600;
     color: var(--detail-muted);
-    background: rgba(124, 92, 255, 0.24);
+    background: rgba(139, 112, 255, 0.24);
     padding: 8px 12px;
     border-radius: 999px;
 }
@@ -293,8 +293,8 @@
 
 .comment-editor textarea:focus {
     outline: none;
-    border-color: rgba(124, 92, 255, 0.55);
-    box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.22);
+    border-color: rgba(139, 112, 255, 0.55);
+    box-shadow: 0 0 0 3px rgba(139, 112, 255, 0.22);
     background: var(--detail-surface);
 }
 
@@ -324,19 +324,19 @@
 
 .btn-secondary:hover {
     transform: translateY(-1px);
-    border-color: rgba(124, 92, 255, 0.5);
+    border-color: rgba(139, 112, 255, 0.5);
     color: var(--detail-text);
 }
 
 .btn-primary {
     background: var(--detail-accent);
     color: #ffffff;
-    box-shadow: 0 20px 30px -22px rgba(124, 92, 255, 0.62);
+    box-shadow: 0 20px 30px -22px rgba(139, 112, 255, 0.62);
 }
 
 .btn-primary:hover {
     transform: translateY(-1px);
-    box-shadow: 0 24px 36px -22px rgba(124, 92, 255, 0.72);
+    box-shadow: 0 24px 36px -22px rgba(139, 112, 255, 0.72);
 }
 
 .btn-primary:disabled {
@@ -436,8 +436,8 @@
 
 .reply-form input:focus {
     outline: none;
-    border-color: rgba(124, 92, 255, 0.5);
-    box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.2);
+    border-color: rgba(139, 112, 255, 0.5);
+    box-shadow: 0 0 0 3px rgba(139, 112, 255, 0.2);
     background: var(--detail-surface);
 }
 
@@ -460,7 +460,7 @@
 .reply-submit-btn {
     background: var(--detail-accent);
     color: #ffffff;
-    box-shadow: 0 16px 24px -20px rgba(124, 92, 255, 0.6);
+    box-shadow: 0 16px 24px -20px rgba(139, 112, 255, 0.6);
 }
 
 .reply-submit-btn:disabled {
@@ -681,7 +681,7 @@
 
 .related-item:hover,
 .related-item:focus-visible {
-    border-color: rgba(124, 92, 255, 0.45);
+    border-color: rgba(139, 112, 255, 0.45);
     transform: translateY(-2px);
     outline: none;
 }
@@ -787,8 +787,8 @@
     --detail-border: rgba(255, 255, 255, 0.08);
     --detail-text: #f2f4ff;
     --detail-muted: #c9cff7;
-    --detail-accent: #b8a2ff;
-    --detail-soft: rgba(164, 136, 255, 0.32);
+    --detail-accent: var(--accent-primary);
+    --detail-soft: rgba(147, 123, 255, 0.32);
 }
 
 .dark-mode .post-surface,

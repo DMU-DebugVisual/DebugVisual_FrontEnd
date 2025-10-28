@@ -198,6 +198,10 @@
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+    padding: 12px 16px;
+    border-radius: 16px;
+    border: 1px dashed rgba(139, 112, 255, 0.28);
+    background: rgba(139, 112, 255, 0.06);
 }
 
 .tech-tag {
@@ -205,20 +209,26 @@
     align-items: center;
     gap: 6px;
     padding: 6px 12px;
+    background: rgba(139, 112, 255, 0.12);
     border-radius: 999px;
-    background: var(--mypage-soft);
+    border: 1px solid rgba(139, 112, 255, 0.26);
     color: var(--mypage-accent);
     font-weight: 600;
     font-size: 13px;
 }
 
 .remove-tag {
-    border: none;
     background: transparent;
     color: inherit;
-    font-size: 14px;
-    line-height: 1;
+    border: 1px dashed rgba(139, 112, 255, 0.28);
+    background: linear-gradient(160deg, rgba(139, 112, 255, 0.12), rgba(139, 112, 255, 0.04));
+    border-radius: 999px;
     cursor: pointer;
+    line-height: 1;
+}
+
+.remove-tag:hover {
+    border-color: rgba(139, 112, 255, 0.48);
 }
 
 .tech-input-row {
@@ -231,32 +241,50 @@
 }
 
 .tech-input-row .secondary-button {
-    flex: 0 0 auto;
+    background: rgba(139, 112, 255, 0.12);
     padding: 10px 18px;
 }
 
 .social-links {
     display: flex;
+    flex-wrap: wrap;
     gap: 12px;
 }
 
 .social-links input {
-    flex: 1;
+    flex: 1 1 240px;
+    border: 1px solid rgba(139, 112, 255, 0.28);
+    border-radius: 14px;
+    padding: 14px 16px;
+    background: rgba(139, 112, 255, 0.08);
+    color: var(--mypage-text);
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.social-links input:focus {
+    outline: none;
+    border-color: rgba(139, 112, 255, 0.54);
+    box-shadow: 0 0 0 4px rgba(139, 112, 255, 0.14);
 }
 
 .settings-preferences {
-    padding: 32px 40px;
     display: flex;
     flex-direction: column;
     gap: 18px;
+    padding: 32px 40px;
+    border-radius: 22px;
+    border: 1px solid rgba(139, 112, 255, 0.28);
+    background: linear-gradient(160deg, rgba(139, 112, 255, 0.12), rgba(139, 112, 255, 0.03));
 }
 
 .settings-preferences h2 {
     margin: 0;
     font-size: 20px;
+    font-weight: 700;
+    color: var(--mypage-accent);
 }
 
-.settings-preferences p {
+.settings-preferences > p {
     margin: 0;
     font-size: 14px;
     color: var(--mypage-text-secondary);
@@ -385,51 +413,68 @@
 }
 
 .dark-mode .settings-tab {
-    background: rgba(15, 23, 42, 0.45);
-    border-color: rgba(148, 163, 184, 0.2);
-    color: rgba(226, 232, 240, 0.76);
+    background: var(--mypage-surface);
+    border-color: var(--mypage-border);
+    color: var(--mypage-text-secondary);
 }
 
 .dark-mode .settings-tab.is-active {
-    background: rgba(124, 92, 255, 0.2);
+    background: rgba(124, 92, 255, 0.24);
     border-color: rgba(124, 92, 255, 0.54);
-    color: #dbeafe;
+    color: var(--mypage-text);
 }
 
 .dark-mode .settings-profile-card {
-    border-color: rgba(124, 92, 255, 0.4);
-    background: linear-gradient(150deg, rgba(124, 92, 255, 0.18), rgba(15, 23, 42, 0.52));
+    border-color: var(--mypage-border);
+    background: var(--mypage-surface);
 }
 
 .dark-mode .settings-tip {
-    background: rgba(148, 163, 184, 0.12);
-    color: rgba(226, 232, 240, 0.76);
+    background: rgba(148, 163, 184, 0.16);
+    color: var(--mypage-text-secondary);
 }
 
 .dark-mode .settings-form input,
 .dark-mode .settings-form textarea {
-    background: rgba(15, 23, 42, 0.64);
-    border-color: rgba(148, 163, 184, 0.25);
-    color: rgba(248, 250, 252, 0.94);
+    background: var(--surface-input);
+    border-color: var(--mypage-border);
+    color: var(--mypage-text);
 }
 
 .dark-mode .settings-form input:focus,
 .dark-mode .settings-form textarea:focus {
     border-color: rgba(124, 92, 255, 0.8);
-    box-shadow: 0 0 0 4px rgba(124, 92, 255, 0.18);
+    box-shadow: 0 0 0 4px rgba(124, 92, 255, 0.22);
 }
 
 .dark-mode .tech-tag {
-    background: rgba(124, 92, 255, 0.24);
-    color: #dbeafe;
+    background: rgba(124, 92, 255, 0.28);
+    color: var(--mypage-text);
+    border-color: var(--mypage-border);
+}
+
+.dark-mode .tech-stack {
+    background: rgba(124, 92, 255, 0.16);
+    border-color: var(--mypage-border);
 }
 
 .dark-mode .settings-preferences {
-    background: rgba(15, 23, 42, 0.42);
+    background: var(--mypage-surface);
+    border-color: var(--mypage-border);
 }
 
 .dark-mode .preference-item {
-    border-bottom-color: rgba(148, 163, 184, 0.15);
+    border-bottom-color: var(--mypage-border);
+}
+
+.dark-mode .social-links input {
+    background: var(--surface-input);
+    border-color: var(--mypage-border);
+    color: var(--mypage-text);
+}
+
+.dark-mode .social-links input:focus {
+    box-shadow: 0 0 0 4px rgba(124, 92, 255, 0.26);
 }
 
 .dark-mode .slider {

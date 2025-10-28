@@ -215,7 +215,7 @@
 .project-progress__bar {
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, #7c5cff, #a78bfa);
+    background: linear-gradient(135deg, var(--accent-grad-start), var(--accent-grad-stop));
 }
 
 .project-progress__label {
@@ -282,28 +282,33 @@
 }
 
 .dark-mode .ghost-button.compact {
-    background: rgba(28, 32, 44, 0.92);
+    background: var(--mypage-surface);
+    border-color: var(--mypage-border);
+    color: var(--mypage-text-secondary);
 }
 
 .dark-mode .project-search {
-    background: rgba(28, 32, 44, 0.9);
-    border-color: rgba(148, 163, 184, 0.22);
+    background: var(--surface-input);
+    border-color: var(--mypage-border);
 }
 
 .dark-mode .toolbar-chip {
-    background: rgba(108, 92, 231, 0.18);
+    background: rgba(108, 92, 231, 0.22);
+    color: var(--mypage-text);
 }
 
 .dark-mode .project-collection__card {
-    background: rgba(28, 32, 44, 0.95);
-    border-color: rgba(148, 163, 184, 0.18);
+    background: var(--mypage-surface);
+    border-color: var(--mypage-border);
+    box-shadow: var(--mypage-shadow);
 }
 
 .dark-mode .project-progress {
-    background: rgba(148, 163, 184, 0.22);
+    background: rgba(148, 163, 184, 0.24);
 }
 
 .dark-mode .secondary-button {
-    background: rgba(28, 32, 44, 0.88);
-    border-color: rgba(148, 163, 184, 0.22);
+    background: var(--surface-input);
+    border-color: var(--mypage-border);
+    color: var(--mypage-text-secondary);
 }

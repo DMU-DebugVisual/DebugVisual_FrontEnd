@@ -7,11 +7,33 @@ const originalFetch = window.fetch;
 
 // 2. window.fetch 함수를 우리의 감시 기능이 추가된 새 함수로 덮어씁니다.
 window.fetch = async (...args) => {
+    const [resource] = args;
+    const request = resource instanceof Request ? resource : null;
+    const rawUrl = request ? request.url : (typeof resource === "string" ? resource : "");
+
+    let pathname = "";
+    if (typeof rawUrl === "string" && rawUrl) {
+        try {
+            pathname = new URL(rawUrl, window.location.origin).pathname;
+        } catch (error) {
+            pathname = rawUrl;
+        }
+    }
+
     // 3. 백업해둔 원래 fetch 함수를 호출하여 실제 API 요청을 보냅니다.
     const response = await originalFetch(...args);
 
+    const isJoinParticipantsRequest =
+        response.status === 403 &&
+        typeof pathname === "string" &&
+        pathname.includes("/api/collab/rooms/") &&
+        pathname.endsWith("/participants");
+
     // 4. 응답을 받은 후, 인증 실패(401/403)가 발생했다면
     if ((response.status === 401 || response.status === 403) && localStorage.getItem("token")) {
+        if (isJoinParticipantsRequest) {
+            return response;
+        }
         localStorage.removeItem("token");
         localStorage.removeItem("username");
         localStorage.removeItem("userId");
@@ -19,7 +41,10 @@ window.fetch = async (...args) => {
 
         window.dispatchEvent(new Event("dv:auth-updated"));
 
-        const redirectTo = window.location.hash ? window.location.hash.replace(/^#/, "") || "/" : window.location.pathname || "/";
+        let redirectTo = window.location.hash ? window.location.hash.replace(/^#/, "") || "/" : window.location.pathname || "/";
+        if (redirectTo.startsWith("/broadcast/live")) {
+            redirectTo = "/broadcast";
+        }
         promptLogin("세션이 만료되었습니다. 다시 로그인해 주세요.", { redirectTo });
     }
 

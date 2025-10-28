@@ -34,8 +34,8 @@
     font-size: 14px;
     text-decoration: none;
     color: var(--mypage-accent);
-    background: rgba(255, 255, 255, 0.7);
-    border: 1px solid rgba(108, 92, 231, 0.2);
+    background: var(--mypage-surface);
+    border: 1px solid var(--mypage-border);
     transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
@@ -65,8 +65,8 @@
     gap: 10px;
     padding: 12px 16px;
     border-radius: 14px;
-    border: 1px solid rgba(148, 163, 184, 0.25);
-    background: rgba(248, 250, 252, 0.75);
+    border: 1px solid var(--mypage-border);
+    background: var(--surface-input);
 }
 
 .mycommunity-search__input svg {
@@ -134,8 +134,8 @@
     gap: 10px;
     padding: 10px 16px;
     border-radius: 14px;
-    border: 1px solid rgba(148, 163, 184, 0.2);
-    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid var(--mypage-border);
+    background: var(--mypage-surface);
     color: var(--mypage-text-secondary);
     font-size: 14px;
     font-weight: 600;
@@ -159,7 +159,7 @@
     min-width: 32px;
     padding: 2px 8px;
     border-radius: 10px;
-    background: rgba(108, 92, 231, 0.08);
+    background: rgba(108, 92, 231, 0.12);
     color: var(--mypage-accent);
     text-align: center;
     font-size: 13px;
@@ -182,9 +182,9 @@
     padding: 36px;
     text-align: center;
     border-radius: 18px;
-    border: 1px dashed rgba(148, 163, 184, 0.32);
+    border: 1px dashed var(--mypage-border);
     color: var(--mypage-text-secondary);
-    background: rgba(248, 250, 252, 0.55);
+    background: rgba(148, 163, 184, 0.08);
     font-weight: 600;
     display: flex;
     align-items: center;
@@ -210,6 +210,10 @@
     gap: 16px;
     padding: 26px;
     min-height: 220px;
+    background: var(--mypage-surface);
+    border: 1px solid var(--mypage-border);
+    border-radius: 20px;
+    box-shadow: var(--mypage-shadow);
 }
 
 .card-header {
@@ -353,54 +357,81 @@
 }
 
 .dark-mode .mycommunity-header__link {
-    background: rgba(31, 33, 45, 0.82);
-    border-color: rgba(167, 139, 250, 0.24);
-    color: rgba(226, 232, 240, 0.88);
+    background: var(--mypage-elevated);
+    border-color: var(--mypage-border);
+    color: var(--mypage-text);
 }
 
 .dark-mode .mycommunity-controls {
-    background: rgba(25, 26, 36, 0.92);
+    background: var(--mypage-surface);
 }
 
 .dark-mode .mycommunity-search__input {
-    background: rgba(36, 37, 47, 0.9);
-    border-color: rgba(148, 163, 184, 0.18);
+    background: var(--surface-input);
+    border-color: var(--mypage-border);
 }
 
 .dark-mode .search-button {
     box-shadow: 0 14px 24px -20px rgba(167, 139, 250, 0.75);
 }
 
+.dark-mode .reset-button {
+    background: rgba(148, 163, 184, 0.24);
+    color: var(--mypage-text);
+}
+
 .dark-mode .mycommunity-tab {
-    background: rgba(31, 32, 44, 0.84);
+    background: var(--mypage-surface);
+    border-color: var(--mypage-border);
 }
 
 .dark-mode .mycommunity-tab .tab-icon {
-    background: rgba(167, 139, 250, 0.16);
-    color: rgba(226, 232, 240, 0.85);
+    background: rgba(167, 139, 250, 0.22);
+    color: var(--mypage-text);
 }
 
 .dark-mode .mycommunity-tab .tab-count {
-    background: rgba(167, 139, 250, 0.16);
-    color: rgba(226, 232, 240, 0.85);
+    background: rgba(167, 139, 250, 0.22);
+    color: var(--mypage-text);
 }
 
 .dark-mode .mycommunity-tab.is-active {
     background: linear-gradient(135deg, rgba(167, 139, 250, 0.24), rgba(96, 165, 250, 0.18));
     border-color: rgba(167, 139, 250, 0.24);
+    color: var(--mypage-text);
 }
 
 .dark-mode .mycommunity-state {
-    background: rgba(31, 32, 44, 0.7);
-    border-color: rgba(148, 163, 184, 0.24);
+    background: rgba(31, 32, 44, 0.72);
+    border-color: var(--mypage-border);
+    color: var(--mypage-text);
 }
 
 .dark-mode .mycommunity-card {
-    background: rgba(24, 25, 34, 0.95);
-    border-color: rgba(148, 163, 184, 0.16);
+    background: var(--mypage-surface);
+    border-color: var(--mypage-border);
+    box-shadow: var(--mypage-shadow);
+}
+
+.dark-mode .badge {
+    background: rgba(148, 163, 184, 0.26);
+    color: var(--mypage-text-secondary);
+}
+
+.dark-mode .badge--ghost {
+    background: rgba(167, 139, 250, 0.14);
+    color: var(--mypage-accent);
+}
+
+.dark-mode .card-summary {
+    color: var(--mypage-text-secondary);
 }
 
 .dark-mode .card-tags .tag {
     background: rgba(59, 130, 246, 0.18);
-    color: rgba(191, 219, 254, 0.9);
+    color: #93c5fd;
+}
+
+.dark-mode .card-footer {
+    color: var(--mypage-text-secondary);
 }

@@ -2,8 +2,8 @@
 
 /* CSS 변수 */
 :root {
-    --primary: #6a47b8;
-    --primary-hover: #5339a0;
+    --primary: var(--accent-secondary);
+    --primary-hover: var(--accent-hover);
     --success: #43a047;
     --warning: #fb8c00;
     --danger-color: #e53935; /* 🆕 삭제 색상 정의 */
@@ -24,19 +24,19 @@
 
 /* 다크 모드 변수 */
 body.dark-mode {
-    --primary: #7e57c2;
-    --primary-hover: #5e35b1;
+    --primary: var(--accent-secondary);
+    --primary-hover: var(--accent-hover);
     --success: #4caf50;
     --warning: #ff9800;
     --danger-color: #ff5252; /* 🆕 다크 모드 삭제 색상 정의 */
-    --bg: #1e1e1e;
-    --element: #252525;
-    --element-light: #2d2d2d;
-    --border: #444444;
-    --border-light: #333333;
-    --text: #e0e0e0;
-    --text-light: #aaaaaa;
-    --text-medium: #cccccc;
+    --bg: #060609;
+    --element: #101018;
+    --element-light: #181828;
+    --border: rgba(124, 104, 220, 0.32);
+    --border-light: rgba(124, 104, 220, 0.2);
+    --text: #f4f3ff;
+    --text-light: #a9a6d6;
+    --text-medium: #c5c2e8;
     background-color: var(--bg);
 }
 
@@ -896,6 +896,38 @@ body.dark-mode .save-button:hover {
     width: 100%;
     position: relative;
     overflow: hidden;
+}
+
+.ide-container .monaco-editor,
+.ide-container .monaco-editor .overflow-guard,
+.ide-container .monaco-editor .monaco-editor-background,
+.ide-container .monaco-editor .view-overlays,
+.ide-container .monaco-editor .margin-view-overlays {
+    background-color: var(--ide-editor-bg) !important;
+}
+
+.ide-container .monaco-editor .view-lines {
+    background-color: var(--ide-editor-bg) !important;
+}
+
+.ide-container .monaco-editor .margin,
+.ide-container .monaco-editor .glyph-margin {
+    background-color: var(--ide-editor-gutter) !important;
+    border-right: 1px solid var(--border-subtle);
+}
+
+.ide-container .monaco-editor .scroll-decoration {
+    box-shadow: none;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.12), transparent);
+}
+
+.ide-container .monaco-editor .line-numbers,
+.ide-container .monaco-editor .margin .current-line {
+    color: var(--ide-editor-line-number) !important;
+}
+
+.ide-container .monaco-editor .line-numbers.active-line-number {
+    color: var(--accent-primary) !important;
 }
 
 .right-panel {

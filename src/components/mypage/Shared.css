@@ -205,23 +205,27 @@
 }
 
 .dark-mode .shared-controls {
-    background: rgba(24, 27, 39, 0.95);
+    background: var(--mypage-surface);
 }
 
 .dark-mode .shared-tab {
-    background: rgba(30, 33, 45, 0.9);
-    border-color: rgba(148, 163, 184, 0.2);
+    background: var(--mypage-surface);
+    border-color: var(--mypage-border);
+    color: var(--mypage-text-secondary);
 }
 
 .dark-mode .shared-tab.is-active {
     background: var(--mypage-accent);
+    color: #fff;
 }
 
 .dark-mode .shared-stat {
-    background: rgba(124, 92, 255, 0.22);
+    background: rgba(124, 92, 255, 0.24);
+    color: var(--mypage-text-secondary);
 }
 
 .dark-mode .shared-card {
-    background: rgba(24, 27, 39, 0.96);
-    border-color: rgba(148, 163, 184, 0.18);
+    background: var(--mypage-surface);
+    border-color: var(--mypage-border);
+    box-shadow: var(--mypage-shadow);
 }

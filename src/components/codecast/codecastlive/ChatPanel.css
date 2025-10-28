@@ -1,11 +1,12 @@
-/* 도킹 모드 공통 */
+/* ChatPanel.css */
+
 .chat-panel.docked {
-    position: sticky;          /* 헤더 아래에 고정 */
+    position: sticky;
     display: flex;
     flex-direction: column;
-    background: #fff;
-    border-left: 1px solid #eee;
-    /* 우측 고정 폭은 부모(grid)에서 제어 (340px) */
+    background: var(--surface-card);
+    border-left: 1px solid var(--border-subtle);
+    color: var(--text-primary);
 }
 
 .chat-header {
@@ -13,11 +14,13 @@
     align-items: center;
     justify-content: space-between;
     padding: 14px 16px;
-    border-bottom: 1px solid #e6e6ef;
+    border-bottom: 1px solid var(--border-subtle);
 }
+
 .chat-header h3 {
     margin: 0;
     font-size: 16px;
+    color: var(--text-primary);
 }
 
 .chat-close {
@@ -25,79 +28,75 @@
     border: none;
     cursor: pointer;
     font-size: 16px;
-    color: #666;
+    color: var(--text-muted);
 }
 
 .chat-list {
     flex: 1;
     overflow: auto;
     padding: 12px 14px;
+    color: var(--text-primary);
 }
 
-.chat-item + .chat-item { margin-top: 10px; }
+.chat-item + .chat-item {
+    margin-top: 10px;
+}
+
 .chat-user {
     font-weight: 700;
     font-size: 13px;
-    color: #333;
+    color: var(--text-primary);
 }
+
 .chat-text {
     font-size: 14px;
-    color: #222;
+    color: var(--text-muted);
 }
 
 .chat-input {
     display: flex;
     gap: 8px;
     padding: 10px 12px;
-    border-top: 1px solid #e6e6ef;
+    border-top: 1px solid var(--border-subtle);
+    background: var(--surface-card);
 }
+
 .chat-input input {
     flex: 1;
-    border: 1px solid #e0e0ea;
+    border: 1px solid var(--border-subtle);
     border-radius: 8px;
     padding: 10px 12px;
     font-size: 14px;
+    background: var(--surface-input);
+    color: var(--text-primary);
 }
+
+.chat-input input::placeholder {
+    color: var(--text-muted);
+}
+
 .chat-input .send-btn {
     border: none;
     border-radius: 8px;
     padding: 0 14px;
-    background: #6f42c1;
+    background: var(--accent-secondary);
     color: #fff;
     cursor: pointer;
+    transition: background-color 0.2s ease;
 }
 
-/* 다크 모드 */
+.chat-input .send-btn:hover {
+    background: var(--accent-hover);
+}
+
 .dark-mode .chat-panel.docked {
-    background: #1a1a26;
-    border-left: 1px solid rgba(255,255,255,0.08);
-    box-shadow: -10px 0 28px rgba(0,0,0,0.35);
-}
-
-.dark-mode .chat-header {
-    border-bottom-color: rgba(255,255,255,0.08);
+    box-shadow: -12px 0 32px rgba(4, 4, 12, 0.45);
 }
 
 .dark-mode .chat-close {
-    color: #bbb;
-}
-
-.dark-mode .chat-user {
-    color: #eaeaf2;
+    color: var(--text-muted);
 }
 
 .dark-mode .chat-text {
-    color: #ddd;
-}
-
-.dark-mode .chat-input {
-    border-top-color: rgba(255,255,255,0.08);
-}
-.dark-mode .chat-input input {
-    background: #232333;
-    color: #eee;
-    border-color: #2f2f40;
-}
-.dark-mode .chat-input .send-btn {
-    background: #6a0dad;
+    color: var(--text-muted);
 }

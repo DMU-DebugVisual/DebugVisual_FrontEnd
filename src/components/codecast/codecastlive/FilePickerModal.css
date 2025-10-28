@@ -82,8 +82,8 @@
 }
 .fpm-item + .fpm-item { margin-top: 8px; }
 .fpm-item:hover {
-    border-color: #d7d7ec;
-    background: #eef0fb;
+    border-color: var(--accent-border);
+    background: var(--accent-soft);
 }
 
 .fpm-item.disabled {
@@ -96,12 +96,12 @@
 }
 
 .fpm-item.new-file {
-    background: #efeaff;
-    border: 1px dashed #c9b6ff;
+    background: rgba(139, 112, 255, 0.1);
+    border: 1px dashed var(--accent-border);
 }
 .fpm-item.new-file:hover {
-    background: #e7e0ff;
-    border-color: #bfa9ff;
+    background: rgba(139, 112, 255, 0.16);
+    border-color: var(--accent-border);
 }
 
 .fpm-name {
@@ -163,7 +163,7 @@
 }
 
 .fpm-preview {
-    color: #4f2aa3;
+    color: var(--accent-secondary);
 }
 
 .fpm-actions {
@@ -183,7 +183,7 @@
 }
 
 .fpm-primary {
-    background: #6a0dad;
+    background: var(--accent-secondary);
     color: #fff;
 }
 .fpm-primary:disabled {
@@ -191,7 +191,7 @@
     cursor: default;
 }
 .fpm-primary:hover:not(:disabled) {
-    background: #7d2ae8;
+    background: var(--accent-hover);
 }
 
 .fpm-secondary {
@@ -234,7 +234,7 @@
     background: #1a1a26;
 }
 .dark-mode .fpm-item:hover {
-    border-color: rgba(128,90,213,0.5);
+    border-color: var(--accent-border);
     background: #1f1f2c;
 }
 .dark-mode .fpm-item.disabled {
@@ -243,12 +243,12 @@
 }
 
 .dark-mode .fpm-item.new-file {
-    background: #201a33;
-    border-color: rgba(128,90,213,0.35);
+    background: rgba(139, 112, 255, 0.18);
+    border-color: var(--accent-border);
 }
 .dark-mode .fpm-item.new-file:hover {
-    background: #251e3d;
-    border-color: rgba(128,90,213,0.6);
+    background: rgba(139, 112, 255, 0.24);
+    border-color: var(--accent-border);
 }
 
 .dark-mode .fpm-name { color: #eee; }
@@ -272,11 +272,11 @@
     border-color: #2f2f40;
 }
 .dark-mode .fpm-hint { color: #c8c1d9; }
-.dark-mode .fpm-preview { color: #c9a7ff; }
+.dark-mode .fpm-preview { color: var(--accent-primary); }
 .dark-mode .fpm-secondary {
     background: #2b2b34;
     color: #eaeaf2;
     border: 1px solid #3a3a48;
 }
 .dark-mode .fpm-secondary:hover { background: #34343f; }
-.dark-mode .fpm-primary { background: #6a0dad; }
+.dark-mode .fpm-primary { background: var(--accent-secondary); }

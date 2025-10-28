@@ -1,4 +1,4 @@
-/* ========== 기본: Light ========== */
+/* CodeEditor.css */
 
 .code-editor {
     flex: 1;
@@ -6,9 +6,9 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
-    background-color: #ffffff;
+    background-color: var(--surface-card);
     padding: 16px;
-    color: #222;
+    color: var(--text-primary);
     font-family: 'Courier New', monospace;
     font-size: 15px;
 }
@@ -21,31 +21,28 @@
     gap: 12px;
 }
 
-/* ✅ 사용자 뱃지 */
 .current-user-badge {
-    background-color: #f2f2f4;
-    color: #333;
+    background-color: var(--surface-muted);
+    color: var(--text-primary);
     padding: 6px 12px;
     border-radius: 12px;
     font-weight: 600;
     font-size: 14px;
-    border: 1px solid #e4e4ea;
+    border: 1px solid var(--border-subtle);
     display: inline-flex;
     align-items: center;
     gap: 6px;
 }
 
-/* 오른쪽 버튼 묶음 */
 .toolbar-right {
     display: inline-flex;
     align-items: center;
     gap: 8px;
 }
 
-/* 실행 버튼 */
 .run-button {
-    background-color: #6a0dad;
-    color: white;
+    background-color: var(--accent-secondary);
+    color: #fff;
     border: none;
     padding: 6px 12px;
     border-radius: 6px;
@@ -56,13 +53,15 @@
     gap: 6px;
     transition: background-color 0.2s ease;
 }
-.run-button:hover { background-color: #8844dd; }
 
-/* 시각화 버튼 */
+.run-button:hover {
+    background-color: var(--accent-hover);
+}
+
 .viz-button {
-    background-color: #f2f2f4;
-    color: #333;
-    border: 1px solid #e4e4ea;
+    background-color: var(--surface-muted);
+    color: var(--text-primary);
+    border: 1px solid var(--border-subtle);
     padding: 6px 12px;
     border-radius: 6px;
     cursor: pointer;
@@ -70,84 +69,84 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    transition: background-color 0.2s ease, border-color 0.2s ease, color .2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
+
 .viz-button:hover {
-    background-color: #ece9f7;
-    border-color: #d7c7ff;
-    color: #4f2aa3;
+    background-color: var(--accent-soft);
+    border-color: var(--accent-border);
+    color: var(--accent-primary);
 }
 
-/* ✅ [수정된 부분] 파일 선택 버튼 크기 조정 */
 .toolbar-right .select-file-btn {
-    /* run-button, viz-button과 동일한 패딩을 적용하여 크기를 맞춤 */
     padding: 6px 12px;
-
-    /* 기존 스타일 유지 (CodecastLive.js에서 부여한 클래스) */
-    background-color: #555;
-    color: white;
-    border: none;
+    background-color: var(--accent-soft);
+    color: var(--accent-secondary);
+    border: 1px solid var(--accent-border);
     border-radius: 6px;
     cursor: pointer;
     font-size: 14px;
+    font-weight: 600;
     display: flex;
     align-items: center;
     gap: 6px;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
+
 .toolbar-right .select-file-btn:hover {
-    background-color: #777;
+    background-color: var(--accent-soft-strong);
+    border-color: var(--accent-secondary);
+    color: var(--accent-primary);
+    box-shadow: 0 0 0 1px rgba(139, 112, 255, 0.18);
 }
 
+body.dark-mode .toolbar-right .select-file-btn {
+    background-color: color-mix(in srgb, var(--accent-soft) 75%, transparent);
+    border-color: rgba(124, 104, 220, 0.42);
+    color: var(--text-primary);
+}
 
-/* Monaco 에디터가 부모 높이를 꽉 채우도록 */
-.code-editor > div, /* @monaco-editor/react 래퍼 */
+body.dark-mode .toolbar-right .select-file-btn:hover {
+    box-shadow: 0 0 0 1px rgba(124, 104, 220, 0.36);
+    color: var(--accent-glow);
+}
+
+.code-editor > div,
 .code-editor .monaco-editor,
 .code-editor .monaco-editor .overflow-guard {
     flex: 1;
     min-height: 0;
 }
 
-/* ========== Dark Mode Overrides ========== */
-
-/* 🟢 수정: CodeEditor 루트 배경을 #1c1c1c로 설정 */
-.dark-mode .code-editor {
-    background-color: #1c1c1c;
-    color: #fff;
+body.dark-mode .code-editor .monaco-editor,
+body.dark-mode .code-editor .monaco-editor .overflow-guard,
+body.dark-mode .code-editor .monaco-editor .monaco-editor-background,
+body.dark-mode .code-editor .monaco-editor .lines-content,
+body.dark-mode .code-editor .monaco-editor .view-overlays,
+body.dark-mode .code-editor .monaco-editor .margin-view-overlays {
+    background-color: var(--ide-editor-bg) !important;
 }
 
-/* 🟢 수정: Monaco Editor 내부 요소의 배경색을 #1c1c1c로 강제 적용 */
-.dark-mode .monaco-editor,
-.dark-mode .monaco-editor .lines-content,
-.dark-mode .monaco-editor .view-overlays,
-.dark-mode .monaco-editor .scroll-decoration {
-    background-color: #1c1c1c !important;
+body.dark-mode .code-editor .monaco-editor .view-lines {
+    background-color: var(--ide-editor-bg) !important;
 }
 
-/* 🟢 수정: Gutter(라인 번호 영역) 및 내부 마진 배경도 #1c1c1c로 맞춤 */
-.dark-mode .monaco-editor .monaco-editor-background,
-.dark-mode .monaco-editor .margin {
-    background-color: #1c1c1c !important;
+body.dark-mode .code-editor .monaco-editor .margin,
+body.dark-mode .code-editor .monaco-editor .glyph-margin {
+    background-color: var(--ide-editor-gutter) !important;
+    border-right: 1px solid var(--border-subtle);
 }
 
-/* ✅ 추가: 라인 번호 색상을 흰색으로 설정 */
-.dark-mode .monaco-editor .line-numbers {
-    color: #ffffff !important;
+body.dark-mode .code-editor .monaco-editor .scroll-decoration {
+    box-shadow: none;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.12), transparent);
 }
 
-
-.dark-mode .current-user-badge {
-    background-color: #222;
-    color: #fff;
-    border-color: #3a3a48;
+body.dark-mode .code-editor .monaco-editor .line-numbers,
+body.dark-mode .code-editor .monaco-editor .margin .current-line {
+    color: var(--ide-editor-line-number) !important;
 }
 
-.dark-mode .viz-button {
-    background-color: #2b2b34;
-    color: #eaeaf2;
-    border: 1px solid #3a3a48;
-}
-.dark-mode .viz-button:hover {
-    background-color: #34343f;
-    border-color: #6a0dad;
-    color: #c9a7ff;
+body.dark-mode .code-editor .monaco-editor .line-numbers.active-line-number {
+    color: var(--accent-primary) !important;
 }

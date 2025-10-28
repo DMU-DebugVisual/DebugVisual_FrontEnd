@@ -1,15 +1,15 @@
 /* src/components/mypage/Mypage.css */
 
 .mypage-wrapper {
-    background: #ffffff;
+    background: var(--surface-page);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
 .mypage {
-    --mypage-bg: #ffffff;
-    --mypage-surface: #ffffff;
+    --mypage-bg: var(--surface-page);
+    --mypage-surface: var(--surface-card);
     --mypage-elevated: rgba(255, 255, 255, 0.92);
     --mypage-border: rgba(15, 23, 42, 0.06);
     --mypage-text-primary: #161829;
@@ -17,8 +17,8 @@
     --mypage-text-tertiary: #a0a6b9;
     --mypage-text: #161829;
     --mypage-muted: #62677a;
-    --mypage-accent: #7c5cff;
-    --mypage-soft: rgba(124, 92, 255, 0.12);
+    --mypage-accent: var(--accent-secondary);
+    --mypage-soft: rgba(139, 112, 255, 0.12);
     --mypage-shadow: 0 22px 40px -32px rgba(15, 23, 42, 0.18);
     flex: 1;
     display: flex;
@@ -126,7 +126,7 @@ body.body-scroll .mypage-content {
 
 .ghost-button:hover {
     transform: translateY(-1px);
-    border-color: rgba(124, 92, 255, 0.5);
+    border-color: rgba(139, 112, 255, 0.5);
     color: var(--mypage-text);
 }
 
@@ -134,12 +134,12 @@ body.body-scroll .mypage-content {
     background: var(--mypage-accent);
     color: #ffffff;
     border: none;
-    box-shadow: 0 20px 32px -22px rgba(124, 92, 255, 0.64);
+    box-shadow: 0 20px 32px -22px rgba(139, 112, 255, 0.64);
 }
 
 .primary-button:hover {
     transform: translateY(-1px);
-    box-shadow: 0 24px 40px -24px rgba(124, 92, 255, 0.72);
+    box-shadow: 0 24px 40px -24px rgba(139, 112, 255, 0.72);
 }
 
 .section-card {
@@ -161,7 +161,7 @@ body.body-scroll .mypage-content {
     width: 160px;
     height: 160px;
     border-radius: 24px;
-    background: linear-gradient(135deg, rgba(124, 92, 255, 0.18), rgba(124, 92, 255, 0.06));
+    background: linear-gradient(135deg, rgba(139, 112, 255, 0.18), rgba(139, 112, 255, 0.06));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -217,7 +217,7 @@ body.body-scroll .mypage-content {
 }
 
 .profile-highlight {
-    background: linear-gradient(135deg, rgba(124, 92, 255, 0.1), rgba(124, 92, 255, 0.02));
+    background: linear-gradient(135deg, rgba(139, 112, 255, 0.1), rgba(139, 112, 255, 0.02));
     border-radius: 18px;
     padding: 24px;
     display: flex;
@@ -372,7 +372,7 @@ body.body-scroll .mypage-content {
 }
 
 .project-card:hover {
-    border-color: rgba(124, 92, 255, 0.4);
+    border-color: rgba(139, 112, 255, 0.4);
     transform: translateY(-3px);
 }
 
@@ -462,22 +462,28 @@ body.body-scroll .mypage-content {
 }
 
 .dark-mode .mypage {
-    --mypage-bg: #0f1119;
+    --mypage-bg: var(--surface-page);
     --mypage-surface: #181c2b;
-    --mypage-border: rgba(255, 255, 255, 0.08);
-    --mypage-text: #f2f4ff;
-    --mypage-muted: #c9cff7;
-    --mypage-accent: #b8a2ff;
-    --mypage-soft: rgba(164, 136, 255, 0.32);
+    --mypage-elevated: rgba(31, 32, 48, 0.92);
+    --mypage-border: rgba(124, 104, 220, 0.32);
+    --mypage-text-primary: #f4f3ff;
+    --mypage-text-secondary: #b3b0de;
+    --mypage-text-tertiary: #8f8bbb;
+    --mypage-text: #f4f3ff;
+    --mypage-muted: #9b97c9;
+    --mypage-accent: var(--accent-primary);
+    --mypage-soft: rgba(108, 92, 231, 0.22);
+    --mypage-shadow: 0 28px 46px -36px rgba(4, 4, 8, 0.62);
 }
 
 .dark-mode .section-card,
 .dark-mode .stat-card {
-    box-shadow: none;
+    box-shadow: var(--mypage-shadow);
 }
 
 .dark-mode .project-card {
-    background: rgba(24, 28, 43, 0.85);
+    background: var(--mypage-surface);
+    border-color: var(--mypage-border);
 }
 
 @media (max-width: 1024px) {
