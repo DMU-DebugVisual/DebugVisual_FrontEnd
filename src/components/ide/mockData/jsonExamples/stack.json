@@ -1,0 +1,72 @@
+{
+  "lang": "c",
+  "input": "",
+  "analysis": {
+    "timeComplexity": "O(n)",
+    "spaceComplexity": "O(CAP)",
+    "opCounts": {
+      "pushAttempt": 6,
+      "pushOk": 5,
+      "pushFail": 1,
+      "peek": 1,
+      "popOk": 5,
+      "popFail": 1,
+      "ioWrites": 14,
+      "loopFor": 6,
+      "loopWhile": 5
+    }
+  },
+  "events": [
+    { "t": 1, "kind": "io", "dir": "out", "channel": "stdout", "data": "=== 스택 데모 (CAP=5) ===\n" },
+
+    { "t": 2, "kind": "loopIter", "loop": { "type": "for", "iter": 0, "total": 6 } },
+    { "t": 3, "kind": "ds_op", "target": "Stack s", "op": "push", "args": [1] },
+    { "t": 4, "kind": "io", "dir": "out", "channel": "stdout", "data": "push 1  -> Stack(top->bottom): [1]\n" },
+
+    { "t": 5, "kind": "loopIter", "loop": { "type": "for", "iter": 1, "total": 6 } },
+    { "t": 6, "kind": "ds_op", "target": "Stack s", "op": "push", "args": [2] },
+    { "t": 7, "kind": "io", "dir": "out", "channel": "stdout", "data": "push 2  -> Stack(top->bottom): [2, 1]\n" },
+
+    { "t": 8, "kind": "loopIter", "loop": { "type": "for", "iter": 2, "total": 6 } },
+    { "t": 9, "kind": "ds_op", "target": "Stack s", "op": "push", "args": [3] },
+    { "t": 10, "kind": "io", "dir": "out", "channel": "stdout", "data": "push 3  -> Stack(top->bottom): [3, 2, 1]\n" },
+
+    { "t": 11, "kind": "loopIter", "loop": { "type": "for", "iter": 3, "total": 6 } },
+    { "t": 12, "kind": "ds_op", "target": "Stack s", "op": "push", "args": [4] },
+    { "t": 13, "kind": "io", "dir": "out", "channel": "stdout", "data": "push 4  -> Stack(top->bottom): [4, 3, 2, 1]\n" },
+
+    { "t": 14, "kind": "loopIter", "loop": { "type": "for", "iter": 4, "total": 6 } },
+    { "t": 15, "kind": "ds_op", "target": "Stack s", "op": "push", "args": [5] },
+    { "t": 16, "kind": "io", "dir": "out", "channel": "stdout", "data": "push 5  -> Stack(top->bottom): [5, 4, 3, 2, 1]\n" },
+
+    { "t": 17, "kind": "loopIter", "loop": { "type": "for", "iter": 5, "total": 6 } },
+    { "t": 18, "kind": "ds_op", "target": "Stack s", "op": "push", "args": [6] },
+    { "t": 19, "kind": "io", "dir": "out", "channel": "stdout", "data": "push 6  -> 실패(가득참)\n" },
+
+    { "t": 20, "kind": "ds_op", "target": "Stack s", "op": "peek", "args": [] },
+    { "t": 21, "kind": "io", "dir": "out", "channel": "stdout", "data": "peek    -> 5\n" },
+
+    { "t": 22, "kind": "loopIter", "loop": { "type": "while", "iter": 0, "total": 5 } },
+    { "t": 23, "kind": "ds_op", "target": "Stack s", "op": "pop", "args": [] },
+    { "t": 24, "kind": "io", "dir": "out", "channel": "stdout", "data": "pop 5   -> Stack(top->bottom): [4, 3, 2, 1]\n" },
+
+    { "t": 25, "kind": "loopIter", "loop": { "type": "while", "iter": 1, "total": 5 } },
+    { "t": 26, "kind": "ds_op", "target": "Stack s", "op": "pop", "args": [] },
+    { "t": 27, "kind": "io", "dir": "out", "channel": "stdout", "data": "pop 4   -> Stack(top->bottom): [3, 2, 1]\n" },
+
+    { "t": 28, "kind": "loopIter", "loop": { "type": "while", "iter": 2, "total": 5 } },
+    { "t": 29, "kind": "ds_op", "target": "Stack s", "op": "pop", "args": [] },
+    { "t": 30, "kind": "io", "dir": "out", "channel": "stdout", "data": "pop 3   -> Stack(top->bottom): [2, 1]\n" },
+
+    { "t": 31, "kind": "loopIter", "loop": { "type": "while", "iter": 3, "total": 5 } },
+    { "t": 32, "kind": "ds_op", "target": "Stack s", "op": "pop", "args": [] },
+    { "t": 33, "kind": "io", "dir": "out", "channel": "stdout", "data": "pop 2   -> Stack(top->bottom): [1]\n" },
+
+    { "t": 34, "kind": "loopIter", "loop": { "type": "while", "iter": 4, "total": 5 } },
+    { "t": 35, "kind": "ds_op", "target": "Stack s", "op": "pop", "args": [] },
+    { "t": 36, "kind": "io", "dir": "out", "channel": "stdout", "data": "pop 1   -> Stack(top->bottom): []\n" },
+
+    { "t": 37, "kind": "ds_op", "target": "Stack s", "op": "pop", "args": [] },
+    { "t": 38, "kind": "io", "dir": "out", "channel": "stdout", "data": "pop     -> 실패(비어있음)\n" }
+  ]
+}
