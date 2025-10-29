@@ -59,6 +59,62 @@ async function joinRoomApi(roomId, token) {
     throw new Error(text || `HTTP ${res.status}`);
 }
 
+const pickFirstNonEmptyString = (...values) => {
+    for (const value of values) {
+        if (typeof value === 'string') {
+            const trimmed = value.trim();
+            if (trimmed) return trimmed;
+        }
+    }
+    return '';
+};
+
+const resolveParticipantName = (primary, fallbackEntry, fallbackId) => {
+    const name = pickFirstNonEmptyString(
+        primary?.displayName,
+        primary?.nickName,
+        primary?.nickname,
+        primary?.profile?.nickname,
+        primary?.profile?.name,
+        primary?.userName,
+        primary?.username,
+        primary?.email,
+        primary?.userEmail,
+    primary?.ownerName,
+        primary?.name,
+        typeof primary?.userId === 'string' ? primary.userId : null,
+        fallbackEntry?.displayName,
+        fallbackEntry?.nickName,
+        fallbackEntry?.nickname,
+        fallbackEntry?.profile?.nickname,
+        fallbackEntry?.profile?.name,
+        fallbackEntry?.userName,
+        fallbackEntry?.username,
+        fallbackEntry?.email,
+        fallbackEntry?.userEmail,
+    fallbackEntry?.ownerName,
+        fallbackEntry?.name,
+        typeof fallbackEntry?.userId === 'string' ? fallbackEntry.userId : null,
+        fallbackId != null ? String(fallbackId) : null
+    );
+
+    return name || (fallbackId != null ? String(fallbackId) : '익명 사용자');
+};
+
+const resolveParticipantEmail = (primary, fallbackEntry) => {
+    return pickFirstNonEmptyString(
+        primary?.email,
+        primary?.userEmail,
+        primary?.contactEmail,
+        primary?.ownerEmail,
+        fallbackEntry?.email,
+        fallbackEntry?.userEmail,
+        fallbackEntry?.contactEmail,
+        fallbackEntry?.ownerEmail
+    );
+};
+
+
 export default function CodecastLive({ isDark }) {
     const navigate = useNavigate();
     const location = useLocation();
@@ -69,6 +125,7 @@ export default function CodecastLive({ isDark }) {
     // 로그인 유저
     const storedUserId = localStorage.getItem('userId') || '';
     const username = localStorage.getItem('username') || storedUserId || 'anonymous';
+    const storedEmail = localStorage.getItem('email') || localStorage.getItem('userEmail') || '';
     const token = localStorage.getItem('token') || '';
     useEffect(() => {
         if (!token) {
@@ -114,12 +171,14 @@ export default function CodecastLive({ isDark }) {
         () => ({
             id: userId,
             name: username,
+            displayName: username,
+            email: storedEmail,
             role: defaultRole,
             code: defaultFile.content,
             file: defaultFile,
             stage: 'ready',
         }),
-        [userId, username, defaultRole, defaultFile]
+        [userId, username, defaultRole, defaultFile, storedEmail]
     );
 
     const [participants, setParticipants] = useState([initialMe]);
@@ -267,7 +326,10 @@ export default function CodecastLive({ isDark }) {
 
                 if (ownerIdFromSession) {
                     sessionOwnerPatch = {
-                        name: sessionLike.ownerName || sessionLike.owner?.userName || sessionLike.owner?.name,
+                        ownerName: sessionLike.ownerName,
+                        name: resolveParticipantName(sessionLike.owner, null, ownerIdFromSession),
+                        displayName: resolveParticipantName(sessionLike.owner, null, ownerIdFromSession),
+                        email: resolveParticipantEmail(sessionLike.owner, null),
                         stage: normalizedStage,
                         sessionId: sId, // ✅ 세션 ID 저장
                         file: sessionFile
@@ -353,9 +415,14 @@ export default function CodecastLive({ isDark }) {
                     const prevEntry = prevMap.get(id);
                     const normalizedId = String(id);
                     const isHost = draft.role === 'host' || prevEntry?.role === 'host';
+                    const resolvedName = resolveParticipantName(draft, prevEntry, id);
+                    const resolvedEmail = resolveParticipantEmail(draft, prevEntry) || prevEntry?.email || '';
+
                     nextMap.set(id, {
                         id,
-                        name: draft.name || prevEntry?.name || id,
+                        name: resolvedName,
+                        displayName: resolvedName,
+                        email: resolvedEmail,
                         role: isHost
                             ? 'host'
                             : editIds.has(normalizedId)
@@ -376,7 +443,10 @@ export default function CodecastLive({ isDark }) {
                     const ownerParticipantId = msg.owner.userId || msg.owner.id;
                     if (ownerParticipantId) {
                         upsert(ownerParticipantId, {
-                            name: msg.owner.userName || msg.owner.userId || msg.owner.name || ownerParticipantId,
+                            ownerName: msg.owner.displayName || msg.owner.userName,
+                            name: resolveParticipantName(msg.owner, null, ownerParticipantId),
+                            displayName: resolveParticipantName(msg.owner, null, ownerParticipantId),
+                            email: resolveParticipantEmail(msg.owner, null),
                             role: 'host',
                         });
                     }
@@ -386,7 +456,10 @@ export default function CodecastLive({ isDark }) {
                     const participantId = participant?.userId || participant?.id;
                     if (!participantId) return;
                     upsert(participantId, {
-                        name: participant.userName || participant.userId || participant.name || participantId,
+                        displayName: participant.displayName || participant.ownerName,
+                        ownerName: participant.ownerName,
+                        name: resolveParticipantName(participant, null, participantId),
+                        email: resolveParticipantEmail(participant, null),
                         stage: participant.stage,
                         code: typeof participant.code === 'string' ? participant.code : undefined,
                         file: participant.file,
@@ -410,7 +483,7 @@ export default function CodecastLive({ isDark }) {
                 return ordered;
             });
         },
-        [initialMe, sessionId, setSessionOwnerId, updateParticipants, userId]
+        [initialMe, setSessionOwnerId, updateParticipants, userId]
     );
 
     const handleSystemEvent = useCallback(
@@ -430,12 +503,19 @@ export default function CodecastLive({ isDark }) {
                     }
 
                     if (ownerId) {
+                        const nameDraft = {
+                            ownerName,
+                            displayName: ownerName,
+                            name: ownerName,
+                        };
+
                         updateParticipants((prev) =>
                             prev.map((p) =>
                                 p.id === ownerId
                                     ? {
                                         ...p,
-                                        name: ownerName || p.name,
+                                        name: resolveParticipantName(nameDraft, p, ownerId),
+                                        displayName: resolveParticipantName(nameDraft, p, ownerId),
                                         sessionId: nextSessionId || p.sessionId, // ✅
                                         file: file
                                             ? { ...p.file, ...file, ...(typeof code === 'string' ? { content: code } : {}) }
@@ -460,11 +540,19 @@ export default function CodecastLive({ isDark }) {
                     }
 
                     if (ownerId && stage) {
+                        const nameDraft = {
+                            ownerName: payload.ownerName,
+                            displayName: payload.ownerName,
+                            name: payload.ownerName,
+                        };
+
                         updateParticipants((prev) =>
                             prev.map((p) =>
                                 p.id === ownerId
                                     ? {
                                         ...p,
+                                        name: resolveParticipantName(nameDraft, p, ownerId),
+                                        displayName: resolveParticipantName(nameDraft, p, ownerId),
                                         sessionId: nextSessionId || p.sessionId, // ✅
                                         stage,
                                         file: file
@@ -809,11 +897,14 @@ export default function CodecastLive({ isDark }) {
             const isSessionOwner = !!ownerId && p.id === ownerId;
             const hasEditPermission = perms[p.id] === 'edit' || perms[idKey] === 'edit';
             const sessionRole = isSessionOwner ? 'owner' : hasEditPermission ? 'edit' : 'view';
+            const displayName = resolveParticipantName(p, null, p.id);
 
             return {
                 ...p,
                 sessionRole,
                 isRoomOwner: p.id === roomOwnerId,
+                displayName,
+                name: displayName,
             };
         });
     }, [participants, activeSessionPermissions, activeSessionMeta?.ownerId, roomOwnerId]);

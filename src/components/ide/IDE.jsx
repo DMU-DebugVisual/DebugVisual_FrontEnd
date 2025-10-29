@@ -422,6 +422,11 @@ const IDE = () => {
                 return;
             }
         } else {
+            if (!isLoggedIn) {
+                toast('로그인 후 코드 시각화를 이용할 수 있습니다.', 'toast-error');
+                return;
+            }
+
             try {
                 const requestBody = { code: code, input: input, lang: mapLanguageToAPI(selectedLanguage) };
 
@@ -870,24 +875,24 @@ const IDE = () => {
 
                 {/* 파일 목록 */}
                 <div className="modern-sidebar-content">
-                    {isLoggedIn ? (
-                        <>
-                            {/* 내 파일 섹션 */}
-                            <div className="sidebar-section">
-                                <button
-                                    className="section-header"
-                                    onClick={() => toggleSidebarSection('myFiles')}
-                                >
-                                    <span className="chevron-icon">
-                                        {sidebarSections.myFiles ? '▼' : '▶'}
-                                    </span>
-                                    <i data-feather="folder" className="section-icon"></i>
-                                    {/* 💡 파일 개수 표시 제거 */}
-                                    <span className="section-title">내 파일</span>
-                                </button>
+                    {/* 내 파일 섹션 */}
+                    <div className="sidebar-section">
+                        <button
+                            className="section-header"
+                            onClick={() => toggleSidebarSection('myFiles')}
+                        >
+                            <span className="chevron-icon">
+                                {sidebarSections.myFiles ? '▼' : '▶'}
+                            </span>
+                            <i data-feather="folder" className="section-icon"></i>
+                            {/* 💡 파일 개수 표시 제거 */}
+                            <span className="section-title">내 파일</span>
+                        </button>
 
-                                {sidebarSections.myFiles && (
-                                    <div className="section-content">
+                        {sidebarSections.myFiles && (
+                            <div className="section-content">
+                                {isLoggedIn ? (
+                                    <>
                                         {/* 서버 저장된 파일 */}
                                         {myServerFiles.map((file) => (
                                             <div
@@ -897,13 +902,11 @@ const IDE = () => {
                                             >
                                                 {getFileIcon(file.name)}
                                                 <span className="file-name">{file.name}</span>
-                                                {/* ⛔ 뱃지 제거됨 */}
 
-                                                {/* 🔑 파일 삭제 버튼 추가 */}
                                                 <button
                                                     className="delete-file-button"
                                                     onClick={(e) => {
-                                                        e.stopPropagation(); // 파일 선택 이벤트 방지
+                                                        e.stopPropagation();
                                                         handleDeleteFile(file.fileUUID, file.name);
                                                     }}
                                                     title="파일 삭제"
@@ -922,72 +925,71 @@ const IDE = () => {
                                             >
                                                 {getFileIcon(file.name)}
                                                 <span className="file-name">{file.name}</span>
-                                                {/* ⛔ 뱃지 제거됨 */}
                                             </div>
                                         ))}
+                                    </>
+                                ) : (
+                                    <div className="auth-section">
+                                        <div className="auth-header">
+                                            <span className="auth-icon">🔐</span>
+                                            <span className="auth-title">로그인 필요</span>
+                                        </div>
+                                        <div className="auth-section">
+                                            <div className="auth-content sidebar-guest-message">
+                                                <p>🔒 로그인 후 내 파일 저장 및 조회를 사용할 수 있습니다</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 )}
                             </div>
+                        )}
+                    </div>
 
-                            {/* 코드/JSON 예제 섹션 (원본 유지) */}
-                            <div className="sidebar-section">
-                                <button
-                                    className="section-header"
-                                    onClick={() => toggleSidebarSection('codeExamples')}
-                                >
-                                    <span className="chevron-icon">
-                                        {sidebarSections.codeExamples ? '▼' : '▶'}
-                                    </span>
-                                    <i data-feather="code" className="section-icon"></i>
-                                    <span className="section-title">코드 예제</span>
-                                </button>
-                                {sidebarSections.codeExamples && (
-                                    <div className="section-content">
-                                        {codeExamples.map((file, index) => (
-                                            <div key={`code-${index}`} className="file-item example-file" onClick={() => handleDummyFileSelect(file)}>
-                                                {getFileIcon(file.name)}
-                                                <span className="file-name">{file.name}</span>
-                                            </div>
-                                        ))}
+                    {/* 코드/JSON 예제 섹션 (게스트 포함) */}
+                    <div className="sidebar-section">
+                        <button
+                            className="section-header"
+                            onClick={() => toggleSidebarSection('codeExamples')}
+                        >
+                            <span className="chevron-icon">
+                                {sidebarSections.codeExamples ? '▼' : '▶'}
+                            </span>
+                            <i data-feather="code" className="section-icon"></i>
+                            <span className="section-title">코드 예제</span>
+                        </button>
+                        {sidebarSections.codeExamples && (
+                            <div className="section-content">
+                                {codeExamples.map((file, index) => (
+                                    <div key={`code-${index}`} className="file-item example-file" onClick={() => handleDummyFileSelect(file)}>
+                                        {getFileIcon(file.name)}
+                                        <span className="file-name">{file.name}</span>
                                     </div>
-                                )}
+                                ))}
                             </div>
-                            <div className="sidebar-section">
-                                <button
-                                    className="section-header"
-                                    onClick={() => toggleSidebarSection('jsonExamples')}
-                                >
-                                    <span className="chevron-icon">
-                                        {sidebarSections.jsonExamples ? '▼' : '▶'}
-                                    </span>
-                                    <i data-feather="database" className="section-icon"></i>
-                                    <span className="section-title">JSON 예제</span>
-                                </button>
-                                {sidebarSections.jsonExamples && (
-                                    <div className="section-content">
-                                        {jsonExamples.map((file, index) => (
-                                            <div key={`json-${index}`} className="file-item json-file example-file" onClick={() => handleDummyFileSelect(file)}>
-                                                {getFileIcon(file.name)}
-                                                <span className="file-name">{file.name}</span>
-                                            </div>
-                                        ))}
+                        )}
+                    </div>
+                    <div className="sidebar-section">
+                        <button
+                            className="section-header"
+                            onClick={() => toggleSidebarSection('jsonExamples')}
+                        >
+                            <span className="chevron-icon">
+                                {sidebarSections.jsonExamples ? '▼' : '▶'}
+                            </span>
+                            <i data-feather="database" className="section-icon"></i>
+                            <span className="section-title">JSON 예제</span>
+                        </button>
+                        {sidebarSections.jsonExamples && (
+                            <div className="section-content">
+                                {jsonExamples.map((file, index) => (
+                                    <div key={`json-${index}`} className="file-item json-file example-file" onClick={() => handleDummyFileSelect(file)}>
+                                        {getFileIcon(file.name)}
+                                        <span className="file-name">{file.name}</span>
                                     </div>
-                                )}
+                                ))}
                             </div>
-                        </>
-                    ) : (
-                        <div className="auth-section">
-                            <div className="auth-header">
-                                <span className="auth-icon">🔐</span>
-                                <span className="auth-title">계정 접속</span>
-                            </div>
-                            <div className="auth-section">
-                                <div className="auth-content sidebar-guest-message">
-                                    <p>🔒 로그인 후 파일 저장 및 조회가 가능합니다</p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
 
                 {/* 푸터 */}
@@ -1089,6 +1091,7 @@ const IDE = () => {
                         ) : (
                             <div className="guest-controls">
                                 <span className="guest-mode-text">제한된 기능으로 실행 중입니다</span>
+                                <span className="guest-mode-hint">저장 기능은 로그인 후 이용 가능합니다</span>
                             </div>
                         )}
                     </div>
@@ -1154,10 +1157,13 @@ const IDE = () => {
                             <button
                                 className="visualization-button"
                                 onClick={handleVisualizationClick}
-                                title={currentFileType === 'json' ? 'JSON 데이터 시각화' : 'API를 통한 코드 시각화'}
+                                disabled={!isLoggedIn && currentFileType !== 'json'}
+                                title={currentFileType === 'json'
+                                    ? 'JSON 데이터 시각화'
+                                    : (isLoggedIn ? 'API를 통한 코드 시각화' : '로그인 후 코드 시각화를 이용할 수 있습니다')}
                             >
                                 <span className="button-icon">📊</span>
-                                {currentFileType === 'json' ? 'JSON 시각화' : '코드 시각화'}
+                                {currentFileType === 'json' ? 'JSON 시각화' : (isLoggedIn ? '코드 시각화' : '코드 시각화 (로그인 필요)')}
                             </button>
                         </div>
 
