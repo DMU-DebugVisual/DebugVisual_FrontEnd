@@ -48,23 +48,38 @@ const LinkedListAnimation = ({ data, currentStep, theme }) => {
 
     // D3 Zoom 설정
     useEffect(() => {
-        if (!containerRef.current || listState.nodes.length === 0) return;
+        const svgElement = containerRef.current;
+        if (!svgElement) return;
 
-        const container = d3.select(containerRef.current);
+        const container = d3.select(svgElement);
 
-        const zoom = d3.zoom()
-            .scaleExtent([0.5, 3])
-            .on('zoom', (event) => {
-                container.select('.zoom-group').attr('transform', event.transform);
-                currentTransformRef.current = event.transform;
-                setZoomLevel(Math.round(event.transform.k * 100));
-            });
+        if (!zoomBehaviorRef.current) {
+            const zoom = d3.zoom()
+                .scaleExtent([0.5, 3])
+                .on('zoom', (event) => {
+                    container.select('.zoom-group').attr('transform', event.transform);
+                    currentTransformRef.current = event.transform;
+                    setZoomLevel(Math.round(event.transform.k * 100));
+                });
 
-        zoomBehaviorRef.current = zoom;
-        container.call(zoom);
-        container.call(zoom.transform, currentTransformRef.current);
+            zoomBehaviorRef.current = zoom;
+            container.call(zoom);
+        }
 
+        container.select('.zoom-group').attr('transform', currentTransformRef.current);
+
+        if (zoomBehaviorRef.current) {
+            container.call(zoomBehaviorRef.current.transform, currentTransformRef.current);
+        }
     }, [listState.nodes.length]);
+
+    useEffect(() => () => {
+        if (!containerRef.current) return;
+        const container = d3.select(containerRef.current);
+        container.on('.zoom', null);
+        zoomBehaviorRef.current = null;
+        currentTransformRef.current = d3.zoomIdentity;
+    }, []);
 
     const handleZoomIn = () => {
         if (!containerRef.current) return;

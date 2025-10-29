@@ -4,6 +4,7 @@ import * as d3 from 'd3';
 
 const BinaryTreeAnimation = ({ data, currentStep, theme }) => {
     const svgRef = useRef(null);
+    const gRef = useRef(null);
     const [zoomLevel, setZoomLevel] = useState(100);
     const zoomBehaviorRef = useRef(null);
     const currentTransformRef = useRef(d3.zoomIdentity);
@@ -103,28 +104,38 @@ const BinaryTreeAnimation = ({ data, currentStep, theme }) => {
     }, [treeState]);
 
     useEffect(() => {
-        const svg = d3.select(svgRef.current);
-        svg.selectAll('*').remove();
+        const svgElement = svgRef.current;
+        if (!svgElement) return;
+
+        const svg = d3.select(svgElement);
+
+        if (!gRef.current) {
+            gRef.current = svg.append('g');
+        }
+
+        const g = gRef.current;
+
+        if (!zoomBehaviorRef.current) {
+            const zoom = d3.zoom()
+                .scaleExtent([0.3, 2])
+                .on('zoom', (event) => {
+                    g.attr('transform', event.transform);
+                    currentTransformRef.current = event.transform;
+                    setZoomLevel(Math.round(event.transform.k * 100));
+                });
+
+            zoomBehaviorRef.current = zoom;
+            svg.call(zoom);
+        }
+
+        g.attr('transform', currentTransformRef.current);
+        g.selectAll('*').remove();
+
+        if (zoomBehaviorRef.current) {
+            svg.call(zoomBehaviorRef.current.transform, currentTransformRef.current);
+        }
 
         if (treeLayout.nodes.length === 0) return;
-
-        const svgElement = svgRef.current;
-        const width = svgElement?.clientWidth || 800;
-        const height = svgElement?.clientHeight || 600;
-
-        const g = svg.append('g');
-
-        const zoom = d3.zoom()
-            .scaleExtent([0.3, 2])
-            .on('zoom', (event) => {
-                g.attr('transform', event.transform);
-                currentTransformRef.current = event.transform;
-                setZoomLevel(Math.round(event.transform.k * 100));
-            });
-
-        zoomBehaviorRef.current = zoom;
-        svg.call(zoom);
-        svg.call(zoom.transform, currentTransformRef.current);
 
         g.selectAll('line')
             .data(treeLayout.links)
@@ -188,6 +199,14 @@ const BinaryTreeAnimation = ({ data, currentStep, theme }) => {
         });
 
     }, [treeLayout, highlightInfo]);
+
+    useEffect(() => () => {
+        const svg = d3.select(svgRef.current);
+        svg.selectAll('*').remove();
+        gRef.current = null;
+        zoomBehaviorRef.current = null;
+        currentTransformRef.current = d3.zoomIdentity;
+    }, []);
 
     const handleZoomIn = () => {
         const svg = d3.select(svgRef.current);

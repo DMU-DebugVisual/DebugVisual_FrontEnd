@@ -254,6 +254,8 @@ const InfoPanel = ({ data, currentStep, totalSteps, animationType, theme }) => {
             'graph': '그래프',
             'linked-list': '연결 리스트',
             'recursion': '재귀',
+            'stack': '스택',
+            'queue': '큐',
             'variables': '변수'
         };
         return labels[type] || type;

@@ -4,6 +4,7 @@ import * as d3 from 'd3';
 
 const SortAnimation = ({ data, currentStep, totalSteps, theme }) => {
     const svgRef = useRef(null);
+    const gRef = useRef(null);
     const [zoomLevel, setZoomLevel] = useState(100);
     const zoomBehaviorRef = useRef(null);
     const currentTransformRef = useRef(d3.zoomIdentity);
@@ -64,31 +65,43 @@ const SortAnimation = ({ data, currentStep, totalSteps, theme }) => {
 
     // SVG + D3 렌더링
     useEffect(() => {
-        const svg = d3.select(svgRef.current);
-        svg.selectAll('*').remove();
+        const svgElement = svgRef.current;
+        if (!svgElement) return;
 
-        if (!currentList || currentList.length === 0) return;
+        const svg = d3.select(svgElement);
 
-        const width = svgRef.current?.clientWidth || 800;
-        const height = svgRef.current?.clientHeight || 600;
+        if (!gRef.current) {
+            gRef.current = svg.append('g');
+        }
 
-        const g = svg.append('g');
+        const g = gRef.current;
 
-        // Zoom behavior 설정
-        const zoom = d3.zoom()
-            .scaleExtent([0.5, 3])
-            .on('zoom', (event) => {
-                g.attr('transform', event.transform);
-                currentTransformRef.current = event.transform; // Transform 저장
-                setZoomLevel(Math.round(event.transform.k * 100));
-            });
+        if (!zoomBehaviorRef.current) {
+            const zoom = d3.zoom()
+                .scaleExtent([0.5, 3])
+                .on('zoom', (event) => {
+                    g.attr('transform', event.transform);
+                    currentTransformRef.current = event.transform; // Transform 저장
+                    setZoomLevel(Math.round(event.transform.k * 100));
+                });
 
-        zoomBehaviorRef.current = zoom;
+            zoomBehaviorRef.current = zoom;
+            svg.call(zoom);
+        }
 
-        svg.call(zoom);
+        g.attr('transform', currentTransformRef.current);
+        g.selectAll('*').remove();
 
-        // 저장된 Transform 복원
-        svg.call(zoom.transform, currentTransformRef.current);
+        if (zoomBehaviorRef.current) {
+            svg.call(zoomBehaviorRef.current.transform, currentTransformRef.current);
+        }
+
+        if (!currentList || currentList.length === 0) {
+            return;
+        }
+
+        const width = svgElement?.clientWidth || 800;
+        const height = svgElement?.clientHeight || 600;
 
         // 막대 그래프 그리기
         const maxValue = Math.max(...currentList);
@@ -150,6 +163,14 @@ const SortAnimation = ({ data, currentStep, totalSteps, theme }) => {
         });
 
     }, [currentList, highlightIndices, currentEvent]); // 의존성 배열
+
+    useEffect(() => () => {
+        const svg = d3.select(svgRef.current);
+        svg.selectAll('*').remove();
+        gRef.current = null;
+        zoomBehaviorRef.current = null;
+        currentTransformRef.current = d3.zoomIdentity;
+    }, []);
 
     const handleZoomIn = () => {
         const svg = d3.select(svgRef.current);

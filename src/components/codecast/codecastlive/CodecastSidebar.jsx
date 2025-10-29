@@ -74,6 +74,19 @@ export default function CodecastSidebar({
             <ul className="participant-list">
                 {participants.map((participant) => {
                     const role = participant.sessionRole || 'view';
+                    const displayName = (() => {
+                        const candidates = [
+                            participant.displayName,
+                            participant.name,
+                            participant.userName,
+                            participant.username,
+                            participant.email,
+                            participant.userEmail,
+                            participant.ownerName,
+                            participant.id != null ? String(participant.id) : ''
+                        ];
+                        return candidates.find((text) => typeof text === 'string' && text.trim())?.trim() || '익명 사용자';
+                    })();
                     const isSessionOwnerRole = role === 'owner';
                     const isFocused = participant.id === focusedParticipantId;
                     const isMenuOpen = menuFor === participant.id;
@@ -102,7 +115,7 @@ export default function CodecastSidebar({
                             }}
                         >
                             {participant.avatar ? (
-                                <img src={participant.avatar} alt={participant.name} className="avatar" />
+                                <img src={participant.avatar} alt={displayName} className="avatar" />
                             ) : (
                                 <div className="avatar placeholder">
                                     <FaUser className="default-user-icon" />
@@ -111,7 +124,7 @@ export default function CodecastSidebar({
 
                             <div className="participant-main">
                                 <span className="name">
-                                    {participant.name}
+                                    {displayName}
                                     {isSelf && <span className="self-badge">나</span>}
                                 </span>
                                 <span className={`stage ${stage}`}>{stageLabel}</span>
@@ -124,7 +137,7 @@ export default function CodecastSidebar({
                             <button
                                 className="more-btn"
                                 type="button"
-                                aria-label={`${participant.name} 더보기`}
+                                aria-label={`${displayName} 더보기`}
                                 onClick={(event) => {
                                     event.stopPropagation();
                                     setMenuFor(isMenuOpen ? null : participant.id);

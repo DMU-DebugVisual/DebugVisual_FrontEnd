@@ -7,6 +7,8 @@ import GraphAnimation from './animations/GraphAnimation';
 import HeapAnimation from './animations/HeapAnimation';
 import LinkedListAnimation from './animations/LinkedListAnimation';
 import RecursionAnimation from './animations/RecursionAnimation';
+import StackAnimation from './animations/StackAnimation';
+import QueueAnimation from './animations/QueueAnimation';
 import PlaceholderAnimation from './animations/PlaceholderAnimation';
 
 /**
@@ -45,6 +47,16 @@ export class AnimationFactory {
         'fibonacci-recursion': RecursionAnimation,
         'fibonacci': RecursionAnimation,
         'factorial': RecursionAnimation,
+
+        // ✅ 스택
+        'stack': StackAnimation,
+        'stack-demo': StackAnimation,
+        'stack-visualization': StackAnimation,
+
+        // ✅ 큐
+        'queue': QueueAnimation,
+        'queue-demo': QueueAnimation,
+        'fifo-queue': QueueAnimation,
 
         // 🚧 기타
         'variables': PlaceholderAnimation,
@@ -102,7 +114,30 @@ export class AnimationFactory {
                 if (vizType === 'graph') return 'graph';
                 if (vizType === 'list' || vizType === 'linkedlist') return 'linked-list';
                 if (vizType === 'recursion' || vizType === 'recursive') return 'recursion';
+                if (vizType === 'stack') return 'stack';
+                if (vizType === 'queue' || vizType === 'fifo') return 'queue';
             }
+        }
+
+        const stackOp = events.find(e =>
+            e.kind === 'ds_op' &&
+            e.target &&
+            e.target.toLowerCase().includes('stack')
+        );
+        if (stackOp) {
+            console.log('✅ ds_op target으로 stack 감지');
+            return 'stack';
+        }
+
+        const queueOp = events.find(e => {
+            if (e.kind !== 'ds_op' || !e.target) return false;
+            const target = e.target.toLowerCase().trim();
+            if (target.includes('queue')) return true;
+            return target === 'q' || target === 'queue';
+        });
+        if (queueOp) {
+            console.log('✅ ds_op target으로 queue 감지');
+            return 'queue';
         }
 
         // 2️⃣ ds_op의 target으로 자료구조 감지

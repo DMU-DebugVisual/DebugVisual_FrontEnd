@@ -59,6 +59,7 @@ function buildRecursionTree(events) {
 
 const RecursionAnimation = ({ data, currentStep, theme }) => {
     const svgRef = useRef(null);
+    const gRef = useRef(null);
     const [zoomLevel, setZoomLevel] = useState(100);
     const zoomBehaviorRef = useRef(null); // Zoom 동작 저장
     const currentTransformRef = useRef(d3.zoomIdentity); // 현재 Transform 저장
@@ -88,8 +89,36 @@ const RecursionAnimation = ({ data, currentStep, theme }) => {
     }, [data, currentStep]);
 
     useEffect(() => {
-        const svg = d3.select(svgRef.current);
-        svg.selectAll('*').remove();
+        const svgElement = svgRef.current;
+        if (!svgElement) return;
+
+        const svg = d3.select(svgElement);
+
+        if (!gRef.current) {
+            gRef.current = svg.append('g');
+        }
+
+        const g = gRef.current;
+
+        if (!zoomBehaviorRef.current) {
+            const zoom = d3.zoom()
+                .scaleExtent([0.3, 3])
+                .on('zoom', (event) => {
+                    g.attr('transform', event.transform);
+                    currentTransformRef.current = event.transform; // Transform 저장
+                    setZoomLevel(Math.round(event.transform.k * 100));
+                });
+
+            zoomBehaviorRef.current = zoom;
+            svg.call(zoom);
+        }
+
+        g.attr('transform', currentTransformRef.current);
+        g.selectAll('*').remove();
+
+        if (zoomBehaviorRef.current) {
+            svg.call(zoomBehaviorRef.current.transform, currentTransformRef.current);
+        }
 
         const { root } = memoizedTreeData;
         const { activeStack, completedSet } = currentExecutionState;
@@ -98,26 +127,8 @@ const RecursionAnimation = ({ data, currentStep, theme }) => {
             return;
         }
 
-        const width = svgRef.current?.clientWidth || 800;
-        const height = svgRef.current?.clientHeight || 600;
-
-        const g = svg.append('g');
-
-        // Zoom behavior 설정
-        const zoom = d3.zoom()
-            .scaleExtent([0.3, 3])
-            .on('zoom', (event) => {
-                g.attr('transform', event.transform);
-                currentTransformRef.current = event.transform; // Transform 저장
-                setZoomLevel(Math.round(event.transform.k * 100));
-            });
-
-        zoomBehaviorRef.current = zoom;
-
-        svg.call(zoom);
-
-        // 저장된 Transform 복원
-        svg.call(zoom.transform, currentTransformRef.current);
+        const width = svgElement?.clientWidth || 800;
+        const height = svgElement?.clientHeight || 600;
 
         const hierarchy = d3.hierarchy(root, d => d.children);
         const treeLayout = d3.tree().size([width - 150, height - 200]);
@@ -199,6 +210,14 @@ const RecursionAnimation = ({ data, currentStep, theme }) => {
             .style('display', d => completedSet.has(d.data.id) ? 'block' : 'none');
 
     }, [memoizedTreeData, currentExecutionState, theme]);
+
+    useEffect(() => () => {
+        const svg = d3.select(svgRef.current);
+        svg.selectAll('*').remove();
+        gRef.current = null;
+        zoomBehaviorRef.current = null;
+        currentTransformRef.current = d3.zoomIdentity;
+    }, []);
 
     const handleZoom = (scale) => {
         const svg = d3.select(svgRef.current);

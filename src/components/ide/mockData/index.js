@@ -16,6 +16,8 @@ import factorialCode from './codeExamples/factorial';  // ✨ 추가
 import binaryTreeCode from './codeExamples/binaryTree';
 import heapCode from './codeExamples/heap';
 import graphCode from './codeExamples/graph';
+import stackCode from './codeExamples/stack';  // ✨ 추가
+import queueCode from './codeExamples/queue';  // ✨ 추가
 
 // JSON 파일들 직접 import (DV-Flow v1.3 스키마)
 import binaryTreeJson from './jsonExamples/binaryTree.json';
@@ -27,6 +29,8 @@ import factorialJson from './jsonExamples/factorial.json';  // ✨ 추가
 import graphJson from './jsonExamples/graph.json';
 import heapJson from './jsonExamples/heap.json';
 import linkedListJson from './jsonExamples/linkedList.json';
+import stackJson from './jsonExamples/stack.json';  // ✨ 추가
+import queueJson from './jsonExamples/queue.json';  // ✨ 추가
 
 // 코드 예제 파일들을 객체 형태로 export
 export const codeExamples = [
@@ -74,6 +78,16 @@ export const codeExamples = [
         name: 'graph.c',
         type: 'code',
         code: graphCode
+    },
+    {
+        name: 'stack_demo.c',  // ✨ 추가
+        type: 'code',
+        code: stackCode
+    },
+    {
+        name: 'queue_demo.c',  // ✨ 추가
+        type: 'code',
+        code: queueCode
     }
 ];
 
@@ -123,6 +137,16 @@ export const jsonExamples = [
         name: 'linkedList.json',
         type: 'json',
         code: JSON.stringify(linkedListJson, null, 2)
+    },
+    {
+        name: 'stack.json',  // ✨ 추가
+        type: 'json',
+        code: JSON.stringify(stackJson, null, 2)
+    },
+    {
+        name: 'queue.json',  // ✨ 추가
+        type: 'json',
+        code: JSON.stringify(queueJson, null, 2)
     }
 ];
 
@@ -136,7 +160,9 @@ const jsonDataMap = {
     factorial: factorialJson,  // ✨ 추가
     graph: graphJson,
     heap: heapJson,
-    linkedList: linkedListJson
+    linkedList: linkedListJson,
+    stack: stackJson,  // ✨ 추가
+    queue: queueJson  // ✨ 추가
 };
 
 // JSON 파일들을 동적으로 import하는 함수 (호환성 유지)
@@ -166,7 +192,9 @@ export class JsonVisualizationManager {
         'factorial',  // ✨ 추가
         'graph',
         'heap',
-        'linkedList'
+        'linkedList',
+        'stack',  // ✨ 추가
+        'queue'  // ✨ 추가
     ];
 
     // 🗄️ 로드된 JSON 데이터 캐시
@@ -194,7 +222,9 @@ export class JsonVisualizationManager {
             insertionSort: ['insertion', '삽입'],  // ✨ 추가
             fibonacci: ['fibonacci', '피보나치', 'fibo', 'fib'],  // ✨ 추가
             factorial: ['factorial', '팩토리얼', 'fact'],  // ✨ 추가
-            graph: ['graph', '그래프', 'adj', 'adjacency']
+            graph: ['graph', '그래프', 'adj', 'adjacency'],
+            stack: ['stack', '스택'],  // ✨ 추가
+            queue: ['queue', '큐']  // ✨ 추가
         };
 
         // 패턴 매칭 시도
