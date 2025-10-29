@@ -802,14 +802,19 @@ export default function CodecastLive({ isDark }) {
 
     // 사이드바 표시용 역할 계산: 현재 세션 권한표 반영
     const sidebarViewParticipants = useMemo(() => {
-        const perms = activeSessionPermissions;
         const ownerId = activeSessionMeta?.ownerId;
+        const perms = activeSessionPermissions || {};
         return participants.map((p) => {
-            let displayRole = 'view';
-            if (p.id === roomOwnerId) displayRole = 'host';      // 방장 표시 유지
-            if (p.id === ownerId) displayRole = 'host';          // 세션 소유자를 별도 'owner'로 구분하고 싶으면 이 라인을 바꿔도 됨
-            else if (perms[p.id] === 'edit') displayRole = 'edit';
-            return { ...p, displayRole };
+            const idKey = String(p.id);
+            const isSessionOwner = !!ownerId && p.id === ownerId;
+            const hasEditPermission = perms[p.id] === 'edit' || perms[idKey] === 'edit';
+            const sessionRole = isSessionOwner ? 'owner' : hasEditPermission ? 'edit' : 'view';
+
+            return {
+                ...p,
+                sessionRole,
+                isRoomOwner: p.id === roomOwnerId,
+            };
         });
     }, [participants, activeSessionPermissions, activeSessionMeta?.ownerId, roomOwnerId]);
 

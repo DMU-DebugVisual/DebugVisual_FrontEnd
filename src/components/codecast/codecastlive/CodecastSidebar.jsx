@@ -1,37 +1,51 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './CodecastSidebar.css';
-import { FaCrown, FaPenFancy, FaEye, FaUser, FaEllipsisV, FaCheck, FaComments } from 'react-icons/fa';
+import { FaUser, FaEllipsisV, FaCheck, FaComments } from 'react-icons/fa';
 
-const RoleIcon = ({ role }) => {
-    if (role === 'host') return <FaCrown className="role-icon host" />;
-    if (role === 'edit') return <FaPenFancy className="role-icon edit" />;
-    return <FaEye className="role-icon view" />;
+const RoleBadge = ({ role }) => {
+    const labelMap = {
+        owner: '세션 소유자',
+        edit: '편집',
+        view: '읽기',
+    };
+    const label = labelMap[role] ?? '';
+
+    return (
+        <span className={`role-badge ${role || 'blank'}`}>
+            {label || '\u00A0'}
+        </span>
+    );
 };
 
 function useClickOutside(onClose) {
     const ref = useRef(null);
+
     useEffect(() => {
-        const handler = (e) => {
+        const handler = (event) => {
             if (!ref.current) return;
-            if (!ref.current.contains(e.target)) onClose?.();
+            if (!ref.current.contains(event.target)) {
+                onClose?.();
+            }
         };
+
         document.addEventListener('mousedown', handler);
         return () => document.removeEventListener('mousedown', handler);
     }, [onClose]);
+
     return ref;
 }
 
 export default function CodecastSidebar({
-                                             participants,
-                                             currentUserId,
-                                             roomOwnerId,
-                                             activeSession,
-                                             focusedParticipantId,
-                                             onSelectParticipant,
-                                             onChangePermission,
-                                             onKick,
-                                             onOpenChat,
-                                         }) {
+    participants,
+    currentUserId,
+    roomOwnerId,
+    activeSession,
+    focusedParticipantId,
+    onSelectParticipant,
+    onChangePermission,
+    onKick,
+    onOpenChat,
+}) {
     const [menuFor, setMenuFor] = useState(null);
     const closeMenu = () => setMenuFor(null);
     const menuRef = useClickOutside(closeMenu);
@@ -39,14 +53,6 @@ export default function CodecastSidebar({
     const canManagePermissions =
         !!activeSession && (activeSession.ownerId === currentUserId || roomOwnerId === currentUserId);
     const canKick = currentUserId === roomOwnerId;
-
-    const resolveRole = (participant) => {
-        if (participant.role === 'host') return 'host';
-        if (participant.role === 'edit') return 'edit';
-        if (activeSession?.permissions?.[participant.id] === 'edit') return 'edit';
-        if (participant.role) return participant.role;
-        return participant.id === roomOwnerId ? 'host' : 'view';
-    };
 
     return (
         <aside className="codecast-sidebar">
@@ -67,7 +73,8 @@ export default function CodecastSidebar({
 
             <ul className="participant-list">
                 {participants.map((participant) => {
-                    const role = resolveRole(participant);
+                    const role = participant.sessionRole || 'view';
+                    const isSessionOwnerRole = role === 'owner';
                     const isFocused = participant.id === focusedParticipantId;
                     const isMenuOpen = menuFor === participant.id;
                     const isSelf = participant.id === currentUserId;
@@ -89,7 +96,10 @@ export default function CodecastSidebar({
                         <li
                             key={participant.id}
                             className={`participant-item ${isFocused ? 'active-user' : ''}`}
-                            onClick={() => onSelectParticipant?.(participant.id)}
+                            onClick={() => {
+                                closeMenu();
+                                onSelectParticipant?.(participant.id);
+                            }}
                         >
                             {participant.avatar ? (
                                 <img src={participant.avatar} alt={participant.name} className="avatar" />
@@ -107,14 +117,16 @@ export default function CodecastSidebar({
                                 <span className={`stage ${stage}`}>{stageLabel}</span>
                             </div>
 
-                            <RoleIcon role={role} />
+                            <div className="permission-chip">
+                                <RoleBadge role={role} />
+                            </div>
 
                             <button
                                 className="more-btn"
                                 type="button"
                                 aria-label={`${participant.name} 더보기`}
-                                onClick={(e) => {
-                                    e.stopPropagation();
+                                onClick={(event) => {
+                                    event.stopPropagation();
                                     setMenuFor(isMenuOpen ? null : participant.id);
                                 }}
                             >
@@ -122,17 +134,12 @@ export default function CodecastSidebar({
                             </button>
 
                             {isMenuOpen && (
-                                <div className="more-menu" ref={menuRef} onClick={(e) => e.stopPropagation()}>
+                                <div className="more-menu" ref={menuRef} onClick={(event) => event.stopPropagation()}>
                                     <div className="menu-group">
                                         <div className="menu-label">세션 권한</div>
 
-                                        <button
-                                            className="menu-item"
-                                            type="button"
-                                            onClick={() => {}}
-                                            disabled
-                                        >
-                                            {role === 'host' && <FaCheck className="check" />}
+                                        <button className="menu-item" type="button" onClick={() => {}} disabled>
+                                            {isSessionOwnerRole && <FaCheck className="check" />}
                                             세션 소유자
                                         </button>
 
@@ -147,7 +154,11 @@ export default function CodecastSidebar({
                                                     type="button"
                                                     onClick={() => {
                                                         if (!disabled) {
-                                                            onChangePermission?.(activeSession.sessionId, participant.id, nextRole);
+                                                            onChangePermission?.(
+                                                                activeSession.sessionId,
+                                                                participant.id,
+                                                                nextRole
+                                                            );
                                                         }
                                                         closeMenu();
                                                     }}

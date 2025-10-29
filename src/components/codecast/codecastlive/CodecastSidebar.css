@@ -156,13 +156,45 @@
     color: #3f51b5;
 }
 
-.role-icon {
-    font-size: 15px;
+.permission-chip {
+    display: flex;
+    justify-content: center;
+    min-width: 78px;
+    flex-shrink: 0;
 }
 
-.role-icon.host { color: #ffbf00; }
-.role-icon.edit { color: #00a152; }
-.role-icon.view { color: #999; }
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 999px;
+    background: var(--surface-muted);
+    color: var(--text-muted);
+    border: 1px solid transparent;
+    min-width: 64px;
+    letter-spacing: -0.02em;
+}
+
+.role-badge.owner {
+    background: rgba(250, 204, 21, 0.14);
+    color: #fbbf24;
+    border-color: rgba(250, 204, 21, 0.25);
+}
+
+.role-badge.edit {
+    background: rgba(56, 189, 248, 0.14);
+    color: #38bdf8;
+    border-color: rgba(56, 189, 248, 0.25);
+}
+
+.role-badge.view {
+    background: rgba(148, 163, 184, 0.12);
+    color: #94a3b8;
+    border-color: rgba(148, 163, 184, 0.2);
+}
 
 .participant-item.active-user {
     background-color: var(--accent-soft-strong);
