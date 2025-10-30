@@ -51,6 +51,7 @@ export default function Community() {
     const [searchOperator, setSearchOperator] = useState(DEFAULT_OPERATOR);
 
     const PAGE_SIZE = 10;
+    const PAGE_BUTTON_LIMIT = 5;
 
     useEffect(() => {
         let ignore = false;
@@ -332,9 +333,16 @@ export default function Community() {
         setLastKnownPage(currentPage);
     }, [currentPage, totalPages]);
 
-    const pageNumbers = useMemo(() => (
-        Array.from({ length: totalPages }, (_, index) => index + 1)
-    ), [totalPages]);
+    const pageNumbers = useMemo(() => {
+        if (totalPages <= 0) return [];
+        if (totalPages <= PAGE_BUTTON_LIMIT) {
+            return Array.from({ length: totalPages }, (_, index) => index + 1);
+        }
+        const chunkIndex = Math.floor((currentPage - 1) / PAGE_BUTTON_LIMIT);
+        const start = chunkIndex * PAGE_BUTTON_LIMIT + 1;
+        const end = Math.min(start + PAGE_BUTTON_LIMIT - 1, totalPages);
+        return Array.from({ length: end - start + 1 }, (_, index) => start + index);
+    }, [currentPage, totalPages]);
 
     const paginatedPosts = useMemo(() => {
         const start = (currentPage - 1) * PAGE_SIZE;
@@ -421,21 +429,22 @@ export default function Community() {
             .slice(0, 5);
     }, [posts]);
 
-    const jumpBy = 5;
     const goToPage = (page) => {
         if (page < 1 || page > totalPages) return;
         setCurrentPage(page);
     };
 
-    const handleChunkMove = (direction) => {
-        const target = currentPage + direction * jumpBy;
-        if (target < 1) {
-            setCurrentPage(1);
-        } else if (target > totalPages) {
-            setCurrentPage(totalPages);
-        } else {
-            setCurrentPage(target);
-        }
+    const canGoPrev = currentPage > 1;
+    const canGoNext = currentPage < totalPages;
+
+    const handlePrevPage = () => {
+        if (!canGoPrev) return;
+        goToPage(currentPage - 1);
+    };
+
+    const handleNextPage = () => {
+        if (!canGoNext) return;
+        goToPage(currentPage + 1);
     };
 
     return (
@@ -649,17 +658,17 @@ export default function Community() {
                                     type="button"
                                     className="page-button"
                                     onClick={() => goToPage(1)}
-                                    disabled={currentPage === 1}
+                                    disabled={!canGoPrev}
                                 >
-                                    처음
+                                    &lt;&lt;
                                 </button>
                                 <button
                                     type="button"
                                     className="page-button"
-                                    onClick={() => handleChunkMove(-1)}
-                                    disabled={currentPage === 1}
+                                    onClick={handlePrevPage}
+                                    disabled={!canGoPrev}
                                 >
-                                    -5쪽
+                                    &lt;
                                 </button>
                                 {pageNumbers.map((page) => (
                                     <button
@@ -674,18 +683,18 @@ export default function Community() {
                                 <button
                                     type="button"
                                     className="page-button"
-                                    onClick={() => handleChunkMove(1)}
-                                    disabled={currentPage === totalPages}
+                                    onClick={handleNextPage}
+                                    disabled={!canGoNext}
                                 >
-                                    +5쪽
+                                    &gt;
                                 </button>
                                 <button
                                     type="button"
                                     className="page-button"
                                     onClick={() => goToPage(totalPages)}
-                                    disabled={currentPage === totalPages}
+                                    disabled={!canGoNext}
                                 >
-                                    마지막
+                                    &gt;&gt;
                                 </button>
                             </div>
                         </div>

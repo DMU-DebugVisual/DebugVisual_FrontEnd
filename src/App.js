@@ -17,6 +17,7 @@ import Settings from "./components/mypage/Settings";
 import Shared from "./components/mypage/Shared";
 import MyProject from "./components/mypage/MyProject";
 import MyCommunity from "./components/mypage/MyCommunity";
+import Notifications from "./components/mypage/Notifications";
 import ScrollToTop from "./components/common/ScrollToTop";
 import CommunityWrite from "./components/community/CommunityWrite";
 import PostDetail from "./components/community/PostDetail";
@@ -129,6 +130,7 @@ function AppContent() {
                     <Route path="community" element={<MyCommunity nickname={nickname} />} />
                     <Route path="setting" element={<Settings nickname={nickname} />} />
                     <Route path="shared" element={<Shared />} />
+                    <Route path="notifications" element={<Notifications />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
