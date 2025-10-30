@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
-import { FaMoon, FaSun, FaUserCircle, FaBell, FaArrowRight } from "react-icons/fa";
+import { FaMoon, FaSun, FaUserCircle, FaBell, FaArrowRight, FaRegAddressCard, FaSignOutAlt } from "react-icons/fa";
 import "./Header.css";
 import logoImage from '../../assets/logo3.png';
 import config from '../../config';
@@ -16,6 +16,24 @@ const Header = ({ isDark, setIsDark, isLoggedIn, nickname, onLoginModalOpen }) =
 
     const navigate = useNavigate();
     const location = useLocation();
+
+    const storedHandle = useMemo(() => {
+        if (typeof window === "undefined") {
+            return "";
+        }
+        try {
+            return window.localStorage.getItem("username") || "";
+        } catch (err) {
+            console.error("Failed to read username from storage", err);
+            return "";
+        }
+    }, []);
+
+    const normalizedHandle = storedHandle.replace(/^@/, "");
+    const displayNickname = nickname || normalizedHandle || "사용자";
+    const displayHandle = (normalizedHandle || nickname)
+        ? `@${(normalizedHandle || nickname).replace(/^@/, "")}`
+        : "";
 
     const fetchNotifications = useCallback(async () => {
         if (!isLoggedIn) return;
@@ -287,9 +305,34 @@ const Header = ({ isDark, setIsDark, isLoggedIn, nickname, onLoginModalOpen }) =
                                 {nickname} 님 ▾
                             </span>
                             {isUserMenuOpen && (
-                                <div className="user-dropdown">
-                                    <button onClick={goToMyPage}>마이페이지</button>
-                                    <button onClick={handleLogout}>로그아웃</button>
+                                <div className="user-dropdown" role="menu">
+                                    <div className="user-dropdown__header">
+                                        <FaUserCircle size={40} className="user-dropdown__avatar" aria-hidden="true" />
+                                        <div className="user-dropdown__meta">
+                                            <span className="user-dropdown__name">{displayNickname}</span>
+                                            {displayHandle && (
+                                                <span className="user-dropdown__handle">{displayHandle}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="user-dropdown__actions">
+                                        <button
+                                            type="button"
+                                            className="user-dropdown__action"
+                                            onClick={goToMyPage}
+                                        >
+                                            <span className="user-dropdown__icon" aria-hidden="true"><FaRegAddressCard /></span>
+                                            <span>마이페이지</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="user-dropdown__action user-dropdown__action--logout"
+                                            onClick={handleLogout}
+                                        >
+                                            <span className="user-dropdown__icon" aria-hidden="true"><FaSignOutAlt /></span>
+                                            <span>로그아웃</span>
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </div>
