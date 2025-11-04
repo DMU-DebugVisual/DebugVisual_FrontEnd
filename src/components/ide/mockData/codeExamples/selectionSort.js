@@ -1,5 +1,4 @@
 const selectionSortExample = `#include <stdio.h>
-#define MAX_SIZE 5
 
 // 선택 정렬
 void selection_sort(int list[], int n) {
@@ -26,8 +25,8 @@ void selection_sort(int list[], int n) {
 
 int main() {
     int i;
-    int n = MAX_SIZE;
-    int list[n] = {64, 25, 12, 22, 11};
+    int n = 5;
+    int list[5] = {64, 25, 12, 22, 11};
     
     // 선택 정렬 수행
     selection_sort(list, n);

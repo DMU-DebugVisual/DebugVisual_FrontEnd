@@ -1,5 +1,4 @@
 const insertionSortExample = `#include <stdio.h>
-#define MAX_SIZE 5
 
 // 삽입 정렬
 void insertion_sort(int list[], int n) {
@@ -21,8 +20,8 @@ void insertion_sort(int list[], int n) {
 
 int main() {
     int i;
-    int n = MAX_SIZE;
-    int list[n] = {5, 2, 4, 6, 1};
+    int n = 5;
+    int list[5] = {5, 2, 4, 6, 1};
     
     // 삽입 정렬 수행
     insertion_sort(list, n);
