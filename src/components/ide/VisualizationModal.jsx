@@ -1,5 +1,5 @@
 // VisualizationModal.jsx - AnimationFactory 감지 로직 활용 버전
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import AnimationFactory from './AnimationFactory';
 import { ApiService } from './services/ApiService';
@@ -28,7 +28,18 @@ const useAnimationControls = (totalSteps) => {
     const [currentStep, setCurrentStep] = useState(0);
     const [speed, setSpeed] = useState(1);
 
-    const play = useCallback(() => setIsPlaying(true), []);
+    const play = useCallback(() => {
+        if (totalSteps === 0) return;
+
+        setCurrentStep(prev => {
+            if (prev >= totalSteps - 1) {
+                return 0;
+            }
+            return prev;
+        });
+
+        setIsPlaying(true);
+    }, [totalSteps]);
     const pause = useCallback(() => setIsPlaying(false), []);
     const stepBack = useCallback(() => setCurrentStep(prev => Math.max(0, prev - 1)), []);
     const stepForward = useCallback(() => setCurrentStep(prev => Math.min(totalSteps - 1, prev + 1)), [totalSteps]);
