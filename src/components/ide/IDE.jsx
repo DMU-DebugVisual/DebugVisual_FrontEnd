@@ -7,6 +7,13 @@ import './IDE.css';
 import config from '../../config';
 import { codeExamples as codeExampleMocks, jsonExamples as jsonExampleMocks } from './mockData';
 
+const generateLocalId = () => `local-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+const getFileId = (file) => file.fileUUID || file.localId;
+const ensureLocalId = (file) => {
+    if (file.fileUUID) return { ...file, localId: file.localId || file.fileUUID };
+    return { ...file, localId: file.localId || generateLocalId() };
+};
+
 // 🎨 Feather Icons CDN 로드 (원본 유지)
 if (!document.querySelector('script[src*="feather"]')) {
     const script = document.createElement('script');
@@ -20,6 +27,16 @@ if (!document.querySelector('script[src*="feather"]')) {
 }
 
 const IDE = () => {
+    const defaultCode = '# 여기에 코드를 입력하세요';
+    const defaultFile = ensureLocalId({
+        name: 'untitled.py',
+        code: defaultCode,
+        lastSavedCode: defaultCode,
+        type: 'code',
+        fileUUID: null,
+        isServerFile: false
+    });
+
     // 🆕 더미 파일 데이터 (mockData 기반)
     const [dummyFiles] = useState(() => [...codeExampleMocks, ...jsonExampleMocks]);
 
@@ -39,8 +56,8 @@ const IDE = () => {
     // 기본 상태들
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [username, setUsername] = useState('');
-    const [code, setCode] = useState('# 여기에 코드를 입력하세요');
-    const [fileName, setFileName] = useState("untitled.py");
+    const [code, setCode] = useState(defaultCode);
+    const [fileName, setFileName] = useState('untitled.py');
     const [isSaved, setIsSaved] = useState(true);
     const [activeFileUUID, setActiveFileUUID] = useState(null);
     const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
@@ -50,9 +67,10 @@ const IDE = () => {
     const [isLoadingContent, setIsLoadingContent] = useState(false);
 
     // 🔑 파일 목록 상태: fileUUID, isServerFile 필드 추가
-    const [savedFiles, setSavedFiles] = useState([
-        { name: "untitled.py", code: '# 여기에 코드를 입력하세요', type: 'code', fileUUID: null, isServerFile: false }
-    ]);
+    const [savedFiles, setSavedFiles] = useState([defaultFile]);
+    const [openFileIds, setOpenFileIds] = useState(() => [getFileId(defaultFile)]);
+    const [activeFileId, setActiveFileId] = useState(() => getFileId(defaultFile));
+    const [fileSavedState, setFileSavedState] = useState(() => new Map([[getFileId(defaultFile), true]]));
 
     const [isDarkMode, setIsDarkMode] = useState(() => {
         return document.body.classList.contains('dark-mode');
@@ -210,13 +228,6 @@ const IDE = () => {
 
     // 🔑 개선된 파일 선택 핸들러 (파일 상세 보기 및 조회)
     const handleFileSelect = async (identifier, isServerFile = false) => {
-        if (!isSaved) {
-            const shouldSave = window.confirm('변경 사항을 저장하시겠습니까?');
-            if (shouldSave) {
-                await handleSave();
-            }
-        }
-
         const selectedFile = savedFiles.find((file) =>
             isServerFile ? file.fileUUID === identifier : file.name === identifier && !file.isServerFile
         );
@@ -226,45 +237,120 @@ const IDE = () => {
             return;
         }
 
-        // 상태 초기 설정
-        setFileName(selectedFile.name);
-        setActiveFileUUID(selectedFile.fileUUID);
-        setIsSaved(true);
-        setCurrentFileType(getFileType(selectedFile.name));
-        setSelectedJsonData(null);
-        setIsExampleFile(false);
+        const ensuredFile = ensureLocalId(selectedFile);
+        const fileId = getFileId(ensuredFile);
 
-        let fileContent = selectedFile.code;
+        if (!selectedFile.localId && ensuredFile.localId) {
+            setSavedFiles(prev => prev.map(file => {
+                if (file === selectedFile) {
+                    return ensuredFile;
+                }
+                return file;
+            }));
+        }
 
-        // 서버 파일이고, 내용이 '로딩 중...'일 경우만 API 호출
-        if (selectedFile.fileUUID && selectedFile.isServerFile && selectedFile.code === '로딩 중...') {
-            const result = await fetchFileContent(selectedFile.fileUUID, selectedFile.name);
+        let fileContent = ensuredFile.code;
+
+        if (ensuredFile.fileUUID && ensuredFile.isServerFile && ensuredFile.code === '로딩 중...') {
+            const result = await fetchFileContent(ensuredFile.fileUUID, ensuredFile.name);
 
             if (result) {
                 fileContent = result.content;
                 const newName = result.originalFileName;
 
-                // savedFiles 목록 업데이트: 파일 이름 및 내용
                 setSavedFiles(prev => prev.map(f => {
-                    if (f.fileUUID === selectedFile.fileUUID) {
-                        return {...f, name: newName, code: fileContent};
+                    if (f.fileUUID === ensuredFile.fileUUID) {
+                        return ensureLocalId({ ...f, name: newName, code: fileContent, lastSavedCode: fileContent });
                     }
                     return f;
                 }));
 
-                // 현재 파일 이름 업데이트
                 setFileName(newName);
             } else {
-                fileContent = `파일 내용을 로드할 수 없습니다. (UUID: ${selectedFile.fileUUID})`;
+                fileContent = `파일 내용을 로드할 수 없습니다. (UUID: ${ensuredFile.fileUUID})`;
             }
         }
 
-        setCode(fileContent);
+        setOpenFileIds(prev => (prev.includes(fileId) ? prev : [...prev, fileId]));
+        const computedSaved = ensuredFile.lastSavedCode !== null && ensuredFile.code === ensuredFile.lastSavedCode;
+        setFileSavedState(prev => {
+            if (prev.has(fileId)) return prev;
+            const next = new Map(prev);
+            next.set(fileId, computedSaved);
+            return next;
+        });
+        setActiveFileId(fileId);
+        setActiveFileUUID(ensuredFile.fileUUID || null);
+        setCurrentFileType(getFileType(ensuredFile.name));
+        setSelectedJsonData(null);
+        setIsExampleFile(false);
+        setFileName(ensuredFile.name);
 
-        // 언어 설정
-        const langId = getLanguageFromFileName(selectedFile.name);
+    const savedState = fileSavedState.has(fileId) ? fileSavedState.get(fileId) : computedSaved;
+    setIsSaved(savedState !== false && savedState !== undefined);
+
+        const updatedFile = savedFiles.find(f => getFileId(f) === fileId) || ensuredFile;
+        const contentToUse = updatedFile.code ?? fileContent;
+        setCode(contentToUse);
+
+        const langId = getLanguageFromFileName(ensuredFile.name);
         if (langId && langId !== selectedLanguage) {
             setSelectedLanguage(langId);
+        }
+    };
+
+    const openFileById = (fileId) => {
+        const targetFile = savedFiles.find(file => getFileId(file) === fileId);
+        if (!targetFile) return;
+        if (targetFile.fileUUID) {
+            handleFileSelect(targetFile.fileUUID, true);
+        } else {
+            handleFileSelect(targetFile.name, false);
+        }
+    };
+
+    const handleCloseTab = (event, fileId) => {
+        event.stopPropagation();
+
+        if (!openFileIds.includes(fileId)) {
+            return;
+        }
+
+        const currentIds = [...openFileIds];
+        const nextIds = currentIds.filter(id => id !== fileId);
+        const wasActive = fileId === activeFileId;
+
+        setOpenFileIds(nextIds);
+        setFileSavedState(prev => {
+            const next = new Map(prev);
+            next.delete(fileId);
+            return next;
+        });
+
+        if (wasActive) {
+            if (nextIds.length > 0) {
+                const closedIndex = currentIds.indexOf(fileId);
+                const fallbackIndex = closedIndex > 0 ? closedIndex - 1 : 0;
+                const nextActiveId = nextIds[fallbackIndex] || nextIds[0];
+                if (nextActiveId) {
+                    openFileById(nextActiveId);
+                }
+            } else {
+                setActiveFileId(null);
+                setActiveFileUUID(null);
+                setCode('');
+                setFileName('열린 파일 없음');
+                setIsSaved(true);
+                setCurrentFileType('code');
+                setSelectedJsonData(null);
+                setIsExampleFile(false);
+                if (editorRef.current) {
+                    editorRef.current = null;
+                }
+                if (monacoRef.current) {
+                    monacoRef.current = null;
+                }
+            }
         }
     };
 
@@ -300,28 +386,67 @@ const IDE = () => {
                 throw new Error(errorMsg);
             }
 
-            // 1. 로컬 상태 업데이트: savedFiles에서 제거
-            setSavedFiles(prev => prev.filter(f => f.fileUUID !== fileUUID));
+            const deletedFileId = fileUUID;
+            const remainingFiles = savedFiles.filter(f => f.fileUUID !== fileUUID);
 
-            // 2. 현재 활성화 파일 상태 확인 및 리셋
-            if (activeFileUUID === fileUUID) {
+            if (remainingFiles.length === 0) {
                 const defaultLang = supportedLanguages.find(lang => lang.id === selectedLanguage) || supportedLanguages[0];
-                const newDefaultFile = {
-                    name: "untitled.py",
+                const fallbackFile = ensureLocalId({
+                    name: 'untitled.py',
                     code: defaultLang.template,
+                    lastSavedCode: defaultLang.template,
                     type: 'code',
                     fileUUID: null,
                     isServerFile: false
-                };
-
-                // 삭제된 파일이 현재 편집 중이었습니다. 새 기본 파일로 상태 리셋.
-                setCode(newDefaultFile.code);
-                setFileName(newDefaultFile.name);
+                });
+                setSavedFiles([fallbackFile]);
+                const fallbackId = getFileId(fallbackFile);
+                setOpenFileIds([fallbackId]);
+                setFileSavedState(new Map([[fallbackId, true]]));
                 setActiveFileUUID(null);
+                setActiveFileId(fallbackId);
+                setCode(fallbackFile.code);
+                setFileName(fallbackFile.name);
                 setIsSaved(true);
-                setCurrentFileType(newDefaultFile.type);
-                setSelectedLanguage(getLanguageFromFileName(newDefaultFile.name));
+                setCurrentFileType(fallbackFile.type);
+                setSelectedLanguage(getLanguageFromFileName(fallbackFile.name));
                 toast(`삭제된 파일이 현재 편집 중이었습니다. 기본 파일로 돌아갑니다.`, 'toast-warning');
+            } else {
+                const nextActiveFile = activeFileUUID === fileUUID ? ensureLocalId(remainingFiles[0]) : null;
+                setSavedFiles(remainingFiles);
+
+                setOpenFileIds(prev => {
+                    let nextIds = prev.filter(id => id !== deletedFileId);
+                    if (nextActiveFile) {
+                        const nextId = getFileId(nextActiveFile);
+                        if (!nextIds.includes(nextId)) {
+                            nextIds = [nextId, ...nextIds];
+                        }
+                        if (nextIds.length === 0) {
+                            nextIds = [nextId];
+                        }
+                    }
+                    return nextIds;
+                });
+
+                setFileSavedState(prev => {
+                    const next = new Map(prev);
+                    next.delete(deletedFileId);
+                    return next;
+                });
+
+                if (nextActiveFile) {
+                    const nextId = getFileId(nextActiveFile);
+                    setActiveFileUUID(nextActiveFile.fileUUID || null);
+                    setActiveFileId(nextId);
+                    setCode(nextActiveFile.code);
+                    setFileName(nextActiveFile.name);
+                    const savedState = fileSavedState.get(nextId);
+                    setIsSaved(savedState !== false);
+                    setCurrentFileType(nextActiveFile.type);
+                    setSelectedLanguage(getLanguageFromFileName(nextActiveFile.name));
+                    toast(`삭제된 파일이 현재 편집 중이었습니다. 다른 파일로 전환합니다.`, 'toast-warning');
+                }
             }
 
             toast(`파일 "${fileName}"이(가) 성공적으로 삭제되었습니다.`);
@@ -335,17 +460,41 @@ const IDE = () => {
 
     // 🆕 더미 파일 선택 핸들러 (원본 유지)
     const handleDummyFileSelect = (file) => {
-        if (!isSaved) {
-            const shouldContinue = window.confirm('현재 파일에 저장되지 않은 변경사항이 있습니다. 예제 파일을 불러오시겠습니까?');
-            if (!shouldContinue) return;
-        }
+        const fileType = getFileType(file.name);
+        const ensuredFile = ensureLocalId({
+            name: file.name,
+            code: file.code,
+            lastSavedCode: null,
+            type: fileType,
+            fileUUID: null,
+            isServerFile: false
+        });
+        const fileId = getFileId(ensuredFile);
 
-        setCode(file.code);
-        setFileName(file.name);
-        setActiveFileUUID(null); // 예제 파일이므로 UUID 없음
-        setCurrentFileType(getFileType(file.name));
+        setSavedFiles(prev => {
+            const existingIndex = prev.findIndex(f => !f.fileUUID && f.name === file.name);
+            if (existingIndex !== -1) {
+                const updated = [...prev];
+                updated[existingIndex] = ensuredFile;
+                return updated;
+            }
+            return [...prev, ensuredFile];
+        });
 
-        if (file.type === 'json') {
+        setOpenFileIds(prev => (prev.includes(fileId) ? prev : [...prev, fileId]));
+        setFileSavedState(prev => {
+            const next = new Map(prev);
+            next.set(fileId, false);
+            return next;
+        });
+
+        setActiveFileId(fileId);
+        setActiveFileUUID(null);
+        setFileName(ensuredFile.name);
+        setCurrentFileType(fileType);
+        setCode(ensuredFile.code);
+
+        if (fileType === 'json') {
             try {
                 const jsonData = JSON.parse(file.code);
                 setSelectedJsonData(jsonData);
@@ -381,19 +530,27 @@ const IDE = () => {
         try {
             const existingFile = savedFiles.find(f => f.name === jsonFileName);
 
-            const fileToUpdate = {
+            const fileToUpdate = ensureLocalId({
                 name: jsonFileName,
                 code: content,
+                lastSavedCode: content,
                 type: 'json',
                 fileUUID: existingFile ? existingFile.fileUUID : null,
                 isServerFile: existingFile ? existingFile.isServerFile : false
-            };
+            });
 
             if (existingFile) {
                 setSavedFiles(prev => prev.map(f => f.name === jsonFileName ? fileToUpdate : f));
             } else {
                 setSavedFiles(prev => [...prev, fileToUpdate]);
             }
+
+            const fileId = getFileId(fileToUpdate);
+            setFileSavedState(prev => {
+                const next = new Map(prev);
+                next.set(fileId, true);
+                return next;
+            });
 
             return content;
         } catch (error) {
@@ -403,6 +560,11 @@ const IDE = () => {
 
     // 🆕 개선된 시각화 클릭 핸들러 (원본 유지)
     const handleVisualizationClick = async () => {
+        if (!activeFileId) {
+            toast('열린 파일이 없습니다.', 'toast-warning');
+            return;
+        }
+
         if (!code.trim()) {
             alert('시각화할 코드를 먼저 작성해주세요.');
             return;
@@ -477,19 +639,29 @@ const IDE = () => {
         }
 
         const fileType = getFileType(newFileName);
-        const newFile = {
+        const newFile = ensureLocalId({
             name: newFileName,
             code: fileType === 'json' ? '{}' : currentLang.template,
+            lastSavedCode: null,
             type: fileType,
             fileUUID: null,
             isServerFile: false,
-        };
+        });
+        const fileId = getFileId(newFile);
 
-        setSavedFiles([...savedFiles, newFile]);
+        setSavedFiles(prev => [...prev, newFile]);
+        setOpenFileIds(prev => prev.includes(fileId) ? prev : [...prev, fileId]);
+        setFileSavedState(prev => {
+            const next = new Map(prev);
+            next.set(fileId, false);
+            return next;
+        });
+
         setFileName(newFileName);
         setCode(newFile.code);
         setActiveFileUUID(null);
-        setIsSaved(true);
+        setActiveFileId(fileId);
+        setIsSaved(false);
         setCurrentFileType(fileType);
 
         setSelectedJsonData(null);
@@ -506,7 +678,52 @@ const IDE = () => {
 
     // 나머지 기본 함수들 (원본 유지)
     const handleEditorChange = (value) => {
-        setCode(value);
+        const updatedValue = value ?? '';
+        setCode(updatedValue);
+
+        if (!activeFileId) {
+            setIsSaved(false);
+            return;
+        }
+
+        const activeFile = savedFiles.find(file => getFileId(file) === activeFileId);
+        const lastSaved = activeFile?.lastSavedCode ?? null;
+        const isCurrentlySaved = lastSaved !== null && updatedValue === lastSaved;
+
+        setSavedFiles(prev => prev.map(file => {
+            if (getFileId(file) === activeFileId) {
+                return { ...file, code: updatedValue };
+            }
+            return file;
+        }));
+
+        setFileSavedState(prev => {
+            const next = new Map(prev);
+            next.set(activeFileId, isCurrentlySaved);
+            return next;
+        });
+
+        setIsSaved(isCurrentlySaved);
+    };
+
+    const handleFileNameChange = (newName) => {
+        setFileName(newName);
+        if (!activeFileId) return;
+
+        const newType = getFileType(newName);
+        setSavedFiles(prev => prev.map(file => {
+            if (getFileId(file) === activeFileId) {
+                return { ...file, name: newName, type: newType };
+            }
+            return file;
+        }));
+        setCurrentFileType(newType);
+
+        setFileSavedState(prev => {
+            const next = new Map(prev);
+            next.set(activeFileId, false);
+            return next;
+        });
         setIsSaved(false);
     };
 
@@ -539,6 +756,11 @@ const IDE = () => {
     const handleSave = async () => {
         if (!isLoggedIn) {
             alert("로그인 후 이용 가능한 기능입니다.");
+            return;
+        }
+
+        if (!activeFileId || !editorRef.current) {
+            toast('열린 파일이 없습니다.', 'toast-error');
             return;
         }
 
@@ -583,35 +805,53 @@ const IDE = () => {
             const result = await response.json();
             const newFileUUID = result.fileUUID;
 
-            // 4. 로컬 상태 업데이트
-            const updatedFile = {
+            const previousFileId = activeFileId;
+            const updatedFile = ensureLocalId({
                 name: currentFileName,
                 code: currentCode,
+                lastSavedCode: currentCode,
                 type: getFileType(currentFileName),
                 fileUUID: newFileUUID,
                 isServerFile: true
-            };
+            });
+            const updatedFileId = getFileId(updatedFile);
 
             setSavedFiles(prev => {
-                const existingIndex = prev.findIndex(f => f.fileUUID === fileUUIDToUse);
-                if (existingIndex !== -1) {
-                    const newFiles = [...prev];
-                    newFiles[existingIndex] = updatedFile;
-                    return newFiles;
+                const newFiles = prev.map(file => {
+                    const fileId = getFileId(file);
+                    if ((fileUUIDToUse && file.fileUUID === fileUUIDToUse) || (!fileUUIDToUse && fileId === previousFileId) || (!fileUUIDToUse && !file.fileUUID && file.name === currentFileName)) {
+                        return updatedFile;
+                    }
+                    return file;
+                });
+
+                if (!newFiles.some(file => getFileId(file) === updatedFileId)) {
+                    newFiles.push(updatedFile);
                 }
 
-                const localFileIndex = prev.findIndex(f => f.name === currentFileName && !f.fileUUID);
-                if (localFileIndex !== -1) {
-                    const newFiles = [...prev];
-                    newFiles[localFileIndex] = updatedFile;
-                    return newFiles;
-                }
-
-                return [...prev, updatedFile];
+                return newFiles;
             });
 
-            // 현재 활성 파일 상태 업데이트
+            setOpenFileIds(prev => {
+                if (!prev.length) return [updatedFileId];
+                const next = prev.map(id => (id === previousFileId ? updatedFileId : id));
+                if (!next.includes(updatedFileId)) {
+                    next.push(updatedFileId);
+                }
+                return next;
+            });
+
+            setFileSavedState(prev => {
+                const next = new Map(prev);
+                next.set(updatedFileId, true);
+                if (previousFileId && previousFileId !== updatedFileId) {
+                    next.delete(previousFileId);
+                }
+                return next;
+            });
+
             setActiveFileUUID(newFileUUID);
+            setActiveFileId(updatedFileId);
             setIsSaved(true);
             setCode(currentCode);
             toast(`파일이 성공적으로 저장/수정되었습니다!`);
@@ -623,6 +863,11 @@ const IDE = () => {
     };
 
     const handleRun = async () => {
+        if (!activeFileId || !editorRef.current) {
+            toast('열린 파일이 없습니다.', 'toast-warning');
+            return;
+        }
+
         // ... (코드 실행 로직, 원본 유지) ...
         if (currentFileType === 'json') {
             alert('JSON 파일은 실행할 수 없습니다. 시각화 버튼을 사용해주세요.');
@@ -696,10 +941,16 @@ const IDE = () => {
             setIsLanguageMenuOpen(false);
             setActiveFileUUID(null);
 
-            const newFile = {
-                name: newFileName, code: newLanguage.template, type: 'code',
-                fileUUID: null, isServerFile: false
-            };
+            const newFile = ensureLocalId({
+                name: newFileName,
+                code: newLanguage.template,
+                lastSavedCode: null,
+                type: 'code',
+                fileUUID: null,
+                isServerFile: false
+            });
+            const newFileId = getFileId(newFile);
+
             setSavedFiles(prev => {
                 const exists = prev.find(f => f.name === newFileName && !f.fileUUID);
                 if (!exists) {
@@ -707,6 +958,14 @@ const IDE = () => {
                 }
                 return prev;
             });
+
+            setOpenFileIds(prev => (prev.includes(newFileId) ? prev : [...prev, newFileId]));
+            setFileSavedState(prev => {
+                const next = new Map(prev);
+                next.set(newFileId, false);
+                return next;
+            });
+            setActiveFileId(newFileId);
         }
     };
 
@@ -758,17 +1017,28 @@ const IDE = () => {
 
                 const fileList = await response.json();
 
-                const serverFiles = fileList.map(file => ({
+                const serverFiles = fileList.map(file => ensureLocalId({
                     name: file.originalFileName,
                     code: '로딩 중...',
+                    lastSavedCode: null,
                     type: getFileType(file.originalFileName),
                     fileUUID: file.fileUUID,
                     isServerFile: true
                 }));
 
                 setSavedFiles(prev => {
-                    const localFiles = prev.filter(f => !f.isServerFile && !f.fileUUID);
+                    const localFiles = prev
+                        .filter(f => !f.isServerFile && !f.fileUUID)
+                        .map(ensureLocalId);
                     return [...localFiles, ...serverFiles];
+                });
+
+                setFileSavedState(prev => {
+                    const next = new Map(prev);
+                    serverFiles.forEach(file => {
+                        next.set(getFileId(file), true);
+                    });
+                    return next;
                 });
 
             } catch (error) {
@@ -780,9 +1050,22 @@ const IDE = () => {
         if (isLoggedIn) {
             fetchSavedFiles();
         } else {
-            setSavedFiles(prev => prev.filter(f => !f.isServerFile));
-            setCode('# 여기에 코드를 입력하세요');
-            setFileName('untitled.py');
+            const resetFile = ensureLocalId({
+                name: 'untitled.py',
+                code: '# 여기에 코드를 입력하세요',
+                lastSavedCode: '# 여기에 코드를 입력하세요',
+                type: 'code',
+                fileUUID: null,
+                isServerFile: false
+            });
+
+            setSavedFiles([resetFile]);
+            const resetId = getFileId(resetFile);
+            setOpenFileIds([resetId]);
+            setFileSavedState(new Map([[resetId, true]]));
+            setActiveFileId(resetId);
+            setCode(resetFile.code);
+            setFileName(resetFile.name);
             setActiveFileUUID(null);
             setIsSaved(true);
             setSelectedLanguage('python');
@@ -852,6 +1135,12 @@ const IDE = () => {
 
         return () => { observer.disconnect(); };
     }, [isDarkMode]);
+
+    const hasActiveFile = Boolean(
+        activeFileId &&
+        openFileIds.includes(activeFileId) &&
+        savedFiles.some(file => getFileId(file) === activeFileId)
+    );
 
     // 🆕 ModernSidebar 렌더링 함수 (삭제 버튼 추가)
     const renderModernSidebar = () => {
@@ -1002,7 +1291,7 @@ const IDE = () => {
                             </div>
                             <div className="stat-row">
                                 <span>활성 파일:</span>
-                                <span className="active-file-name">{fileName}</span>
+                                <span className="active-file-name">{hasActiveFile ? fileName : '없음'}</span>
                             </div>
                         </div>
                     </div>
@@ -1010,6 +1299,10 @@ const IDE = () => {
             </div>
         );
     };
+
+    const openFiles = openFileIds
+        .map(id => savedFiles.find(file => getFileId(file) === id))
+        .filter(Boolean);
 
     return (
         <div className="ide-container">
@@ -1076,17 +1369,20 @@ const IDE = () => {
                                 <input
                                     type="text"
                                     value={fileName}
-                                    onChange={(e) => setFileName(e.target.value)}
+                                    onChange={(e) => handleFileNameChange(e.target.value)}
                                     className="filename-input"
                                     placeholder="파일명.확장자"
+                                    disabled={!hasActiveFile}
                                     title={`현재 파일 UUID: ${activeFileUUID || '없음'}`}
                                 />
-                                <button className="save-button" onClick={handleSave} disabled={isSaved}>
+                                <button className="save-button" onClick={handleSave} disabled={!hasActiveFile || isSaved}>
                                     {activeFileUUID ? '덮어쓰기' : '저장'}
                                 </button>
-                                <span className={`save-indicator ${isSaved ? 'saved' : ''}`}>
-                                    {isSaved ? '✓' : '●'}
-                                </span>
+                                {hasActiveFile && (
+                                    <span className={`save-indicator ${isSaved ? 'saved' : ''}`}>
+                                        {isSaved ? '✓' : '●'}
+                                    </span>
+                                )}
                             </>
                         ) : (
                             <div className="guest-controls">
@@ -1098,6 +1394,33 @@ const IDE = () => {
                 </div>
 
                 {/* 코드 에디터와 출력 영역 */}
+                <div className="editor-tabs">
+                    {openFiles.map(file => {
+                        const id = getFileId(file);
+                        const isActive = id === activeFileId;
+                        const isDirty = fileSavedState.get(id) === false;
+                        return (
+                            <button
+                                key={id}
+                                className={`editor-tab ${isActive ? 'active' : ''}`}
+                                onClick={() => openFileById(id)}
+                                type="button"
+                            >
+                                <span className="tab-title">{file.name}</span>
+                                {isDirty && <span className="tab-dirty-indicator">●</span>}
+                                <span
+                                    className="tab-close"
+                                    onClick={(event) => handleCloseTab(event, id)}
+                                    title="탭 닫기"
+                                >
+                                    ×
+                                </span>
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* 코드 에디터와 출력 영역 */}
                 <div className="content-layout">
                     <div className="editor-section">
                         {isLoadingContent && (
@@ -1106,40 +1429,46 @@ const IDE = () => {
                             </div>
                         )}
                         <div className="monaco-editor-wrapper" style={{ opacity: isLoadingContent ? 0.5 : 1 }}>
-                            <Editor
-                                // 🔑 key 추가: 파일 변경 시 에디터 강제 재마운트
-                                key={activeFileUUID || fileName}
-                                height="100%"
-                                defaultLanguage={currentFileType === 'json' ? 'json' : selectedLanguage}
-                                defaultValue={code}
-                                language={currentFileType === 'json' ? 'json' : selectedLanguage}
-                                value={code}
-                                onChange={handleEditorChange}
-                                onMount={handleEditorDidMount}
-                                theme={isDarkMode ? "vs-dark" : "vs-light"}
-                                options={{
-                                    fontSize: 14,
-                                    minimap: { enabled: false },
-                                    scrollBeyondLastLine: false,
-                                    automaticLayout: false, // 💡 충돌 회피를 위해 비활성화
-                                    tabSize: 4,
-                                    insertSpaces: true,
-                                    cursorBlinking: "solid",
-                                    folding: true,
-                                    lineNumbersMinChars: 3,
-                                    wordWrap: "off",
-                                    renderWhitespace: "none",
-                                    renderLineHighlight: "line",
-                                    renderLineHighlightOnlyWhenFocus: false,
-                                    scrollbar: {
-                                        useShadows: false,
-                                        vertical: 'auto',
-                                        horizontal: 'auto',
-                                        verticalScrollbarSize: 10,
-                                        horizontalScrollbarSize: 10
-                                    }
-                                }}
-                            />
+                            {hasActiveFile ? (
+                                <Editor
+                                    // 🔑 key 추가: 파일 변경 시 에디터 강제 재마운트
+                                    key={activeFileId || fileName}
+                                    height="100%"
+                                    defaultLanguage={currentFileType === 'json' ? 'json' : selectedLanguage}
+                                    defaultValue={code}
+                                    language={currentFileType === 'json' ? 'json' : selectedLanguage}
+                                    value={code}
+                                    onChange={handleEditorChange}
+                                    onMount={handleEditorDidMount}
+                                    theme={isDarkMode ? "vs-dark" : "vs-light"}
+                                    options={{
+                                        fontSize: 14,
+                                        minimap: { enabled: false },
+                                        scrollBeyondLastLine: false,
+                                        automaticLayout: false, // 💡 충돌 회피를 위해 비활성화
+                                        tabSize: 4,
+                                        insertSpaces: true,
+                                        cursorBlinking: "solid",
+                                        folding: true,
+                                        lineNumbersMinChars: 3,
+                                        wordWrap: "off",
+                                        renderWhitespace: "none",
+                                        renderLineHighlight: "line",
+                                        renderLineHighlightOnlyWhenFocus: false,
+                                        scrollbar: {
+                                            useShadows: false,
+                                            vertical: 'auto',
+                                            horizontal: 'auto',
+                                            verticalScrollbarSize: 10,
+                                            horizontalScrollbarSize: 10
+                                        }
+                                    }}
+                                />
+                            ) : (
+                                <div className="no-open-file-message">
+                                    열린 파일이 없습니다. 왼쪽에서 파일을 선택하거나 새 파일을 만들어 시작하세요.
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -1148,8 +1477,12 @@ const IDE = () => {
                             <button
                                 className="run-code-button"
                                 onClick={handleRun}
-                                disabled={isRunning || currentFileType === 'json'}
-                                title={currentFileType === 'json' ? 'JSON 파일은 실행할 수 없습니다' : '코드 실행'}
+                                disabled={!hasActiveFile || isRunning || currentFileType === 'json'}
+                                title={!hasActiveFile
+                                    ? '열린 파일이 없습니다'
+                                    : (currentFileType === 'json'
+                                        ? 'JSON 파일은 실행할 수 없습니다'
+                                        : '코드 실행')}
                             >
                                 <span className="button-icon">▶</span>
                                 {currentFileType === 'json' ? '실행 불가' : '실행 코드'}
@@ -1157,10 +1490,12 @@ const IDE = () => {
                             <button
                                 className="visualization-button"
                                 onClick={handleVisualizationClick}
-                                disabled={!isLoggedIn && currentFileType !== 'json'}
-                                title={currentFileType === 'json'
-                                    ? 'JSON 데이터 시각화'
-                                    : (isLoggedIn ? 'API를 통한 코드 시각화' : '로그인 후 코드 시각화를 이용할 수 있습니다')}
+                                disabled={!hasActiveFile || (!isLoggedIn && currentFileType !== 'json')}
+                                title={!hasActiveFile
+                                    ? '열린 파일이 없습니다'
+                                    : (currentFileType === 'json'
+                                        ? 'JSON 데이터 시각화'
+                                        : (isLoggedIn ? 'API를 통한 코드 시각화' : '로그인 후 코드 시각화를 이용할 수 있습니다'))}
                             >
                                 <span className="button-icon">📊</span>
                                 {currentFileType === 'json' ? 'JSON 시각화' : (isLoggedIn ? '코드 시각화' : '코드 시각화 (로그인 필요)')}
@@ -1175,11 +1510,13 @@ const IDE = () => {
                                 className="program-input"
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
-                                placeholder={currentFileType === 'json' ?
-                                    'JSON 파일에서는 입력값이 사용되지 않습니다' :
-                                    '프로그램 실행 시 필요한 입력값을 여기에 작성하세요'
+                                placeholder={!hasActiveFile ?
+                                    '열린 파일이 없습니다. 파일을 열면 입력값을 작성할 수 있습니다.' :
+                                    (currentFileType === 'json' ?
+                                        'JSON 파일에서는 입력값이 사용되지 않습니다' :
+                                        '프로그램 실행 시 필요한 입력값을 여기에 작성하세요')
                                 }
-                                disabled={currentFileType === 'json'}
+                                disabled={!hasActiveFile || currentFileType === 'json'}
                             ></textarea>
                         </div>
 
