@@ -123,8 +123,10 @@ export default function CodecastSidebar({
                             )}
 
                             <div className="participant-main">
-                                <span className="name">
-                                    {displayName}
+                                <span className="name" title={displayName}>
+                                    {displayName.length > 4
+                                        ? displayName.slice(0, 4) + '…'
+                                        : displayName}
                                     {isSelf && <span className="self-badge">나</span>}
                                 </span>
                                 <span className={`stage ${stage}`}>{stageLabel}</span>
