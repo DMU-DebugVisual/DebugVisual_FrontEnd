@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
-import { FaMoon, FaSun, FaUserCircle, FaBell } from "react-icons/fa";
+import { FaMoon, FaSun, FaUserCircle, FaBell, FaArrowRight, FaRegAddressCard, FaSignOutAlt } from "react-icons/fa";
 import "./Header.css";
 import logoImage from '../../assets/logo3.png';
 import config from '../../config';
+import { formatAbsoluteDateTimeKo, formatRelativeTimeKo } from "../../utils/date";
 
 const Header = ({ isDark, setIsDark, isLoggedIn, nickname, onLoginModalOpen }) => {
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -11,12 +12,28 @@ const Header = ({ isDark, setIsDark, isLoggedIn, nickname, onLoginModalOpen }) =
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
 
-    const [isViewAll, setIsViewAll] = useState(false);
-    const [currentPage, setCurrentPage] = useState(1);
-    const notificationsPerPage = 7;
+    const notificationsPreviewCount = 7;
 
     const navigate = useNavigate();
     const location = useLocation();
+
+    const storedHandle = useMemo(() => {
+        if (typeof window === "undefined") {
+            return "";
+        }
+        try {
+            return window.localStorage.getItem("username") || "";
+        } catch (err) {
+            console.error("Failed to read username from storage", err);
+            return "";
+        }
+    }, []);
+
+    const normalizedHandle = storedHandle.replace(/^@/, "");
+    const displayNickname = nickname || normalizedHandle || "사용자";
+    const displayHandle = (normalizedHandle || nickname)
+        ? `@${(normalizedHandle || nickname).replace(/^@/, "")}`
+        : "";
 
     const fetchNotifications = useCallback(async () => {
         if (!isLoggedIn) return;
@@ -55,22 +72,25 @@ const Header = ({ isDark, setIsDark, isLoggedIn, nickname, onLoginModalOpen }) =
         }
     }, [isLoggedIn, fetchNotifications]);
 
+    useEffect(() => {
+        const refreshHandler = () => {
+            if (isLoggedIn) {
+                fetchNotifications();
+            }
+        };
+
+        window.addEventListener("dv:notifications-refresh", refreshHandler);
+        return () => window.removeEventListener("dv:notifications-refresh", refreshHandler);
+    }, [fetchNotifications, isLoggedIn]);
+
     const toggleNotificationMenu = () => {
         setIsNotificationMenuOpen(!isNotificationMenuOpen);
         setIsUserMenuOpen(false);
-        if (isNotificationMenuOpen) {
-            setIsViewAll(false);
-            setCurrentPage(1);
-        }
     };
 
     const toggleUserMenu = () => {
         setIsUserMenuOpen(!isUserMenuOpen);
         setIsNotificationMenuOpen(false);
-        if (isNotificationMenuOpen) {
-            setIsViewAll(false);
-            setCurrentPage(1);
-        }
     };
 
     const resolveNotificationId = useCallback((notification) => {
@@ -141,22 +161,15 @@ const Header = ({ isDark, setIsDark, isLoggedIn, nickname, onLoginModalOpen }) =
             }
 
             setIsNotificationMenuOpen(false);
-            setIsViewAll(false);
-            setCurrentPage(1);
         },
         [handleNotificationRead, navigate, resolveNotificationId]
     );
 
-    const handleViewAll = () => {
-        setIsViewAll(true);
-        setCurrentPage(1);
-    };
-
-    // ✅ 닫기 버튼 핸들러 추가
-    const closeViewAll = () => {
-        setIsViewAll(false);
-        setCurrentPage(1);
-    };
+    const handleViewAll = useCallback(() => {
+        setIsNotificationMenuOpen(false);
+        setIsUserMenuOpen(false);
+        navigate("/mypage/notifications");
+    }, [navigate]);
 
     const goToMyPage = () => {
         navigate("/mypage");
@@ -173,11 +186,8 @@ const Header = ({ isDark, setIsDark, isLoggedIn, nickname, onLoginModalOpen }) =
         window.location.reload();
     };
 
-    const displayNotifications = isViewAll
-        ? notifications.slice((currentPage - 1) * notificationsPerPage, currentPage * notificationsPerPage)
-        : notifications.slice(0, notificationsPerPage);
-
-    const totalPages = Math.ceil(notifications.length / notificationsPerPage);
+    const displayNotifications = notifications.slice(0, notificationsPreviewCount);
+    const hasNotifications = notifications.length > 0;
 
     return (
         <header className="custom-header">
@@ -213,66 +223,76 @@ const Header = ({ isDark, setIsDark, isLoggedIn, nickname, onLoginModalOpen }) =
                                 )}
                             </button>
                             {isNotificationMenuOpen && (
-                                <div className={`notification-dropdown ${isViewAll ? 'expanded-dropdown' : ''}`}>
-                                    {/* ✅ 전체보기 모드일 때 닫기 버튼 추가 */}
-                                    {isViewAll && (
-                                        <button className="close-btn" onClick={closeViewAll}>
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    )}
-                                    {displayNotifications.length > 0 ? (
-                                        displayNotifications.map((notification, index) => {
-                                            const notificationId = resolveNotificationId(notification);
-                                            const key = notificationId ?? `notification-${index}`;
-                                            const isUnread = !notification.read;
-                                            const disableRead = !notificationId || !isUnread;
+                                <div className="notification-dropdown">
+                                    <div className="notification-dropdown__header">
+                                        <span className="notification-dropdown__title">최근 알림</span>
+                                        {unreadCount > 0 && (
+                                            <span className="notification-dropdown__badge">{unreadCount}개 읽지 않음</span>
+                                        )}
+                                    </div>
+                                    <div className="notification-dropdown__list">
+                                        {displayNotifications.length > 0 ? (
+                                            displayNotifications.map((notification, index) => {
+                                                const notificationId = resolveNotificationId(notification);
+                                                const key = notificationId ?? `notification-${index}`;
+                                                const isUnread = !notification.read;
+                                                const disableRead = !notificationId || !isUnread;
+                                                const createdAt = notification.createdAt ?? notification.created_at;
+                                                const relativeTime = formatRelativeTimeKo(createdAt);
+                                                const absoluteTime = formatAbsoluteDateTimeKo(createdAt);
+                                                const absoluteIso = absoluteTime && createdAt
+                                                    ? new Date(createdAt).toISOString()
+                                                    : "";
 
-                                            return (
-                                                <div
-                                                    key={key}
-                                                    className={`notification-item ${isUnread ? 'unread' : 'read'}`}
-                                                >
-                                                    <button
-                                                        type="button"
-                                                        className="notification-message"
-                                                        onClick={() => handleNotificationNavigate(notification)}
+                                                return (
+                                                    <div
+                                                        key={key}
+                                                        className={`notification-item ${isUnread ? 'unread' : 'read'}`}
                                                     >
-                                                        {notification.message}
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        className="notification-read-btn"
-                                                        disabled={disableRead}
-                                                        onClick={async (e) => {
-                                                            e.stopPropagation();
-                                                            await handleNotificationRead(notificationId);
-                                                        }}
-                                                    >
-                                                        읽음
-                                                    </button>
-                                                </div>
-                                            );
-                                        })
-                                    ) : (
-                                        <div className="no-notifications">알림이 없습니다.</div>
-                                    )}
-                                    {notifications.length > notificationsPerPage && (
-                                        <div className="notification-footer">
-                                            {isViewAll ? (
-                                                <div className="pagination">
-                                                    {Array.from({ length: totalPages }, (_, i) => (
                                                         <button
-                                                            key={i + 1}
-                                                            onClick={() => setCurrentPage(i + 1)}
-                                                            className={currentPage === i + 1 ? 'active' : ''}
+                                                            type="button"
+                                                            className="notification-message"
+                                                            onClick={() => handleNotificationNavigate(notification)}
                                                         >
-                                                            {i + 1}
+                                                            <span className="notification-text">{notification.message}</span>
+                                                            {(relativeTime || absoluteTime) && (
+                                                                <span className="notification-meta">
+                                                                    {relativeTime && (
+                                                                        <span>{relativeTime}</span>
+                                                                    )}
+                                                                    {relativeTime && absoluteTime && (
+                                                                        <span className="notification-meta__dot">•</span>
+                                                                    )}
+                                                                    {absoluteTime && (
+                                                                        <time dateTime={absoluteIso}>{absoluteTime}</time>
+                                                                    )}
+                                                                </span>
+                                                            )}
                                                         </button>
-                                                    ))}
-                                                </div>
-                                            ) : (
-                                                <button onClick={handleViewAll}>전체보기</button>
-                                            )}
+                                                        <button
+                                                            type="button"
+                                                            className="notification-read-btn"
+                                                            disabled={disableRead}
+                                                            onClick={async (e) => {
+                                                                e.stopPropagation();
+                                                                await handleNotificationRead(notificationId);
+                                                            }}
+                                                        >
+                                                            {isUnread ? "안읽음" : "읽음"}
+                                                        </button>
+                                                    </div>
+                                                );
+                                            })
+                                        ) : (
+                                            <div className="no-notifications">알림이 없습니다.</div>
+                                        )}
+                                    </div>
+                                    {hasNotifications && (
+                                        <div className="notification-footer">
+                                            <button type="button" className="notification-view-all" onClick={handleViewAll}>
+                                                <span>알림 전체 보기</span>
+                                                <FaArrowRight aria-hidden="true" />
+                                            </button>
                                         </div>
                                     )}
                                 </div>
@@ -285,9 +305,34 @@ const Header = ({ isDark, setIsDark, isLoggedIn, nickname, onLoginModalOpen }) =
                                 {nickname} 님 ▾
                             </span>
                             {isUserMenuOpen && (
-                                <div className="user-dropdown">
-                                    <button onClick={goToMyPage}>마이페이지</button>
-                                    <button onClick={handleLogout}>로그아웃</button>
+                                <div className="user-dropdown" role="menu">
+                                    <div className="user-dropdown__header">
+                                        <FaUserCircle size={40} className="user-dropdown__avatar" aria-hidden="true" />
+                                        <div className="user-dropdown__meta">
+                                            <span className="user-dropdown__name">{displayNickname}</span>
+                                            {displayHandle && (
+                                                <span className="user-dropdown__handle">{displayHandle}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="user-dropdown__actions">
+                                        <button
+                                            type="button"
+                                            className="user-dropdown__action"
+                                            onClick={goToMyPage}
+                                        >
+                                            <span className="user-dropdown__icon" aria-hidden="true"><FaRegAddressCard /></span>
+                                            <span>마이페이지</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="user-dropdown__action user-dropdown__action--logout"
+                                            onClick={handleLogout}
+                                        >
+                                            <span className="user-dropdown__icon" aria-hidden="true"><FaSignOutAlt /></span>
+                                            <span>로그아웃</span>
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </div>

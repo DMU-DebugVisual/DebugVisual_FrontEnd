@@ -8,11 +8,13 @@ import {
     FaShareAlt,
     FaCog,
     FaPen,
-    FaExternalLinkAlt
+    FaExternalLinkAlt,
+    FaBell
 } from 'react-icons/fa';
 
 const menuItems = [
     { label: '대시보드', path: '/mypage', icon: <FaTachometerAlt /> },
+    { label: '알림', path: '/mypage/notifications', icon: <FaBell /> },
     { label: '프로젝트', path: '/mypage/project', icon: <FaFolderOpen /> },
     { label: '커뮤니티', path: '/mypage/community', icon: <FaComments /> },
     { label: '공유됨', path: '/mypage/shared', icon: <FaShareAlt /> },
