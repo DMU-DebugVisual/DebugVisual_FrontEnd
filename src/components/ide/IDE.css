@@ -806,6 +806,7 @@ body.dark-mode .sidebar-toggle-button:hover {
     position: relative;
     display: inline-block;
     margin-left: 10px;
+    top: 9px;
 }
 
 .language-button {
@@ -879,6 +880,8 @@ body.dark-mode .language-item:hover {
 }
 
 .file-type-indicator .file-type-badge {
+    position: relative;
+    top: 10px ;
     display: inline-flex !important;
     align-items: center !important;
     gap: 6px !important;
